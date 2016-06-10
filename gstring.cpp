@@ -53,7 +53,7 @@ void GString::update_coord_binding_site(double* xyz1, int b1, int a1)
 
 void GString::setup_surface_sites()
 {
-  if (!isSSM)
+  if (!isSSM || tstype != -1)
   {
     printf(" surface sites functionality is for SSM only \n");
     return;
