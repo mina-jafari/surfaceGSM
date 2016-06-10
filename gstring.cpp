@@ -172,7 +172,7 @@ void GString::String_Method_Optimization()
   nsplit = 0;
   n0 = 0;
   growing = 1;
-  double rn3m6 = sqrt(3*natoms-6);
+  double r3n = sqrt(3*natoms);
 
 
   //align initial string
@@ -587,7 +587,7 @@ void GString::String_Method_Optimization()
   double gradrms = 100.;
   emin = V_profile[0];
 
-  double gaddmax = ADD_NODE_TOL/rn3m6;
+  double gaddmax = ADD_NODE_TOL/r3n;
   newic.SCALEQN0 = SCALING;
   for (int i=0;i<nnmax;i++) icoords[i].SCALEQN0 = SCALING*1.0;
   newic.optCG = 0;
@@ -6675,7 +6675,7 @@ int GString::past_ts()
 
 void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, double endenergy, string strfileg, int& tscontinue, double gaddmax, int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan)
 {
-  double rn3m6 = sqrt(3*natoms-6);
+  double r3n = sqrt(3*natoms);
   int nmax;
   double emax;
   double emaxp;
@@ -6798,7 +6798,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
     {
       if (icoords[i].gradrms<1000.)
       {
-        totalgrad += icoords[i].gradrms*rn3m6;
+        totalgrad += icoords[i].gradrms*r3n;
         gradrms += icoords[i].gradrms*icoords[i].gradrms;
       }
     }
@@ -6905,7 +6905,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
 
 void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double endenergy, string strfileg, int& tscontinue, double gaddmax, int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan, int finder, int climber, int do_tp, int& tp)
 {
-  double rn3m6 = sqrt(3*natoms-6);
+  double r3n = sqrt(3*natoms);
   int nmax;
   int nnmaxp = nnmax;
   double emax;
@@ -6937,7 +6937,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
     gradrms = 0.;
     for (int i=n0+1;i<nnmax-1;i++)
     {
-      totalgrad += icoords[i].gradrms*rn3m6;
+      totalgrad += icoords[i].gradrms*r3n;
       gradrms += icoords[i].gradrms*icoords[i].gradrms;
     }
     gradrms = sqrt(gradrms/(nnmax-2-n0));
