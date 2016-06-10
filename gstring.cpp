@@ -56,6 +56,7 @@ void GString::setup_surface_sites()
   if (!isSSM || tstype != -1)
   {
     printf(" surface sites functionality is for SSM only \n");
+    printf(" TS_FINAL_TYPE should be set to -1 \n");
     return;
   }
 
