@@ -1,5 +1,3 @@
-// // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
 // Mina Jafari
 // 12-14-2015
 
@@ -32,16 +30,6 @@ int SurfaceClass::getSurfaceLength() const
 int SurfaceClass::getSurfaceHeight() const
 {
     return (mSlabSize[2]);
-}
-
-BindingSiteClass SurfaceClass::getBindingSite1(unsigned int index) //zero indexed
-{
-    if (!(index <= mBindingSites.size() && index >= 0))
-    {
-      printf("   cannot find binding site %2i \n",index);
-      exit(1);
-    }
-    return (mBindingSites[index]);
 }
 
 const BindingSiteClass* SurfaceClass::getBindingSite(unsigned int index) const //zero indexed
@@ -80,10 +68,10 @@ bool SurfaceClass::setAtoms(int numOfAtoms, double* coordinates, std::string* at
     std::string surfaceAtom = atomicSymbols[0];
     for (int i=0; i<numOfAtoms; ++i)
     {
-        if (atomicSymbols[k] == surfaceAtom)
+        if (atomicSymbols[k] == surfaceAtom) //TODO: you have duplicated code here. Fix it
         {
             std::vector<double> temp;
-            temp.push_back(coordinates[3*k]);
+            temp.push_back(coordinates[3*k]); //TODO: replace k with i
             temp.push_back(coordinates[3*k+1]);
             temp.push_back(coordinates[3*k+2]);
             mCoordinates.push_back(temp);
@@ -269,7 +257,7 @@ int SurfaceClass::findHollow()
             }
         }
     }
-    else if (mSurfaceType == "fcc110") //TODO fcc110-hollow: include the layer above mNthAtom
+    else if (mSurfaceType == "fcc110")
     {
         for (int i=0; i<mSlabSize[0]-1; ++i)
         {
@@ -294,10 +282,18 @@ int SurfaceClass::findHollow()
         double prevI = 0.5;
         for (int j=0; j<mSlabSize[1]; ++j)
         {
-            for (double i=prevI; i<limit; i=i+0.5)
+            for (double i=prevI; i<limit-0.5; i=i+0.5)
             {
                 double offX = i * mDeltaX;
-                double offY = j * mDistance + mDistance/2;
+                double offY = j * mDistance + mDistance/3; // i whole number and j even OR i rational and j odd
+                if (i == floor(i) && j%2 == 0) // i whole number and j even
+                {
+                    offY = j * mDistance + 2*mDistance/3;
+                }
+                else if (i != floor(i) && j%2 != 0)
+                {
+                    offY = j * mDistance + 2*mDistance/3; // i rational and j odd
+                }
                 double hollowX = mNthAtom[0] - offX;
                 double hollowY = mNthAtom[1] - offY;
                 double hollowZ = mNthAtom[2] + m_DELTA_Z;
@@ -533,7 +529,7 @@ int SurfaceClass::findLongBridge()
     {
         for (int i=0; i<mSlabSize[0]; ++i) // i is the X offset
         {
-            for (int j=0; j<mSlabSize[1]; ++j) // j is the Y offset
+            for (int j=0; j<mSlabSize[1]-1; ++j) // j is the Y offset
             {
                 offX = i * mDeltaX + mDeltaX/2;
                 offY = j * mDistance;
@@ -804,11 +800,11 @@ void SurfaceClass::findNearbySites(const int atomIndex, const double radius,
             {
                 // the site is in the range
                 mSelectedBindingSites.push_back(mBindingSites[i]);
-               // std::cout << "This site IS within the specified radius/type" << std::endl;
+                std::cout << "This site IS within the specified radius/type" << std::endl;
             }
             else
             {
-               // std::cout << "ERROR: This site is NOT within the specified radius/type" << std::endl;
+                std::cout << "ERROR: This site is NOT within the specified radius/type" << std::endl;
             }
         }
     }
@@ -848,7 +844,6 @@ void SurfaceClass::findAllSites()
         mSelectedBindingSites.push_back(mBindingSites[i]);
         //std::cout << "This site IS within the specified radius/type" << std::endl;
     }
-    printf("  found %2i binding sites \n",numOfSites);
 }
 
 bool SurfaceClass::writeToFile(std::string &outFile)
@@ -857,9 +852,7 @@ bool SurfaceClass::writeToFile(std::string &outFile)
     std::ofstream ofs;
     ofs.open(outFile.c_str());
 
-//    ofs << std::to_string(mNumOfSurfAtoms+mNumOfAdsorbateAtoms+mSelectedBindingSites.size()) << "\n";
-    string nstr = StringTools::int2str(mNumOfSurfAtoms+mSelectedBindingSites.size(),1,"0");
-    ofs << nstr << "\n";
+    ofs << std::to_string(mNumOfSurfAtoms+mNumOfAdsorbateAtoms+mSelectedBindingSites.size()) << "\n";
     ofs << "\n";
     ofs << std::fixed << std::setprecision(15);
     for (unsigned int i=0; i<mCoordinates.size(); ++i)

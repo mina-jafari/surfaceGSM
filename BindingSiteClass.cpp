@@ -1,15 +1,8 @@
-// // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
 // Mina Jafrai
 // 12-14-2015
 
 #include "BindingSiteClass.h"
 #include <string>
-
-BindingSiteClass::BindingSiteClass()
-{
-}
-
 
 BindingSiteClass::BindingSiteClass(std::string inType, double inX, double inY, double inZ):
                                    mType("TT")
@@ -21,13 +14,6 @@ BindingSiteClass::BindingSiteClass(std::string inType, double inX, double inY, d
 std::string BindingSiteClass::getType() const
 {
     return (mType);
-}
-
-void BindingSiteClass::getXYZ(double* carts)
-{
-  carts[0] = mCoordinate[0];
-  carts[1] = mCoordinate[1];
-  carts[2] = mCoordinate[2];
 }
 
 double BindingSiteClass::getX() const

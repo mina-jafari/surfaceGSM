@@ -1,10 +1,8 @@
-// // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
 // Mina Jafari
 // 12-14-2015
 // This class works alongside the BindingSiteClass. This class defines a slab with
-// its size and finds all the binsing sites on that surface. The binding sites within
-// radius can be found usind the findNearbySites() function. To use this class, make
+// its size and finds all the binding sites on that surface. The binding sites within a
+// radius can be found using the findNearbySites() function. To use this class, make
 // an object of type SurfaceClass and call setAtoms, setSurfaceType functions on it.
 //
 // atom assignment: first layer
@@ -18,7 +16,6 @@
 #ifndef _SURFACECLASS_H_
 #define _SURFACECLASS_H_
 #include "BindingSiteClass.h"
-#include "stringtools.h"
 #include <string>
 #include <vector>
 
@@ -47,7 +44,7 @@ class SurfaceClass
         double mDeltaY = 0.0;
         double mDistance = 0.0;
         // x, y, z of some important atoms used to find binding sites
-        double mNthAtom[3];
+        double mNthAtom [3];
         double mNthMinusOneAtom [3];
         double mStarAtom [3];
         double mStarMinusOneAtom [3];
@@ -63,7 +60,6 @@ class SurfaceClass
         int getSurfaceWidth() const;
         int getSurfaceLength() const;
         int getSurfaceHeight() const;
-        BindingSiteClass getBindingSite1(unsigned int index);
         const BindingSiteClass* getBindingSite(unsigned int index) const; // zero indexed
         //setter functions
         bool setSurfaceType(std::string inSurface);
