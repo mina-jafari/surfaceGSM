@@ -689,7 +689,7 @@ void GString::String_Method_Optimization()
   overlapn = icoords[TSnode0].path_overlap_n;
   overlap = icoords[TSnode0].path_overlap;
 
-  printf("\n opt_iters over: totalgrad: %5.3f gradrms: %6.4f tgrads: %4i  ol(%i): %3.2f max E: %5.1f Erxn: %4.1f nmax: %2i TSnode: %2i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
+  printf("\n opt_iters over: sumForcesSquared: %5.3f TSgradRMS: %6.4f totalForceCalls: %4i  ol(%i): %3.2f max E: %5.1f Erxn: %4.1f nmax: %2i TSnode: %2i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
   int converged = 0;
   if (isFSM)
     printf("   -FSM done-");
@@ -3224,7 +3224,7 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
 
   if (gradFailCount>25)
   {
-    printf("\n opt_i: Exiting! Too many failed SCF's tgrads: %3i \n",gradJobCount);
+    printf("\n opt_i: Exiting! Too many failed SCF's totalForceCalls: %3i \n",gradJobCount);
     exit(-1);
   }
 
@@ -6817,7 +6817,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
       nmax = i;
     }
     printf("\n");
-    printf(" gopt_iter: %2i totalgrad: %4.3f gradrms: %5.4f tgrads: %3i",oi+1,totalgrad,gradrms,gradJobCount);
+    printf(" gopt_iter: %2i sumForcesSquared: %4.3f TSgradRMS: %5.4f totalForceCalls: %3i",oi+1,totalgrad,gradrms,gradJobCount);
     printf(" max E: %5.1f",emax-emin);
     if (isSSM)
     {
@@ -6874,7 +6874,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
     printf("\n SSM run, growth phase over \n");
     if (V_profile[nnR-1]>prodelim)
     {
-      printf("\n gopt_iter: Last node high energy %3.1f / %3.1f tgrads: %3i  -exit early- \n",V_profile[nnR-1],prodelim,gradJobCount);
+      printf("\n gopt_iter: Last node high energy %3.1f / %3.1f totalForceCalls: %3i  -exit early- \n",V_profile[nnR-1],prodelim,gradJobCount);
       printf(" V_profile:");
       for (int i=0;i<nnR;i++)
         printf(" %2.1f",V_profile[i]);
@@ -6957,7 +6957,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
     printf("\n");
     if (climb && !find) printf("c");
     if (find) printf("x");
-    printf(" opt_iter: %2i totalgrad: %1.3f gradrms: %1.4f tgrads: %i",oi+1,totalgrad,gradrms,gradJobCount);
+    printf(" opt_iter: %2i sumForcesSquared: %1.3f TSgradRMS: %1.4f totalForceCalls: %i",oi+1,totalgrad,gradrms,gradJobCount);
     printf(" ol(%i): %1.2f max E: %1.1f",overlapn,overlap,emax-emin);
     if (nsplit) printf(" s");
     printf(" \n");
@@ -7012,7 +7012,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
         || (icoords[nmax].gradrms<CONV_TOL*5.)))
       {
         printf(" ** starting exact TS search at node %i ** \n",nmax);
-        printf(" totalgrad: %5.4f gradrms: %5.4f gts: %5.4f \n",totalgrad,icoords[nmax].gradrms,icoords[nmax].gradq[icoords[nmax].nicd0-1]);
+        printf(" sumForcesSquared: %5.4f TSgradRMS: %5.4f gts: %5.4f \n",totalgrad,icoords[nmax].gradrms,icoords[nmax].gradq[icoords[nmax].nicd0-1]);
         TSnode0 = nmax;
         for (int n=1;n<nnmax-1;n++)
           icoords[n].isTSnode = 0;
@@ -7278,7 +7278,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
   } //if converged
 
   if (tscontinue!=0)
-    printf("\n opt_iters over: totalgrad: %1.3f gradrms: %1.4f tgrads: %i  ol(%i): %1.2f max E: %1.1f Erxn: %1.1f nmax: %i TSnode: %i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
+    printf("\n opt_iters over: sumForcesSquared: %1.3f TSgradRMS: %1.4f totalForceCalls: %i  ol(%i): %1.2f max E: %1.1f Erxn: %1.1f nmax: %i TSnode: %i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
   if (flat) printf(" -FL-");
   if (tscontinue) printf("\n");
 
