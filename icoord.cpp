@@ -1376,6 +1376,7 @@ double ICoord::getR(int i){
   else if (an==28) value = 3.0;
   else if (an==29) value = 3.0;
   else if (an==35) value = 2.7;
+  else if (an==41) value = 2.15; 
   else if (an==44) value = 3.2;
   else if (an==45) value = 3.15;
   else if (an==46) value = 3.15;
