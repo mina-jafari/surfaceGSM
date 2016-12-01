@@ -16,6 +16,7 @@
 #ifndef _SURFACECLASS_H_
 #define _SURFACECLASS_H_
 #include "BindingSiteClass.h"
+#include "stringtools.h"
 #include <string>
 #include <vector>
 
@@ -60,6 +61,7 @@ class SurfaceClass
         int getSurfaceWidth() const;
         int getSurfaceLength() const;
         int getSurfaceHeight() const;
+        BindingSiteClass getBindingSite1(unsigned int index);
         const BindingSiteClass* getBindingSite(unsigned int index) const; // zero indexed
         //setter functions
         bool setSurfaceType(std::string inSurface);

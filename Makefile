@@ -1,8 +1,8 @@
 # Use this Makefile with make
 
 # Executable name
-CMD = test/gfstringq.exe
-#CMD = gfstringq.exe
+#CMD = test/gfstringq.exe
+CMD = gfstringq.exe
 #CMD = /export/zimmerman/paulzim/trials/mina/gsm-bridge-fcc-CO-EMT/gfstringq.exe
 
 # -------- description of DFLAGS ---------------
@@ -12,7 +12,8 @@ CMD = test/gfstringq.exe
 # Make sure it is defined
 #          ifeq ($(strip$(FORTRAN_COMPILER)),)
 # Otherwise you can define it here also by uncommenting next line
- FC = icpc -std=c++11 -openmp -I$(MKLROOT)/include
+# FC = icpc -std=c++11 -openmp -I$(MKLROOT)/include
+FC = icpc -openmp -I$(MKLROOT)/include
 # FC = g++ -fopenmp -I$(MKLROOT)/include
 # FC = g++ -I$(MKLROOT)/include
 # FC = g++ -g -I$(MKLROOT)/include

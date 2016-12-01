@@ -18,11 +18,13 @@ class BindingSiteClass
     public:
         // Ctors
         BindingSiteClass(std::string inType, double inX, double inY, double ins);
+        BindingSiteClass() {};
         // getter functions
         std::string getType() const;
         double getX() const;
         double getY() const;
         double getZ() const;
+        void getXYZ(double* carts);
         // setter functions
         void setType(std::string inType);
         void setCoordinates(double inX, double inY, double inZ);

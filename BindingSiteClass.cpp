@@ -31,6 +31,13 @@ double BindingSiteClass::getZ() const
     return (mCoordinate[2]);
 }
 
+void BindingSiteClass::getXYZ(double* carts)
+{
+  carts[0] = mCoordinate[0];
+  carts[1] = mCoordinate[1];
+  carts[2] = mCoordinate[2];
+}
+
 void BindingSiteClass::setType (std::string inType)
 {
     mType = inType;

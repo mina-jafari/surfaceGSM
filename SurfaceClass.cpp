@@ -32,6 +32,16 @@ int SurfaceClass::getSurfaceHeight() const
     return (mSlabSize[2]);
 }
 
+BindingSiteClass SurfaceClass::getBindingSite1(unsigned int index)
+{
+    if (!(index <= mBindingSites.size() && index >= 0))
+    {
+      printf("   cannot find binding site %2i \n",index);
+      exit(1);
+    }
+    return (mBindingSites[index]);
+}
+
 const BindingSiteClass* SurfaceClass::getBindingSite(unsigned int index) const //zero indexed
 {
     if (index <= mBindingSites.size() && index >= 0)
@@ -852,7 +862,9 @@ bool SurfaceClass::writeToFile(std::string &outFile)
     std::ofstream ofs;
     ofs.open(outFile.c_str());
 
-    ofs << std::to_string(mNumOfSurfAtoms+mNumOfAdsorbateAtoms+mSelectedBindingSites.size()) << "\n";
+    //ofs << std::to_string(mNumOfSurfAtoms+mNumOfAdsorbateAtoms+mSelectedBindingSites.size()) << "\n";
+    std::string nstr = StringTools::int2str(mNumOfSurfAtoms+mSelectedBindingSites.size(),1,"0");
+    ofs << nstr << "\n";
     ofs << "\n";
     ofs << std::fixed << std::setprecision(15);
     for (unsigned int i=0; i<mCoordinates.size(); ++i)
