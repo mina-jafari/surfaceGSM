@@ -1,5 +1,5 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 #ifndef ICOORD_H
 #define ICOORD_H
 
@@ -42,8 +42,10 @@ class ICoord {
   void structure_read(string xyzfile);
   void alloc_mem();
   void make_bonds();
+  void make_bonds_1(int i);
   void coord_num();
   void get_xyzic();
+  int get_ox(int* oxel);
   void connect_1_coord_mg();
   void make_angles();
   void make_torsions();
@@ -243,6 +245,9 @@ class ICoord {
   int distance_matrix_ic(ICoord ic1, ICoord ic2);
   int union_ic(ICoord ic1, ICoord ic2);
   int copy_ic(ICoord ic1);
+  int add_bonds(ICoord ic1);
+  int add_bonds(int nbonds1, int* bonds1);
+  int add_bonds_2();
   void write_ic(string filename);
   int read_ics(string filename);
 

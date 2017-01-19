@@ -1,5 +1,5 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 #include "gstring.h"
 #include "omp.h"
 using namespace std;
@@ -44,6 +44,89 @@ using namespace std;
 
 #define ADD_EXTRA_BONDS 0
 
+
+void GString::get_diff_bonds(ICoord ic1, ICoord ic2, ICoord& ic3)
+{
+  printf("  in get_diff_bonds \n");
+
+  ic1.isOpt = 0; ic1.use_xyz = 2;
+  ic2.isOpt = 0; ic2.use_xyz = 2;
+
+  ic1.ic_create();
+  ic2.ic_create();
+
+  int maxbonds = ic1.nbonds + ic2.nbonds;
+  printf("  ic1/2 nbonds: %2i %2i \n",ic1.nbonds,ic2.nbonds);
+  if (maxbonds<1) return;
+
+  int nf = 0;
+  int* allbonds = new int[2*maxbonds];
+ //find ic1 bonds not in ic2
+  for (int i=0;i<ic1.nbonds;i++)
+  {
+    int a1 = ic1.bonds[i][0];
+    int a2 = ic1.bonds[i][1];
+
+    int found = 0;
+    for (int j=0;j<ic2.nbonds;j++)
+    if (ic2.bonds[j][0]==a1 && ic2.bonds[j][1]==a2
+     || ic2.bonds[j][0]==a2 && ic2.bonds[j][1]==a1)
+    {
+      found = 1;
+      break;
+    }
+    if (!found)
+    {
+      allbonds[2*nf+0] = a1;
+      allbonds[2*nf+1] = a2;
+      nf++;
+    }
+  }
+
+ //find ic2 bonds not in ic1
+  for (int i=0;i<ic2.nbonds;i++)
+  {
+    int a1 = ic2.bonds[i][0];
+    int a2 = ic2.bonds[i][1];
+
+    int found = 0;
+    for (int j=0;j<ic1.nbonds;j++)
+    if (ic1.bonds[j][0]==a1 && ic1.bonds[j][1]==a2
+     || ic1.bonds[j][0]==a2 && ic1.bonds[j][1]==a1)
+    {
+      found = 1;
+      break;
+    }
+    if (!found)
+    {
+      //int found2 = 0;
+      //for (int j=0;j<nf;j++)
+      //if ((a1==allbonds[2*nf+0] && a2==allbonds[2*nf+1])
+      // || (a2==allbonds[2*nf+0] && a1==allbonds[2*nf+1]))
+      //{
+      //  found2 = 1;
+      //  break;
+      //}
+
+      allbonds[2*nf+0] = a1;
+      allbonds[2*nf+1] = a2;
+      nf++;
+    }
+  }
+
+  printf("  found %2i unique bonds \n",nf);
+  for (int i=0;i<nf;i++)
+  {
+    printf("   %2i %2i \n",allbonds[2*i+0]+1,allbonds[2*i+1]+1);
+    ic3.bonds[i][0] = allbonds[2*i+0];
+    ic3.bonds[i][1] = allbonds[2*i+1];
+  }
+  ic3.nbonds = nf;
+
+  return;
+}
+
+
 void GString::update_coord_binding_site(double* xyz1, int b1, int a1)
 {
   BindingSiteClass bsite;
@@ -53,10 +136,9 @@ void GString::update_coord_binding_site(double* xyz1, int b1, int a1)
 
 void GString::setup_surface_sites()
 {
-  if (!isSSM || tstype != -1)
+  if (!isSSM)
   {
     printf(" surface sites functionality is for SSM only \n");
-    printf(" TS_FINAL_TYPE should be set to -1 \n");
     return;
   }
 
@@ -302,12 +384,14 @@ void GString::String_Method_Optimization()
   ic2.frozen = frozen;
   ic1.reset(natoms,anames,anumbers,coords[0]);
   ic2.reset(natoms,anames,anumbers,coords[nnmax-1]);
+  if (!isSSM)
+    get_diff_bonds(ic1,ic2,ic3);
   ic1.ic_create();
   ic2.ic_create();
 
-
  //add bonds in isomers list
   if (isSSM) set_ssm_bonds(ic1);
+  else ic1.add_bonds(ic3);
 
 #if ADD_EXTRA_BONDS
   printf(" adding torsion %i \n",ic1.ntor);
@@ -690,7 +774,7 @@ void GString::String_Method_Optimization()
   overlapn = icoords[TSnode0].path_overlap_n;
   overlap = icoords[TSnode0].path_overlap;
 
-  printf("\n opt_iters over: sumForcesSquared: %5.3f TSgradRMS: %6.4f totalForceCalls: %4i  ol(%i): %3.2f max E: %5.1f Erxn: %4.1f nmax: %2i TSnode: %2i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
+  printf("\n opt_iters over: totalgrad: %5.3f gradrms: %6.4f tgrads: %4i  ol(%i): %3.2f max E: %5.1f Erxn: %4.1f nmax: %2i TSnode: %2i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
   int converged = 0;
   if (isFSM)
     printf("   -FSM done-");
@@ -3225,7 +3309,7 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
 
   if (gradFailCount>25)
   {
-    printf("\n opt_i: Exiting! Too many failed SCF's totalForceCalls: %3i \n",gradJobCount);
+    printf("\n opt_i: Exiting! Too many failed SCF's tgrads: %3i \n",gradJobCount);
     exit(-1);
   }
 
@@ -6491,18 +6575,35 @@ void GString::set_ssm_bonds(ICoord &ic1)
 {
   printf("\n setting SSM bonds \n");
 
-  for (int i=0;i<nbond;i++)
+#if 1
+  int nadded = 0;
+  int nnew = nadd + nbrk;
+  int* newbonds = new int[2*nnew];
+
+//  for (int i=0;i<nbond;i++)
+//  {
+//    newbonds[2*nadded+0] = bond[2*i+0];
+//    newbonds[2*nadded+1] = bond[2*i+1];
+//    nadded++;
+//  }
+
+  for (int i=0;i<nadd;i++)
   {
-    int a1 = bond[2*i+0];
-    int a2 = bond[2*i+1];
-    if (!ic1.bond_exists(a1,a2))
-    {
-      ic1.bonds[ic1.nbonds][0] = a1;
-      ic1.bonds[ic1.nbonds][1] = a2;
-      ic1.nbonds++;
-      printf(" added bond for coordinates only: %i %i \n",a1+1,a2+1);
-    }
-  } //loop i over nbond
+    newbonds[2*nadded+0] = add[2*i+0];
+    newbonds[2*nadded+1] = add[2*i+1];
+    nadded++;
+  }
+  for (int i=0;i<nbrk;i++)
+  {
+    newbonds[2*nadded+0] = brk[2*i+0];
+    newbonds[2*nadded+1] = brk[2*i+1];
+    nadded++;
+  }
+
+  ic1.add_bonds(nadded,newbonds);
+
+  delete [] newbonds;
+#else
   for (int i=0;i<nadd;i++)
   {
     int a1 = add[2*i+0];
@@ -6527,6 +6628,20 @@ void GString::set_ssm_bonds(ICoord &ic1)
       printf(" added brk bond: %i %i \n",b1+1,b2+1);
     }
   } //loop i over nbrk
+#endif
+
+  for (int i=0;i<nbond;i++)
+  {
+    int a1 = bond[2*i+0];
+    int a2 = bond[2*i+1];
+    if (!ic1.bond_exists(a1,a2))
+    {
+      ic1.bonds[ic1.nbonds][0] = a1;
+      ic1.bonds[ic1.nbonds][1] = a2;
+      ic1.nbonds++;
+      printf(" added bond for coordinates only: %i %i \n",a1+1,a2+1);
+    }
+  } //loop i over nbond
 
   for (int i=0;i<nangle;i++)
   {
@@ -6818,7 +6933,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
       nmax = i;
     }
     printf("\n");
-    printf(" gopt_iter: %2i sumForcesSquared: %4.3f TSgradRMS: %5.4f totalForceCalls: %3i",oi+1,totalgrad,gradrms,gradJobCount);
+    printf(" gopt_iter: %2i totalgrad: %4.3f gradrms: %5.4f tgrads: %3i",oi+1,totalgrad,gradrms,gradJobCount);
     printf(" max E: %5.1f",emax-emin);
     if (isSSM)
     {
@@ -6875,7 +6990,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
     printf("\n SSM run, growth phase over \n");
     if (V_profile[nnR-1]>prodelim)
     {
-      printf("\n gopt_iter: Last node high energy %3.1f / %3.1f totalForceCalls: %3i  -exit early- \n",V_profile[nnR-1],prodelim,gradJobCount);
+      printf("\n gopt_iter: Last node high energy %3.1f / %3.1f tgrads: %3i  -exit early- \n",V_profile[nnR-1],prodelim,gradJobCount);
       printf(" V_profile:");
       for (int i=0;i<nnR;i++)
         printf(" %2.1f",V_profile[i]);
@@ -6958,7 +7073,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
     printf("\n");
     if (climb && !find) printf("c");
     if (find) printf("x");
-    printf(" opt_iter: %2i sumForcesSquared: %1.3f TSgradRMS: %1.4f totalForceCalls: %i",oi+1,totalgrad,gradrms,gradJobCount);
+    printf(" opt_iter: %2i totalgrad: %1.3f gradrms: %1.4f tgrads: %i",oi+1,totalgrad,gradrms,gradJobCount);
     printf(" ol(%i): %1.2f max E: %1.1f",overlapn,overlap,emax-emin);
     if (nsplit) printf(" s");
     printf(" \n");
@@ -7013,7 +7128,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
         || (icoords[nmax].gradrms<CONV_TOL*5.)))
       {
         printf(" ** starting exact TS search at node %i ** \n",nmax);
-        printf(" sumForcesSquared: %5.4f TSgradRMS: %5.4f gts: %5.4f \n",totalgrad,icoords[nmax].gradrms,icoords[nmax].gradq[icoords[nmax].nicd0-1]);
+        printf(" totalgrad: %5.4f gradrms: %5.4f gts: %5.4f \n",totalgrad,icoords[nmax].gradrms,icoords[nmax].gradq[icoords[nmax].nicd0-1]);
         TSnode0 = nmax;
         for (int n=1;n<nnmax-1;n++)
           icoords[n].isTSnode = 0;
@@ -7279,7 +7394,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
   } //if converged
 
   if (tscontinue!=0)
-    printf("\n opt_iters over: sumForcesSquared: %1.3f TSgradRMS: %1.4f totalForceCalls: %i  ol(%i): %1.2f max E: %1.1f Erxn: %1.1f nmax: %i TSnode: %i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
+    printf("\n opt_iters over: totalgrad: %1.3f gradrms: %1.4f tgrads: %i  ol(%i): %1.2f max E: %1.1f Erxn: %1.1f nmax: %i TSnode: %i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
   if (flat) printf(" -FL-");
   if (tscontinue) printf("\n");
 

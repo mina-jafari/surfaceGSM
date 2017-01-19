@@ -1,5 +1,5 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 #include "icoord.h"
 #include "utils.h"
 #include "/export/apps/Intel/Compiler/11.1/075/mkl/include/mkl.h"
@@ -349,7 +349,6 @@ int ICoord::bmatp_to_U()
 //  printf(" after diagonalize \n");
 //  fflush(stdout);
 
-#if 1
   int lowev = 0;
   for (int i=0;i<len_d;i++)
   if (e[len-1-i]<0.001)
@@ -360,7 +359,6 @@ int ICoord::bmatp_to_U()
   if (lowev>0)
     printf(" lowev: %i",lowev);
   len_d -= lowev;
-#endif
 
   int redset = len - len_d;
   for (int i=0;i<len_d;i++)

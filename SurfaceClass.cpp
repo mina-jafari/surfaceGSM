@@ -810,11 +810,11 @@ void SurfaceClass::findNearbySites(const int atomIndex, const double radius,
             {
                 // the site is in the range
                 mSelectedBindingSites.push_back(mBindingSites[i]);
-                std::cout << "This site IS within the specified radius/type" << std::endl;
+                //std::cout << "This site IS within the specified radius/type" << std::endl;
             }
             else
             {
-                std::cout << "ERROR: This site is NOT within the specified radius/type" << std::endl;
+                //std::cout << "ERROR: This site is NOT within the specified radius/type" << std::endl;
             }
         }
     }
@@ -854,6 +854,7 @@ void SurfaceClass::findAllSites()
         mSelectedBindingSites.push_back(mBindingSites[i]);
         //std::cout << "This site IS within the specified radius/type" << std::endl;
     }
+    printf("  found %2i binding sites \n",numOfSites);
 }
 
 bool SurfaceClass::writeToFile(std::string &outFile)

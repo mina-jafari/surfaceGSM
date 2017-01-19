@@ -1,5 +1,5 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 #include "icoord.h"
 #include "gstring.h"
 
@@ -402,6 +402,123 @@ int ICoord::copy_ic(ICoord ic1)
 
   coord_num();
   update_ic();
+
+  return 0;
+}
+
+void ICoord::make_bonds_1(int i)
+{
+  printf("    make_bonds_1 for %2i \n",i+1);
+  int nf = 0;
+  for (int j=0;j<natoms;j++)
+  if (i!=j)
+  {
+    double MAX_BOND_DIST = (getR(i) + getR(j))/2;
+    if (farBond>1.0) MAX_BOND_DIST *= farBond;
+    double d = distance(i,j);
+    if (d<MAX_BOND_DIST && !bond_exists(i,j))
+    {
+      printf("     found bond: %2i %2i dist: %6.2f \n",i+1,j+1,d);
+      bonds[nbonds][0]=i;
+      bonds[nbonds][1]=j;
+      nbonds++;
+      nf++;
+    }
+    if (nf>3) break;
+  }
+  return;
+}
+
+int ICoord::add_bonds(int nbonds1, int* bonds1)
+{
+  printf("   in add_bonds \n");
+  for (int i=0;i<nbonds1;i++)
+  {
+    int a1 = bonds1[2*i+0];
+    int a2 = bonds1[2*i+1];
+    if (!bond_exists(a1,a2))
+    {
+      bonds[nbonds][0] = a1;
+      bonds[nbonds][1] = a2;
+      nbonds++;
+    }
+  }
+
+  return add_bonds_2();
+}
+
+int ICoord::add_bonds(ICoord ic1)
+{
+  printf("   in add_bonds(ic) \n");
+  for (int i=0;i<ic1.nbonds;i++)
+  {
+    int a1 = ic1.bonds[i][0];
+    int a2 = ic1.bonds[i][1];
+    if (!bond_exists(a1,a2))
+    {
+      bonds[nbonds][0] = a1;
+      bonds[nbonds][1] = a2;
+      nbonds++;
+    }
+  }
+
+  return add_bonds_2();
+}
+
+int ICoord::add_bonds_2()
+{
+  int* actat = new int[natoms];
+  for (int i=0;i<natoms;i++) actat[i] = 0;
+  for (int i=0;i<nbonds;i++)
+  {
+    int a1 = bonds[i][0];
+    int a2 = bonds[i][1];
+    actat[a1] = 1;
+    actat[a2] = 1;
+  }
+
+  for (int i=0;i<natoms;i++)
+  if (actat[i])
+    make_bonds_1(i);
+
+  ic_create_nobonds();
+  coord_num();
+
+  nxyzic = 0;
+  for (int i=0;i<natoms;i++) xyzic[i] = 0;
+#if 1
+  for (int i=0;i<natoms;i++)
+  if (!actat[i] && coordn[i]<3)
+  {
+    xyzic[i] = 1;
+    nxyzic += 3;
+  }
+#else
+  for (int i=0;i<natoms;i++)
+//  if ((coordn[i]<2 && isTM(i)) || coordn[i]<1)
+  if (coordn[i]<1 || (anumbers[i]!=1 && coordn[i]<2))
+  {
+    //printf(" low coordn (%i), setting xyz: %i \n",coordn[i],i);
+    xyzic[i] = 1;
+    nxyzic += 3;
+  }
+#endif
+
+  update_ic();
+
+  //if (isOpt)
+  {
+    printf("\n XYZ vs. IC geometry \n");
+    printf(" %i \n\n",natoms);
+    for (int i=0;i<natoms;i++)
+    if (xyzic[i])
+      printf(" X %7.5f %7.5f %7.5f \n",coords[3*i+0],coords[3*i+1],coords[3*i+2]);
+    else
+      printf(" %s %7.5f %7.5f %7.5f \n",anames[i].c_str(),coords[3*i+0],coords[3*i+1],coords[3*i+2]);
+    printf("\n");
+  }
+
+  delete [] actat;
 
   return 0;
 }

@@ -1,5 +1,5 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 #ifndef GSTRING_H
 #define GSTRING_H
 
@@ -71,6 +71,7 @@ class GString {
   void trim_string(int nextmin);
   int add_linear();
 
+  void get_diff_bonds(ICoord ic1, ICoord ic2, ICoord& ic3);
   void setup_surface_sites();
   SurfaceClass* surfs; //one surf per node
   BindingSiteClass* sites; //

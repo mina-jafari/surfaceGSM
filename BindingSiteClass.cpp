@@ -4,6 +4,10 @@
 #include "BindingSiteClass.h"
 #include <string>
 
+BindingSiteClass::BindingSiteClass()
+{
+}
+
 BindingSiteClass::BindingSiteClass(std::string inType, double inX, double inY, double inZ):
                                    mType("TT")
 {

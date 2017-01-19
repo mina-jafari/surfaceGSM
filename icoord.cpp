@@ -1,5 +1,5 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 #include "icoord.h"
 #include "utils.h"
 using namespace std;
@@ -176,7 +176,10 @@ int ICoord::ic_create()
   {
     printf(" isOpt: %i \n",isOpt);
     make_frags();
-    bond_frags();
+    if (use_xyz)
+      bond_frags_xyz();
+    else
+      bond_frags();
   }
 
   coord_num(); // counts # surrounding species
@@ -189,7 +192,7 @@ int ICoord::ic_create()
   if (isOpt)
     linear_ties();
 
-  n_nonbond = make_nonbond(); //anything not connected by bond or angle
+//  n_nonbond = make_nonbond(); //anything not connected by bond or angle
 
   update_ic();
 
@@ -202,7 +205,10 @@ int ICoord::ic_create_nobonds()
   {
     printf(" isOpt: %i \n",isOpt);
     make_frags();
-    bond_frags();
+    if (use_xyz)
+      bond_frags_xyz();
+    else
+      bond_frags();
   }
 
   coord_num(); // counts # surrounding species
@@ -213,7 +219,7 @@ int ICoord::ic_create_nobonds()
   if (isOpt)
     linear_ties();
 
-  n_nonbond = make_nonbond(); //anything not connected by bond or angle
+//  n_nonbond = make_nonbond(); //anything not connected by bond or angle
 
   update_ic();
 
@@ -519,7 +525,7 @@ void ICoord::make_frags()
 
 void ICoord::bond_frags_xyz()
 {
-  printf(" in bond_frags() \n");
+  printf(" in bond_frags_xyz() \n");
   if (nfrags<2) return;
 
   int found = 0;
@@ -542,6 +548,7 @@ void ICoord::bond_frags_xyz()
     for (int i=0;i<natoms;i++)
     for (int j=0;j<natoms;j++)
     if (frags[i]==n1 && frags[j]==n2)
+    if (isTM(i)==0 && isTM(j)==0)
     {
       close = distance(i,j);
       if (close<mclose)
@@ -557,6 +564,7 @@ void ICoord::bond_frags_xyz()
     mclose2 = 1000.;
     for (int i=0;i<natoms;i++)
     if (frags[i]==n1 && i!=a1 && i!=a2)
+    if (isTM(i)==0)
     {
       close = distance(i,a1);
       if (close<mclose2)
@@ -739,6 +747,7 @@ void ICoord::connect_1_coord_mg()
     nxyzic += 3;
   }
 
+#if 0
   for (int i=0;i<natoms;i++)
   if (!isTM(i) && coordn[i]<2 && !frozen[i] && anumbers[i]!=1 && anumbers[i]!=-1) 
   {
@@ -764,14 +773,105 @@ void ICoord::connect_1_coord_mg()
       coord_num();
     }
   }
+#endif
 
   return;
+}
+
+int ICoord::get_ox(int* oxel)
+{
+  printf("   testing get_ox \n");
+
+  for (int i=0;i<natoms;i++) oxel[i] = 0;
+
+  int* elem = new int[100];
+  for (int i=0;i<100;i++) elem[i] = 0;
+  for (int i=0;i<natoms;i++)
+  {
+    int atNum = anumbers[i];
+    elem[atNum]++;
+  }
+
+  int emax1 = -1;
+  int nmax1 = 0;
+  for (int i=2;i<100;i++)
+  {
+    if (elem[i]>nmax1)
+    {
+      emax1 = i;
+      nmax1 = elem[i];
+    }
+  }
+  int emax2 = -1;
+  int nmax2 = 0;
+  for (int i=2;i<100;i++)
+  {
+    if (elem[i]>nmax2 && i!=emax1)
+    {
+      emax2 = i;
+      nmax2 = elem[i];
+    }
+  }
+
+  printf("   most abundant: %2s/%2i %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1,PTable::atom_name(emax2).c_str(),nmax2);
+
+ //verify second element is actually abundant
+  if (nmax2<natoms/5) 
+    emax2 = -1;
+
+  int nox = 0;
+  for (int i=0;i<natoms;i++)
+  if (anumbers[i]==emax1 || anumbers[i]==emax2)
+  {
+    oxel[i]++;
+    nox++;
+  }
+
+#if 0
+  for (int i=0;i<natoms;i++)
+    printf(" %2i: %i ",i+1,oxel[i]);
+  printf("\n");
+#endif
+
+  delete [] elem;
+
+  return nox;
 }
 
 //CPMZ tune me
 void ICoord::get_xyzic()
 {
-  printf("  in get_xyzic() \n");
+  printf("  in get_xyzic() use_xyz: %i \n",use_xyz);
+
+  if (use_xyz==2)
+  for (int i=0;i<nbonds;i++)
+  {
+    int a1 = bonds[i][0];
+    int a2 = bonds[i][1];
+    int frzpair = 0;
+    if (frozen!=NULL)
+    if (frozen[a1] && frozen[a2])
+      frzpair = 1;
+
+    if ((isTM(a1) && isTM(a2)) || frzpair)
+    {
+      //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
+      //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
+      for (int j=i;j<nbonds-1;j++)
+      {
+        bonds[j][0] = bonds[j+1][0];
+        bonds[j][1] = bonds[j+1][1];
+        bondd[j] = bondd[j+1];
+      }
+      nbonds--;
+      i--;
+    }
+  }
+  if (use_xyz==2) return;
+
+
+  int* oxel = new int[natoms];
+  int nox = get_ox(oxel);
 
   nxyzic = 0;
   for (int i=0;i<natoms;i++)
@@ -786,11 +886,8 @@ void ICoord::get_xyzic()
     if (frozen[a1] && frozen[a2])
       frzpair = 1;
 
-//    if (coordn[a1] + coordn[a2] > 8 || coordn[a1] > 6 || coordn[a2] > 6)
-//    if (coordn[a1]>4 && coordn[a2]>4)
-//    if ((coordn[a1]>4 && anumbers[a2]>20) || (coordn[a2]>4 && anumbers[a1]>20))
-//    if (isTM(a1) && isTM(a2) && (coordn[a1]>3 || coordn[a2]>3))
-    if ((isTM(a1) && isTM(a2)) || frzpair)
+    //if ((isTM(a1) && isTM(a2)) || frzpair || oxel[a1] || oxel[a2])
+    if (frzpair || oxel[a1] || oxel[a2])
     {
       //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
       //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
@@ -808,7 +905,7 @@ void ICoord::get_xyzic()
   coord_num();
 
   for (int i=0;i<natoms;i++)
-  if ((coordn[i]<2 && isTM(i)) || coordn[i]<1) //was 1
+  if ((coordn[i]<2 && isTM(i)) || coordn[i]<1)
 //  if (coordn[i]<1)
   {
     //printf(" low coordn (%i), setting xyz: %i \n",coordn[i],i);
@@ -816,15 +913,19 @@ void ICoord::get_xyzic()
     nxyzic += 3;
   }
 
+#if 0
   if (nxyzic && isOpt)
   {
     connect_1_coord_mg(); //fix for oxides
     make_frags();
     bond_frags_xyz();
   }
+#endif
 
-#if 1
-  if (isOpt || 0)
+  delete [] oxel;
+
+#if 0
+  if (isOpt)
   {
     printf("\n XYZ vs. IC geometry \n");
     printf(" %i \n\n",natoms);
@@ -1376,7 +1477,7 @@ double ICoord::getR(int i){
   else if (an==28) value = 3.0;
   else if (an==29) value = 3.0;
   else if (an==35) value = 2.7;
-  else if (an==41) value = 2.15; 
+  else if (an==41) value = 2.15; //Nb
   else if (an==44) value = 3.2;
   else if (an==45) value = 3.15;
   else if (an==46) value = 3.15;

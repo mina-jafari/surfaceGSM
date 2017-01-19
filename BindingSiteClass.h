@@ -13,12 +13,12 @@ class BindingSiteClass
         // hollow, hcp, fcc, atop, long-bridge, short-bridge, bridge
         std::string mType;
         // coordinates of the site
-        double mCoordinate[3];
+        double mCoordinate[3]= {0.0, 0.0, 0.0};
 
     public:
         // Ctors
+        BindingSiteClass();
         BindingSiteClass(std::string inType, double inX, double inY, double ins);
-        BindingSiteClass() {};
         // getter functions
         std::string getType() const;
         double getX() const;
