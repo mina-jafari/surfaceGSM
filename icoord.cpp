@@ -784,17 +784,18 @@ int ICoord::get_ox(int* oxel)
 
   for (int i=0;i<natoms;i++) oxel[i] = 0;
 
-  int* elem = new int[100];
-  for (int i=0;i<100;i++) elem[i] = 0;
+  int* elem = new int[PTable::MAX_NUMBER_OF_ATOMS]; // number of elements in pTable.cpp
+  for (int i=0;i<PTable::MAX_NUMBER_OF_ATOMS;i++) elem[i] = 0;
   for (int i=0;i<natoms;i++)
   {
     int atNum = anumbers[i];
-    elem[atNum]++;
+    if (atNum > 0)
+        elem[atNum]++;
   }
 
   int emax1 = -1;
   int nmax1 = 0;
-  for (int i=2;i<100;i++)
+  for (int i=2;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
   {
     if (elem[i]>nmax1)
     {
@@ -804,7 +805,7 @@ int ICoord::get_ox(int* oxel)
   }
   int emax2 = -1;
   int nmax2 = 0;
-  for (int i=2;i<100;i++)
+  for (int i=2;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
   {
     if (elem[i]>nmax2 && i!=emax1)
     {
@@ -1450,7 +1451,8 @@ double ICoord::getR(int i){
   double value;
  
   int an = anumbers[i];
-  if      (an==1) value = 1.3;
+  if      (an==0) value = 0.05;
+  else if (an==1) value = 1.3;
   else if (an==3) value = 2.65; //PT
   else if (an==4) value = 2.0; //PT
   else if (an==5) value = 1.75;

@@ -123,6 +123,7 @@ void GString::get_diff_bonds(ICoord ic1, ICoord ic2, ICoord& ic3)
   }
   ic3.nbonds = nf;
 
+  delete [] allbonds;
   return;
 }
 
@@ -1385,7 +1386,7 @@ void GString::structure_init(string xyzfile){
   for (int i=natoms;i<natoms+npad;i++)
   {
     anames[i]="X";
-    anumbers[i]=-1;
+    anumbers[i]=0;
     amasses[i]=-1.;
   }
 

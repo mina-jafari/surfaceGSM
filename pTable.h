@@ -30,6 +30,8 @@ using namespace std;
 
 namespace PTable
   {
+      const int MAX_NUMBER_OF_ATOMS = 103;
+
      int  atom_number(string &aName);
 
      string  atom_name(int aNumber);
