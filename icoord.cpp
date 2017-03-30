@@ -749,7 +749,7 @@ void ICoord::connect_1_coord_mg()
 
 #if 0
   for (int i=0;i<natoms;i++)
-  if (!isTM(i) && coordn[i]<2 && !frozen[i] && anumbers[i]!=1 && anumbers[i]!=-1) 
+  if (!isTM(i) && coordn[i]<2 && !frozen[i] && anumbers[i]!=1 && anumbers[i]!=0) 
   {
     double d1 = 1000.;
     int wa = -1;
@@ -1489,7 +1489,7 @@ double ICoord::getR(int i){
   else if (an==77) value = 3.35;
   else if (an==78) value = 3.35;
   else if (an==79) value = 3.35;
-  else if (an==-1) value = 0.; 
+  else if (an==0) value = 0.; 
   else 
   {
     printf(" Need to add atomic number %i to getR! (atom %2i) \n",an,i+1);

@@ -1796,7 +1796,7 @@ double GString::tangent_1b(double* ictan)
     }
     double d0 = (newic.getR(a1) + newic.getR(a2))/2.8;
     //if (newic.anumbers[a1]==1 && newic.anumbers[a2]==1) d0 = 0.7;
-    if (newic.anumbers[a1]==-1 || newic.anumbers[a2]==-1) d0 = 0.;
+    if (newic.anumbers[a1]==0 || newic.anumbers[a2]==0) d0 = 0.;
     ictan[wbond] = -1 * (d0 - newic.distance(a1,a2));
     if (ictan[wbond] < 0.)
       ictan[wbond] = 0.;

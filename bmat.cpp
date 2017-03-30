@@ -148,14 +148,14 @@ int ICoord::bmatp_create() {
     bmatp_dqbdx(a1,a2,dqbdx);
     double FACTOR = 1;
     //if (!xyzic[a1])
-    if (anumbers[a1]>-1)
+    if (anumbers[a1]>0)
     {
       bmatp[i*N3+3*a1+0] = dqbdx[0]*FACTOR;
       bmatp[i*N3+3*a1+1] = dqbdx[1]*FACTOR;
       bmatp[i*N3+3*a1+2] = dqbdx[2]*FACTOR;
     }
     //if (!xyzic[a2])
-    if (anumbers[a2]>-1)
+    if (anumbers[a2]>0)
     {
       bmatp[i*N3+3*a2+0] = dqbdx[3]*FACTOR;
       bmatp[i*N3+3*a2+1] = dqbdx[4]*FACTOR;
@@ -1758,11 +1758,13 @@ void ICoord::opt_constraint(double* C)
 
   for (int i=0;i<len;i++)
   for (int j=0;j<len;j++)
+  {
     dots[i] += C[j]*Ut[i*len+j];
+  }
  
   for (int i=0;i<nicd0;i++) //CPMZ fix? right now subspace projection
   for (int j=0;j<len;j++)
-    Cn[j] += dots[i]*Ut[i*len+j];
+    Cn[j] += dots[i]*Ut[i*len+j]; //Cn = U_c from PMZ2013, equation 2, tangent vector
 
   norm = 0.;
   for (int i=0;i<len;i++)
@@ -1783,6 +1785,7 @@ void ICoord::opt_constraint(double* C)
   for (int j=0;j<nbonds;j++)
     printf(" %1.2f",Cn[j]);
   printf("\n");
+  printf(" bond %i: %i to %i: %1.2f \n",4+1,bonds[4][0]+1,bonds[4][1]+1,bondd[4]); 
   for (int j=0;j<nangles;j++)
     printf(" %1.2f",Cn[nbonds+j]);
   printf("\n");
@@ -1792,6 +1795,7 @@ void ICoord::opt_constraint(double* C)
 #endif
 
   for (int i=0;i<len;i++) dots[i] =0.;
+
   for (int i=0;i<len;i++) 
   for (int j=0;j<len;j++)
     dots[i] += Cn[j]*Ut[i*len+j];
@@ -1819,8 +1823,8 @@ void ICoord::opt_constraint(double* C)
     for (int j=0;j<len;j++)
       norm += Ut[i*len+j] * Ut[i*len+j];
     norm = sqrt(norm);
-    if (abs(norm)<0.00001) norm = 1;
     if (abs(norm)<0.00001) printf(" WARNING: small norm: %1.7f \n",norm);
+    if (abs(norm)<0.00001) norm = 1;
     for (int j=0;j<len;j++)
       Ut[i*len+j] = Ut[i*len+j]/norm;
   }
@@ -2330,7 +2334,7 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
   energyl = energy;
 #if 0
   ofstream xyzfile;
-  xyzfile.open(xyzfile_string.c_str());
+  xyzfile.open(xyzfile_string.c_str(), std::ofstream::app);
   xyzfile.setf(ios::fixed);
   xyzfile.setf(ios::left);
   xyzfile << setprecision(6);
@@ -2373,6 +2377,7 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
       xyzfile << " " << coords[3*i+0] << " " << coords[3*i+1] << " " << coords[3*i+2];
       xyzfile << endl;
     }
+  xyzfile.close();
 #endif
 
   //  print_grad();
