@@ -469,6 +469,7 @@ void ICoord::make_frags()
     atominfrag[bonds[i][0]] = 1;
     atominfrag[bonds[i][1]] = 1;
 
+    // is this first if statement ever trigerred? Mina  TODO
     if ( frags[bonds[i][0]] == -1 && frags[bonds[i][1]] == -1 )
     {
       frags[bonds[i][0]] = nfrags;
@@ -892,6 +893,7 @@ void ICoord::get_xyzic()
     {
       //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
       //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
+        // bonds are deleted if transition metal
       for (int j=i;j<nbonds-1;j++)
       {
         bonds[j][0] = bonds[j+1][0];

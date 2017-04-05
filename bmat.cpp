@@ -309,6 +309,7 @@ int ICoord::bmatp_to_U()
   int size_xyz = N3;
 
   int len_d;
+  // e: array of eigen values
   double* e = new double[len];
 //  double* U = new double[len*len];
   double* tmp = new double[len*N3];
