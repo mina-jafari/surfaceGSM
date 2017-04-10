@@ -411,7 +411,8 @@ void ICoord::make_bonds_1(int i)
   printf("    make_bonds_1 for %2i \n",i+1);
   int nf = 0;
   for (int j=0;j<natoms;j++)
-  if (i!=j)
+  //if (i!=j) Mina
+  if (i!=j && !isTM(i)) //Mina
   {
     double MAX_BOND_DIST = (getR(i) + getR(j))/2;
     if (farBond>1.0) MAX_BOND_DIST *= farBond;

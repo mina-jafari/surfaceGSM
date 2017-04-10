@@ -177,13 +177,16 @@ int ICoord::ic_create()
     printf(" isOpt: %i \n",isOpt);
     make_frags();
     if (use_xyz)
+    {
+      get_xyzic(); // Mina
       bond_frags_xyz();
+    }
     else
       bond_frags();
   }
 
   coord_num(); // counts # surrounding species
-  if (use_xyz) get_xyzic();
+  //if (use_xyz) get_xyzic(); Mina
 
   make_angles();
   make_torsions();
@@ -537,65 +540,74 @@ void ICoord::bond_frags_xyz()
   double mclose;
   double mclose2;
   for (int n1=0;n1<nfrags;n1++)
-  for (int n2=0;n2<n1;n2++)
   {
-    if (natoms<150)
-      printf(" connecting frag %i to frag %i: ",n1+1,n2+1);
-
-    found = 0;
-    found2 = 0;
-    double close = 0.;
-    mclose = 1000.;
-    for (int i=0;i<natoms;i++)
-    for (int j=0;j<natoms;j++)
-    if (frags[i]==n1 && frags[j]==n2)
-    if (isTM(i)==0 && isTM(j)==0)
-    {
-      close = distance(i,j);
-      if (close<mclose)
+      for (int n2=0;n2<n1;n2++)
       {
-        mclose = close;
-        a1 = i;
-        a2 = j;
-        found = 1;
-      }
-    }
+          if (natoms<150)
+              printf(" connecting frag %i to frag %i: ",n1+1,n2+1);
 
-   //now connect a1 to next nearest
-    mclose2 = 1000.;
-    for (int i=0;i<natoms;i++)
-    if (frags[i]==n1 && i!=a1 && i!=a2)
-    if (isTM(i)==0)
-    {
-      close = distance(i,a1);
-      if (close<mclose2)
-      {
-        mclose2 = close;
-        b1 = a1;
-        b2 = i;
-        found2 = 1;
-      }
-    } 
+          found = 0;
+          found2 = 0;
+          double close = 0.;
+          mclose = 1000.;
+          for (int i=0;i<natoms;i++)
+          {
+              for (int j=0;j<natoms;j++)
+              {
+                  if (frags[i]==n1 && frags[j]==n2)
+                  {
+                      if (isTM(i)==0 && isTM(j)==0)
+                      {
+                          close = distance(i,j);
+                          if (close<mclose)
+                          {
+                              mclose = close;
+                              a1 = i;
+                              a2 = j;
+                              found = 1;
+                          }
+                      }
+                  }
+              }
+          }
 
-    if (found && !bond_exists(a1,a2))
-    {
-      printf(" bond pair1 added : %i %i ",a1+1,a2+1);
-      bonds[nbonds][0] = a1;
-      bonds[nbonds][1] = a2;
-      bondd[nbonds] = mclose;
-      nbonds++;
-    } // if found
+          //now connect a1 to next nearest
+          mclose2 = 1000.;
+          for (int i=0;i<natoms;i++)
+              //if (frags[i]==n1 && i!=a1 && i!=a2)
+              if (frags[i]!=n1 && i!=a1 && i!=a2)
+                  //if (isTM(i)==0) Mina
+                  {
+                      close = distance(i,a1);
+                      if (close<mclose2)
+                      {
+                          mclose2 = close;
+                          b1 = a1;
+                          b2 = i;
+                          found2 = 1;
+                      }
+                  } 
 
-    if (found2 && !bond_exists(b1,b2))
-    {
-      printf(" bond pair2 added : %i %i ",b1+1,b2+1);
-      bonds[nbonds][0] = b1;
-      bonds[nbonds][1] = b2;
-      bondd[nbonds] = mclose2;
-      nbonds++;
-    } // if found2
+          if (found && !bond_exists(a1,a2))
+          {
+              printf(" bond pair1 added : %i %i ",a1+1,a2+1);
+              bonds[nbonds][0] = a1;
+              bonds[nbonds][1] = a2;
+              bondd[nbonds] = mclose;
+              nbonds++;
+          } // if found
 
-  } //loop n2<n1 over nfrags
+          if (found2 && !bond_exists(b1,b2))
+          {
+              printf(" bond pair2 added : %i %i ",b1+1,b2+1);
+              bonds[nbonds][0] = b1;
+              bonds[nbonds][1] = b2;
+              bondd[nbonds] = mclose2;
+              nbonds++;
+          } // if found2
+
+      } //loop n2<n1 over nfrags
+  }
 
   return;
 }

@@ -137,9 +137,12 @@ void GString::update_coord_binding_site(double* xyz1, int b1, int a1)
 
 void GString::setup_surface_sites()
 {
-  if (!isSSM)
+  // to avoid printing error messages from 
+  if (!isSSM || tstype != -1)
   {
     printf(" surface sites functionality is for SSM only \n");
+    printf(" TS_FINAL_TYPE should be set to -1 \n");
+    printf(" Slab termination should be set on second line of initial.xyz file\n");
     return;
   }
 
@@ -1434,8 +1437,7 @@ void GString::structure_init(string xyzfile){
       coords[n][3*j+0]=atof(tok_line[1].c_str());
       coords[n][3*j+1]=atof(tok_line[2].c_str());
       coords[n][3*j+2]=atof(tok_line[3].c_str());
-      //if (tok_line.size()>4)
-      if (tok_line[4] == "*")
+      if (tok_line.size()>4 && tok_line[4] == "*")
         frozen[j] = 1;
       perp_grads[i][3*j+0] = 0.0;
       perp_grads[i][3*j+1] = 0.0;
