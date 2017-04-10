@@ -154,17 +154,17 @@ bool SurfaceClass::setAtoms(int numOfAtoms, double* coordinates, std::string* at
         }
         else 
         { 
-            std::cout << "ERROR: not an ASE generated input file" << std::endl;
+            //std::cout << "ERROR: not an ASE generated input file" << std::endl;
             isSet = false;
         }
         if (!(isFound(mStarAtom[0], mStarAtom[1], mStarAtom[2])))
         {   
-            std::cout << "ERROR: setting the StarAtom failed" << std::endl;
+            //std::cout << "ERROR: setting the StarAtom failed" << std::endl;
             isSet = false;
         }   
         if (!(isFound(mStarMinusOneAtom[0], mStarMinusOneAtom[1], mStarMinusOneAtom[2])))
         {   
-            std::cout << "ERROR: setting the StarMinusOneAtom failed" << std::endl;
+            //std::cout << "ERROR: setting the StarMinusOneAtom failed" << std::endl;
             isSet = false;
         }   
 

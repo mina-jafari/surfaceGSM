@@ -137,8 +137,7 @@ void GString::update_coord_binding_site(double* xyz1, int b1, int a1)
 
 void GString::setup_surface_sites()
 {
-  // to avoid printing error messages from 
-  if (!isSSM || tstype != -1)
+  if (!isSSM)
   {
     printf(" surface sites functionality is for SSM only \n");
     printf(" TS_FINAL_TYPE should be set to -1 \n");
@@ -149,7 +148,7 @@ void GString::setup_surface_sites()
   printf("\n\n setting up surface sites \n");
 
   string nstr = StringTools::int2str(runNum,4,"0");
-  sites = new BindingSiteClass[nnmax];
+  //sites = new BindingSiteClass[nnmax];
   surfs = new SurfaceClass[nnmax];
 
   string stype = surftype;
@@ -1358,6 +1357,11 @@ void GString::structure_init(string xyzfile){
   vector<string> tok_line = StringTools::tokenize(line, " \t");
   if (tok_line.size()>0)
     surftype = tok_line[0];
+  if (surftype == "none")
+  {
+      std::cout << "ERROR: not an ASE generated input file" << std::endl;
+      std::cout << "Set syrface type on the second line of " << std::endl;
+  }
   if (isSSM)
     printf(" found surftype: %s \n",surftype.c_str());
  
