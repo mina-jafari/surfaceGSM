@@ -535,8 +535,8 @@ void ICoord::bond_frags_xyz()
   int found = 0;
   int found2 = 0;
 
-  int a1,a2;
-  int b1,b2;
+  int a1,a2 = 0;
+  int b1,b2 = 0;
   double mclose;
   double mclose2;
   for (int n1=0;n1<nfrags;n1++)
@@ -574,6 +574,7 @@ void ICoord::bond_frags_xyz()
           //now connect a1 to next nearest
           mclose2 = 1000.;
           for (int i=0;i<natoms;i++)
+          {
               //if (frags[i]==n1 && i!=a1 && i!=a2)
               if (frags[i]!=n1 && i!=a1 && i!=a2)
                   //if (isTM(i)==0) Mina
@@ -587,6 +588,7 @@ void ICoord::bond_frags_xyz()
                           found2 = 1;
                       }
                   } 
+          }
 
           if (found && !bond_exists(a1,a2))
           {
@@ -1525,6 +1527,11 @@ double ICoord::distance(int i, int j)
 
 int ICoord::bond_exists(int b1, int b2) {
 
+   if (b1 < 0 || b1 > natoms)
+   {
+       std::cout << "ERROR: Something is wrong with atomic indices" << std::endl; //Mina
+       exit(-1);
+   }
    int found = 0;
    if (bond_num(b1,b2)>-1)
      found = 1;
