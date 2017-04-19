@@ -140,7 +140,6 @@ void GString::setup_surface_sites()
   if (!isSSM)
   {
     printf(" surface sites functionality is for SSM only \n");
-    printf(" TS_FINAL_TYPE should be set to -1 \n");
     printf(" Slab termination should be set on second line of initial.xyz file\n");
     return;
   }

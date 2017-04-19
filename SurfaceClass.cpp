@@ -864,7 +864,8 @@ bool SurfaceClass::writeToFile(std::string &outFile)
     ofs.open(outFile.c_str());
 
     //ofs << std::to_string(mNumOfSurfAtoms+mNumOfAdsorbateAtoms+mSelectedBindingSites.size()) << "\n";
-    std::string nstr = StringTools::int2str(mNumOfSurfAtoms+mSelectedBindingSites.size(),1,"0");
+    std::string nstr = StringTools::int2str(mNumOfSurfAtoms + mNumOfAdsorbateAtoms 
+                     + mSelectedBindingSites.size(),1,"0");
     ofs << nstr << "\n";
     ofs << "\n";
     ofs << std::fixed << std::setprecision(15);
