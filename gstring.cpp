@@ -5418,11 +5418,17 @@ void GString::get_tangents_1g(double** dqa, double* dqmaga, double** ictan)
     //newic.bmat_create();
 
     for (int j=0;j<size_ic-ntor;j++) 
+    {
       dqmaga[nlist[2*n]] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
+    }
     for (int j=nbonds+nangles;j<size_icp;j++)
+    {
       dqmaga[nlist[2*n]] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j]; //CPMZ check
+    }
     for (int j=size_icp;j<size_ic;j++)
+    {
       dqmaga[nlist[2*n]] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
+    }
 #endif
     dqmaga[nlist[2*n]] = sqrt(dqmaga[nlist[2*n]]);
     //printf(" dqmaga: %1.2f",dqmaga[nlist[2*n]]);

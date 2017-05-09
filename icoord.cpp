@@ -2,6 +2,7 @@
 // Author: Paul Zimmerman, University of Michigan //
 #include "icoord.h"
 #include "utils.h"
+#include <assert.h>
 using namespace std;
 
 #define MAX_FRAG_DIST 12.0
@@ -314,7 +315,8 @@ void ICoord::linear_ties()
       }
       if (!found)
       {
-        int c1,c2;
+        int c1 = 0;
+        int c2 = 0;
         if (bond_exists(b1,a1))
           c1 = b1;
         if (bond_exists(b2,a1))
@@ -535,8 +537,10 @@ void ICoord::bond_frags_xyz()
   int found = 0;
   int found2 = 0;
 
-  int a1,a2 = 0;
-  int b1,b2 = 0;
+  int a1 = 0;
+  int a2 = 0;
+  int b1 = 0;
+  int b2 = 0;
   double mclose;
   double mclose2;
   for (int n1=0;n1<nfrags;n1++)
@@ -546,8 +550,8 @@ void ICoord::bond_frags_xyz()
           if (natoms<150)
               printf(" connecting frag %i to frag %i: ",n1+1,n2+1);
 
-          found = 0;
-          found2 = 0;
+          //found = 0; Mina
+          //found2 = 0; Mina
           double close = 0.;
           mclose = 1000.;
           for (int i=0;i<natoms;i++)
@@ -859,35 +863,42 @@ void ICoord::get_xyzic()
 {
   printf("  in get_xyzic() use_xyz: %i \n",use_xyz);
 
-  if (use_xyz==2)
-  for (int i=0;i<nbonds;i++)
-  {
-    int a1 = bonds[i][0];
-    int a2 = bonds[i][1];
-    int frzpair = 0;
-    if (frozen!=NULL)
-    if (frozen[a1] && frozen[a2])
-      frzpair = 1;
+  int* oxel = new int[natoms]; //Mina
+  int nox = get_ox(oxel); //Mina
 
-    if ((isTM(a1) && isTM(a2)) || frzpair)
-    {
-      //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
-      //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
-      for (int j=i;j<nbonds-1;j++)
+  if (use_xyz==2)
+  {
+      for (int i=0;i<nbonds;i++)
       {
-        bonds[j][0] = bonds[j+1][0];
-        bonds[j][1] = bonds[j+1][1];
-        bondd[j] = bondd[j+1];
+          int a1 = bonds[i][0];
+          int a2 = bonds[i][1];
+          int frzpair = 0;
+          if (frozen!=NULL)
+              if (frozen[a1] && frozen[a2])
+                  frzpair = 1;
+
+          // delete a bond if both atoms transition metals and abundant
+          if ( ((isTM(a1) && isTM(a2)) && (oxel[a1] && oxel[a2])) || frzpair)
+          {
+              std::cout << "Deleting bonds " << a1+1 << "   " << a2+1 << std::endl;
+              //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
+              //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
+              for (int j=i;j<nbonds-1;j++)
+              {
+                  bonds[j][0] = bonds[j+1][0];
+                  bonds[j][1] = bonds[j+1][1];
+                  bondd[j] = bondd[j+1];
+              }
+              nbonds--;
+              i--;
+          }
       }
-      nbonds--;
-      i--;
-    }
   }
   if (use_xyz==2) return;
 
 
-  int* oxel = new int[natoms];
-  int nox = get_ox(oxel);
+  //int* oxel = new int[natoms]; Mina
+  //int nox = get_ox(oxel); Mina
 
   nxyzic = 0;
   for (int i=0;i<natoms;i++)
@@ -1375,6 +1386,7 @@ double ICoord::angle_val(int i, int j, int k)
    double D2 = distance(j,k);
    double D3 = distance(i,k);
    
+   assert (D1 != 0 and D2 != 0);
    double cos = ( D1*D1 + D2*D2 - D3*D3 ) / ( 2*D1*D2);
  
    if (cos > 1) cos = 1;
@@ -1527,7 +1539,7 @@ double ICoord::distance(int i, int j)
 
 int ICoord::bond_exists(int b1, int b2) {
 
-   if (b1 < 0 || b1 > natoms)
+   if (b1 < 0 || b1 > natoms || b2 < 0 || b2 > natoms)
    {
        std::cout << "ERROR: Something is wrong with atomic indices" << std::endl; //Mina
        exit(-1);

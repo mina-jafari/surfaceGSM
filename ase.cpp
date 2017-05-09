@@ -72,7 +72,7 @@ double ASE::grads(double* coords, double* grad)
   for (int i=0;i<3*natoms;i++)
     grad[i] = 0.;
 
-  int num,k,c;
+  //int num,k,c;
   double V = -1.;
 
   string nstr=StringTools::int2str(runNum,4,"0");
