@@ -302,37 +302,38 @@ int ICoord::bmatp_to_U()
  // fflush(stdout);
  // update_ic();
 
-  int len_icp =	nbonds+nangles+ntor;
-  int len = len_icp + nxyzic;
+  //int len_icp =	nbonds+nangles+ntor; Mina
+  //int len = len_icp + nxyzic; Mina
+  int len = nbonds + nangles + ntor + nxyzic;
   int N3 = 3*natoms;
-  int max_size_ic = len;
-  int size_xyz = N3;
+  //int max_size_ic = len; Mina
+  //int size_xyz = N3; Mina
 
-  int len_d;
+  //int len_d = 0; Mina
   // e: array of eigen values
   double* e = new double[len];
 //  double* U = new double[len*len];
-  double* tmp = new double[len*N3];
-  for (int i=0;i<len*N3;i++)
-    tmp[i] = bmatp[i];
+  //double* tmp = new double[len*N3]; Mina
+  //for (int i=0;i<len*N3;i++) Mina
+  //  tmp[i] = bmatp[i]; Mina
 
 //  printf(" about to create G matrix \n");
 //  fflush(stdout);
 
   double* G = new double[len*len];
+  for (int i=0;i<len*len;i++) G[i] = 0.;
 #if 1
   mat_times_mat_bt(G,bmatp,bmatp,len,len,N3);
 #else
-  for (int i=0;i<len*len;i++) G[i] = 0.;
   for (int i=0;i<len;i++) 
-  for (int j=0;j<len;j++)
-  for (int k=0;k<N3;k++)
-    G[i*len+j] += bmatp[i*N3+k]*bmatp[j*N3+k];
+      for (int j=0;j<len;j++)
+          for (int k=0;k<N3;k++)
+              G[i*len+j] += bmatp[i*N3+k]*bmatp[j*N3+k];
 #endif
 
 #if 0
-  printf(" G: \n");
-  for (int i=0;i<len;i++)
+          printf(" G: \n");
+          for (int i=0;i<len;i++)
   {
     for (int j=0;j<len;j++)
       printf(" %1.2f",G[i*len+j]);
@@ -344,7 +345,7 @@ int ICoord::bmatp_to_U()
 //  printf(" before diagonalize: mkl_threads: %i \n",mkl_get_max_threads());
 //  fflush(stdout);
   Diagonalize(G,e,len);
-  len_d = N3-6;
+  int len_d = N3-6;
   if (nxyzic>0)
     len_d = N3;
 //  printf(" after diagonalize \n");
@@ -448,7 +449,7 @@ int ICoord::bmatp_to_U()
     Ut0[i] = Ut[i];
   nicd0 = nicd;
 
-  delete [] tmp;
+  //delete [] tmp; Mina
   delete [] G;
   delete [] e;
   //delete [] U;

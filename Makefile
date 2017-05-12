@@ -31,7 +31,8 @@ LINKERFLAGS =  -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_intel_thread -lmk
 #LINKERFLAGS = -lm -framework Accelerate
 
 
-OFLAGS =  # optimization
+OFLAGS =  -O3 # optimization
+DEBUG_FLAGS = # debug flags
 
 
 
