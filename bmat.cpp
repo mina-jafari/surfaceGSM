@@ -302,26 +302,22 @@ int ICoord::bmatp_to_U()
  // fflush(stdout);
  // update_ic();
 
-  //int len_icp =	nbonds+nangles+ntor; Mina
-  //int len = len_icp + nxyzic; Mina
   int len = nbonds + nangles + ntor + nxyzic;
   int N3 = 3*natoms;
-  //int max_size_ic = len; Mina
-  //int size_xyz = N3; Mina
 
-  //int len_d = 0; Mina
   // e: array of eigen values
   double* e = new double[len];
-//  double* U = new double[len*len];
+  //double* U = new double[len*len];
   //double* tmp = new double[len*N3]; Mina
   //for (int i=0;i<len*N3;i++) Mina
   //  tmp[i] = bmatp[i]; Mina
 
-//  printf(" about to create G matrix \n");
-//  fflush(stdout);
+  //printf(" about to create G matrix \n");
+  //fflush(stdout);
 
   double* G = new double[len*len];
-  for (int i=0;i<len*len;i++) G[i] = 0.;
+  for (int i=0;i<len*len;i++) 
+      G[i] = 0.;
 #if 1
   mat_times_mat_bt(G,bmatp,bmatp,len,len,N3);
 #else
@@ -582,6 +578,11 @@ int ICoord::bmat_create()
 
   double* bbt = new double[len_d*len_d];
   double* bbti = new double[len_d*len_d];
+  for (int i=0; i<len_d*len_d; i++)
+  {
+      bbt[i] = 0.0;
+      bbti[i] = 0.0;
+  }
 
 #if 1
   mat_times_mat_bt(bbt,bmat,bmat,len_d,len_d,N3);
@@ -1135,6 +1136,20 @@ void ICoord::update_bfgs()
   double* dxdgG = new double[len0*len0];
   double* Gdgdx = new double[len0*len0];
   double* Gdg = new double[len0];
+  for (int i=0; i<len0; i++)
+  {
+      dg[i] = 0.0;
+      dx[i] = 0.0;
+      Gdg[i] = 0.0;
+  }
+  for (int i=0; i<len0*len0; i++)
+  {
+      G[i] = 0.0;
+      dxdx[i] = 0.0;
+      dxdg[i] = 0.0;
+      dxdgG[i] = 0.0;
+      Gdgdx[i] = 0.0;
+  }
 
   double dxtdg = 0.;
   double dgGdg = 0.;
@@ -1379,11 +1394,14 @@ void ICoord::update_bfgsp(int makeHint)
 void ICoord::Hintp_to_Hint()
 {
 
-  int len_icp =	nbonds+nangles+ntor;
-  int len0 = len_icp + nxyzic;
+  int len0 = nbonds + nangles + ntor + nxyzic;
   int len_d = nicd0;
 
   double* tmp = new double[len0*len0];
+  for (int i=0; i<len0*len0; i++)
+  {
+      tmp[i] = 0.0;
+  }
 
 #if 1
   mat_times_mat_bt(tmp,Ut,Hintp,len_d,len0,len0);
@@ -1602,8 +1620,16 @@ void ICoord::make_Hint()
   int len = nicd;
   
   double* tmp = new double[len0*size_ic];
+  for (int i=0; i<len0*size_ic; i++)
+  {
+      tmp[i] = 0.0;
+  }
 
   double* Hdiagp = new double[size_ic];
+  for (int i=0; i<size_ic; i++)
+  {
+      Hdiagp[i] = 0.0;
+  }
 #if 0
   for (int i=0;i<nbonds;i++)
     Hdiagp[i] = 0.5*close_bond(i);
@@ -1629,13 +1655,15 @@ void ICoord::make_Hint()
     printf(" %1.3f \n",Hdiagp[i]);
 #endif
 
-  for (int i=0;i<size_ic*size_ic;i++) Hintp[i] = 0.;
-  for (int i=0;i<size_ic;i++) Hintp[i*size_ic+i] = Hdiagp[i];
+  for (int i=0;i<size_ic*size_ic;i++) 
+      Hintp[i] = 0.;
+  for (int i=0;i<size_ic;i++) 
+      Hintp[i*size_ic+i] = Hdiagp[i];
   
 
   for (int i=0;i<len0;i++)
-  for (int k=0;k<size_ic;k++)
-    tmp[i*size_ic+k] = Ut[i*size_ic+k]*Hdiagp[k];
+      for (int k=0;k<size_ic;k++)
+          tmp[i*size_ic+k] = Ut[i*size_ic+k]*Hdiagp[k];
 
 #if 1
   mat_times_mat_bt(Hint,tmp,Ut,len0,len0,size_ic);
