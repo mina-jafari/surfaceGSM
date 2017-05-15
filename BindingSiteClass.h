@@ -13,7 +13,7 @@ class BindingSiteClass
         // hollow, hcp, fcc, atop, long-bridge, short-bridge, bridge
         std::string mType;
         // coordinates of the site
-        double mCoordinate[3]= {0.0, 0.0, 0.0};
+        double mCoordinate[3];
 
     public:
         // Ctors

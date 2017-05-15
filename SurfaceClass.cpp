@@ -7,6 +7,11 @@
 #include <fstream>
 #include <iomanip>
 
+SurfaceClass::SurfaceClass()
+{
+    mSlabSize[0] = mSlabSize[1] = mSlabSize[2] = 0.0;
+}
+
 std::string SurfaceClass::getSurfaceType() const
 {
     return (mSurfaceType);

@@ -6,6 +6,10 @@
 
 BindingSiteClass::BindingSiteClass()
 {
+    for (int i=0; i<3; i++)
+    {
+        mCoordinate[i] = 0.0;
+    }
 }
 
 BindingSiteClass::BindingSiteClass(std::string inType, double inX, double inY, double inZ):
@@ -13,6 +17,10 @@ BindingSiteClass::BindingSiteClass(std::string inType, double inX, double inY, d
 {
     setType(inType);
     setCoordinates(inX, inY, inZ);
+    for (int i=0; i<3; i++)
+    {
+        mCoordinate[i] = 0.0;
+    }
 }
 
 std::string BindingSiteClass::getType() const

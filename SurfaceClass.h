@@ -29,7 +29,7 @@ class SurfaceClass
         int mNumOfSurfAtoms = 0;
         int mNumOfAdsorbateAtoms = 0;
         // number of atoms in x, y, and z direction in slab
-        int mSlabSize[3] = {0, 0, 0}; // x * y * z
+        int mSlabSize[3]; // x * y * z
         // a vector to store all the binding sites of the surface
         std::vector<BindingSiteClass> mBindingSites; 
         // a vector to store only the sites within a range and atom
@@ -55,6 +55,7 @@ class SurfaceClass
         void resetGeometry();
 
     public:
+        SurfaceClass();
         // getter functions
         std::string getSurfaceType() const;
         int getNumOfAtoms() const;
