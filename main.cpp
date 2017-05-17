@@ -13,7 +13,7 @@ using namespace std;
 
 int main(int argc, char* argv[]){
   //for NaN debugging
-  feenableexcept(FE_INVALID | FE_OVERFLOW); //Mina
+  //feenableexcept(FE_INVALID | FE_OVERFLOW); //Mina
   string inpfile;
   string xyzfile;
   string nprocs;
