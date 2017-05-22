@@ -54,13 +54,33 @@ void ICoord::alloc_mem(){
  for (int i=0;i<max_bonds;i++)
    bonds[i]=new int[2];
  bondd = new double[max_bonds];
+ for (int i=0; i<max_bonds; i++)
+ {
+     bondd[i] = 0.0;
+     for (int j=0; j<2; j++)
+     {
+         bonds[i][j] = 0;
+     }
+ }
 
  nangles = 0;
  max_angles=natoms*24;
  angles = new int*[max_angles];
  for (int i=0;i<max_angles;i++)
    angles[i]=new int[3];
+ for (int i=0; i<max_angles; i++)
+ {
+     for (int j=0; j<3; j++)
+     {
+         angles[i][j] = 0;
+     }
+ }
+
  anglev = new double[max_angles];
+ for (int i=0; i<max_angles; i++)
+ {
+     anglev[i] = 0.0;
+ }
 
  ntor = 0;
  max_torsions=natoms*80;

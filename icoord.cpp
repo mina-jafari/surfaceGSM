@@ -1746,6 +1746,11 @@ void ICoord::structure_read(string xyzfile){
   
   coords = new double[natoms*3];
   coords0 = new double[natoms*3];
+  for (int i=0; i<natoms*3; i++)
+  {
+      coords[i] = 0.0;
+      coords0[i] = 0.0;
+  }
    
   //cout <<"  -Reading coordinates...";
  // cout << "Opening the xyz file" << endl;

@@ -15,12 +15,12 @@ BindingSiteClass::BindingSiteClass()
 BindingSiteClass::BindingSiteClass(std::string inType, double inX, double inY, double inZ):
                                    mType("TT")
 {
-    setType(inType);
-    setCoordinates(inX, inY, inZ);
     for (int i=0; i<3; i++)
     {
         mCoordinate[i] = 0.0;
     }
+    setType(inType);
+    setCoordinates(inX, inY, inZ);
 }
 
 std::string BindingSiteClass::getType() const
