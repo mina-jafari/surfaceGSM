@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 
+#include <cmath>
 #include "stringtools.h"
 
 using namespace std;
@@ -153,7 +154,13 @@ string StringTools::double2str(double val, int precision)
   } else if( expn>5) {
      decadd=expn-5;
      for (int i=1; i<=decadd; i++) {fac=fac*10;}
-     val=val/fac;
+     if (!StringTools::isEqual(fac, 0.0))
+         val=val/fac;
+     else
+     {
+         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+         exit(-1);
+     }
   }
   for (int i=0; i<25; i++){temp[i]=' ';} 
   buffer = fcvt(val, precision, &decimal, &sign);
@@ -361,3 +368,17 @@ bool StringTools::findstr(ifstream &fstr, string tag, string & outline){
    return found;
 }
 
+bool StringTools::isEqual(double a, double b)
+{
+    const double epsilon = 0.000001;
+    bool isequal = true;
+
+    if (std::abs(a - b) < epsilon)
+    {
+        isequal = true;
+    }
+    else
+        isequal = false;
+
+    return isequal;
+}

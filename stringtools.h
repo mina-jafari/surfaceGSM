@@ -92,6 +92,7 @@ namespace StringTools
   bool findstr(ifstream &fstr, string tag, string & outstring);
   bool contains(string s1, string s2);
   bool iscomment(string s);
+  bool isEqual(double a, double b);
 
 };
 

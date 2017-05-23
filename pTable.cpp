@@ -42,7 +42,7 @@ namespace PTable {
 
 
 
-    double atom_masses[MAX_NUMBER_OF_ATOMS]={-1.00,
+    double atom_masses[MAX_NUMBER_OF_ATOMS]={-1, //Mina TODO reason for NaN? sqrt domain?
         1.0079 , 4.0026 , 6.941 , 9.0121 , 10.811 , 12.010 , 14.006 ,
         15.999 , 18.998 , 20.179 , 22.989 , 24.305 , 26.981 , 28.085 ,
         30.973 , 32.065 , 35.453 , 39.948 , 39.098 , 40.078 , 44.955 ,
@@ -119,7 +119,7 @@ namespace PTable {
 
 
     string PTable::atom_name(int aNumber){
-        if ((aNumber<0)||(aNumber>102)) {
+        if ((aNumber<0)||(aNumber>MAX_NUMBER_OF_ATOMS)) {
             cout << endl <<"Now in file: :" <<__FILE__
                 << " at line: "<< __LINE__<< endl;
             cout << "Failed to find atom with atomic number : " << aNumber << endl;

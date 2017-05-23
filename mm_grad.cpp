@@ -211,6 +211,11 @@ void ICoord::vdw_grad_1(int i, int j, double scale){
   double r = distance(i,j);
 
 //  printf(" R: %1.4f r: %1.4f \n",R,r);
+  if (StringTools::isEqual(r, 0.0) || StringTools::isEqual(R, 0.0))
+  {    
+      std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+      exit(-1);
+  }
   double Rr = R / r;
   double Rr2 = Rr*Rr;
   double Rr6 = Rr2*Rr2*Rr2;
@@ -268,6 +273,11 @@ void ICoord::lin_grad_1(int i, int j, double scale){
   dx[2] = coords[3*i+2]-coords[3*j+2];
 
   double norm = ( dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2] );
+  if (StringTools::isEqual(norm, 0.0))
+  {    
+      std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+      exit(-1);
+  }
   norm = sqrt(norm);
   dx[0] = dx[0] / norm;
   dx[1] = dx[1] / norm;
@@ -339,6 +349,11 @@ void ICoord::angle_grad_1(int i, int j, int k){
 //  printf(" r1: %1.4f r2: %1.4f\n",r1,r2);
   double* g1 = new double[3];
   double* g2 = new double[3];
+  if (StringTools::isEqual(r1, 0.0) || StringTools::isEqual(r2, 0.0))
+  {    
+      std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+      exit(-1);
+  }
   double g1a = -r2/r1*cos(angle);
   double g2a = -r1/r2*cos(angle);
 //  printf(" g1a: %1.4f g2a: %1.4f\n",g1a,g2a);
@@ -352,6 +367,11 @@ void ICoord::angle_grad_1(int i, int j, int k){
   double d = angle - ffangled(i,j)*3.14/180; //in radians
   
   double SCALE=1;
+  if (StringTools::isEqual(sin(angle), 0.0) || StringTools::isEqual(SCALE, 0.0))
+  {    
+      std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+      exit(-1);
+  }
   double t = 2 * d * ffanglee(i,j) / sin(angle) / r1 / r2 / SCALE;
 
 //  printf(" grad mag on %i %i %i: %1.4f, current stretch: %1.4f angle: %1.4f \n",i,j,k,t,d,angle*180/3.14);
@@ -432,6 +452,12 @@ void ICoord::torsion_grad_1(int i, int j, int k, int l){
   double* S = new double[3];
   double* Fi = new double[3];
   double* Fl = new double[3];
+  if (StringTools::isEqual(mm, 0.0) || StringTools::isEqual(nn, 0.0) ||
+      StringTools::isEqual(R2, 0.0))
+  {    
+      std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+      exit(-1);
+  }
   grad[3*i+0] += Fi[0] = -dEdphi*R*m[0]/mm;
   grad[3*i+1] += Fi[1] = -dEdphi*R*m[1]/mm;
   grad[3*i+2] += Fi[2] = -dEdphi*R*m[2]/mm;
@@ -517,6 +543,12 @@ void ICoord::imptor_grad_1(int i, int j, int k, int l){
   double* S = new double[3];
   double* Fi = new double[3];
   double* Fl = new double[3];
+  if (StringTools::isEqual(mm, 0.0) || StringTools::isEqual(nn, 0.0) ||
+      StringTools::isEqual(R2, 0.0))
+  {    
+      std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+      exit(-1);
+  }
   grad[3*i+0] += Fi[0] = -dEdphi*R*m[0]/mm;
   grad[3*i+1] += Fi[1] = -dEdphi*R*m[1]/mm;
   grad[3*i+2] += Fi[2] = -dEdphi*R*m[2]/mm;

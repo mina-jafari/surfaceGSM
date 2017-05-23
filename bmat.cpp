@@ -699,6 +699,11 @@ int ICoord::bmatp_finite() {
       b2 = distance(a1,a2);
       coords[3*a2+j]-=fstep;
 
+      if (StringTools::isEqual(fstep, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
       dqbdx[3*0+j] = (b1-b0)/fstep;
       dqbdx[3*1+j] = (b2-b0)/fstep;
     }
@@ -738,6 +743,11 @@ int ICoord::bmatp_finite() {
       b3 = angle_val(a1,a2,a3)*3.14159/180;
       coords[3*a3+j]-=fstep;
 
+      if (StringTools::isEqual(fstep, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
       dqadx[3*0+j] = (b1-b0)/fstep;
       dqadx[3*1+j] = (b2-b0)/fstep;
       dqadx[3*2+j] = (b3-b0)/fstep;
@@ -788,6 +798,11 @@ int ICoord::bmatp_finite() {
 
       //printf(" b0,b1,b2,b3,b4: %1.6f %1.6f %1.6f %1.6f %1.6f \n",b0,b1,b2,b3,b4);
 
+      if (StringTools::isEqual(fstep, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
       dqtdx[3*0+j] = (b1-b0)/fstep;
       dqtdx[3*1+j] = (b2-b0)/fstep;
       dqtdx[3*2+j] = (b3-b0)/fstep;
@@ -867,6 +882,11 @@ void ICoord::bmatp_dqbdx(int i, int j, double* dqbdx) {
   double norm = distance(i,j);
   //double norm = sqrt(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);
 
+  if (StringTools::isEqual(norm, 0.0))
+  {    
+      std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+      exit(-1);
+  }
   u[0] = u[0]/norm;
   u[1] = u[1]/norm;
   u[2] = u[2]/norm;
@@ -1778,7 +1798,14 @@ void ICoord::opt_constraint(double* C)
     norm += C[i]*C[i];
   norm = sqrt(norm);
   for (int j=0;j<len;j++)
-    C[j] = C[j]/norm;
+  {
+      if (StringTools::isEqual(norm, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      C[j] = C[j]/norm;
+  }
 
   double* dots = new double[len];
   for (int i=0;i<len;i++) dots[i] =0.;
@@ -1802,7 +1829,14 @@ void ICoord::opt_constraint(double* C)
   norm = sqrt(norm);
   //printf(" Cn norm: %1.2f \n",norm);
   for (int j=0;j<len;j++)
-    Cn[j] = Cn[j]/norm;
+  {
+      if (StringTools::isEqual(norm, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      Cn[j] = Cn[j]/norm;
+  }
 
 #if 0
   norm = 0.;
@@ -1856,7 +1890,14 @@ void ICoord::opt_constraint(double* C)
     if (abs(norm)<0.00001) printf(" WARNING: small norm: %1.7f \n",norm);
     if (abs(norm)<0.00001) norm = 1;
     for (int j=0;j<len;j++)
-      Ut[i*len+j] = Ut[i*len+j]/norm;
+    {
+        if (StringTools::isEqual(norm, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+        Ut[i*len+j] = Ut[i*len+j]/norm;
+    }
   }
 
   for (int j=0;j<len;j++)
@@ -2321,7 +2362,14 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
     norm += Cn[i]*Cn[i];
   norm = sqrt(norm);
   for (int j=0;j<len0;j++)
-    Cn[j] = Cn[j]/norm;
+  {
+      if (StringTools::isEqual(norm, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      Cn[j] = Cn[j]/norm;
+  }
 #if 0
   printf(" Cn norm: %1.2f \n",norm);
   printf(" C:");
@@ -2626,7 +2674,14 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
     norm += Cn[i]*Cn[i];
   norm = sqrt(norm);
   for (int j=0;j<len0;j++)
-    Cn[j] = Cn[j]/norm;
+  {
+      if (StringTools::isEqual(norm, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      Cn[j] = Cn[j]/norm;
+  }
 
   double* Dn = new double[len0];
   for (int i=0;i<len;i++) dots[i] = 0.;
@@ -2642,7 +2697,14 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
     norm += Dn[i]*Dn[i];
   norm = sqrt(norm);
   for (int j=0;j<len0;j++)
-    Dn[j] = Dn[j]/norm;
+  {
+      if (StringTools::isEqual(norm, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      Dn[j] = Dn[j]/norm;
+  }
 
 #if 0
   printf(" Cn norm: %1.2f \n",norm);
@@ -2956,7 +3018,14 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
     norm += Cn[i]*Cn[i];
   norm = sqrt(norm);
   for (int j=0;j<len0;j++)
-    Cn[j] = Cn[j]/norm;
+  {
+      if (StringTools::isEqual(norm, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      Cn[j] = Cn[j]/norm;
+  }
 #if 0
   printf(" Cn norm: %1.2f \n",norm);
   printf(" C:");
@@ -5104,7 +5173,14 @@ int ICoord::create_prima(int nnodes0, int nbonds1, int nangles1, int ntor1, doub
     norm += Cp[j]*Cp[j];
   norm = sqrt(norm);
   for (int j=0;j<len;j++)
-    Cp[j] = Cp[j]/norm;
+  {
+      if (StringTools::isEqual(norm, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      Cp[j] = Cp[j]/norm;
+  }
 
 #if 0 
   printf(" printing prima tangent Cp: \n");
@@ -5448,7 +5524,14 @@ int ICoord::davidson_H(int nval)
         mag += vecs[wv][j]*vecs[wv][j];
       double norm = sqrt(mag);
       for (int j=0;j<len;j++)
-        vecs[wv][j] = vecs[wv][j] / norm;
+      {
+          if (StringTools::isEqual(norm, 0.0))
+          {    
+              std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+              exit(-1);
+          }
+          vecs[wv][j] = vecs[wv][j] / norm;
+      }
       //printf(" %i mag: %4.3f \n",i,mag);
 
 #if 0

@@ -40,7 +40,12 @@ void LST::getTangents_withLST_from_nodes_only(double** angs, double** dangstroms
   for(int i=1;i<=nstring;i++){
     temp1 = Utils::vecMag(dangstromsds[i],natoms*3);
     for(int j=1;j<=natoms*3;j++){
-      dangstromsds[i][j] = dangstromsds[i][j]/temp1;
+        if (StringTools::isEqual(temp1, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+        dangstromsds[i][j] = dangstromsds[i][j]/temp1;
     }
   }
 
@@ -85,7 +90,12 @@ void LST::get_single_tangent_from_fstring(double** interp_string, double* dangst
   
   double temp1 = Utils::vecMag(dangstromds ,natoms*3);
   for(int j=1;j<=natoms*3;j++){
-    dangstromds[j] *= 1/temp1;
+      if (StringTools::isEqual(temp1, 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      dangstromds[j] *= 1/temp1;
   }
     
   delete [] y;
@@ -120,7 +130,12 @@ void LST::getTangents_from_fstring(double** interp_string, double** dangstromsds
   for(int i=1;i<=nstring;i++){
     temp1 = Utils::vecMag(dangstromsds[i],natoms*3);
     for(int j=1;j<=natoms*3;j++){
-      dangstromsds[i][j] = dangstromsds[i][j]/temp1;
+        if (StringTools::isEqual(temp1, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+        dangstromsds[i][j] = dangstromsds[i][j]/temp1;
     }
   }
 
@@ -152,7 +167,12 @@ void LST::LST_stringbuild(double** interp_string, double** ang_coords, int nstri
   double* norm_s = new double[1+nstring];
   
   for (int i=1;i<=nstring;i++){
-    norm_s[i] = SS[i]/SS[nstring];
+      if (StringTools::isEqual(SS[nstring], 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      norm_s[i] = SS[i]/SS[nstring];
   }
 
   //Utils::normalize_S(norm_s, SS, nstring);
@@ -233,7 +253,12 @@ void LST::LST_stringbuild(double** interp_string, double** ang_coords, int nstri
   int j=1;
   for (int i=1;i<=nstring-1;i++){
     for (int j=1;j<=f_distribute[i];j++){
-      f[accum+j]=j/(f_distribute[i]+1);
+        if (StringTools::isEqual((f_distribute[i]+1), 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+        f[accum+j]=j/(f_distribute[i]+1);
     }
     accum+=(int)f_distribute[i]+1;
   }
@@ -331,7 +356,12 @@ void LST::LST_pickout(double** fstring, double* s_new, int nnOld, int nnNew, int
 
   //normalize fstr_S
   for (int i=1;i<=num_interp;i++){
-    fstr_S[i]*=(1/fstr_S[num_interp]);
+      if (StringTools::isEqual(fstr_S[num_interp], 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+      fstr_S[i]*=(1/fstr_S[num_interp]);
   }
 
   //Pick out new nodes from the fstring by comparing actual and desired ss_new values.
@@ -340,6 +370,11 @@ void LST::LST_pickout(double** fstring, double* s_new, int nnOld, int nnNew, int
     for (int j=1;j<=num_interp-1;j++){      
       if (s_new[i]>=fstr_S[j] && s_new[i]<=fstr_S[j+1]) {
 	//cout <<"success! at interpolation number: ";
+      if (StringTools::isEqual( (fstr_S[j+1]-fstr_S[j]) , 0.0))
+      {    
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
 	if ((s_new[i]-fstr_S[j])/(fstr_S[j+1]-fstr_S[j])<0.50000){
 	  // cout << j << endl;;
 	  nodes_picked[i]=j;
@@ -434,7 +469,12 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
       for (int j=1;j<=3;j++){
 	for (int k=1;k<=natoms;k++){
           if (i!=k){
-	    dS[3*(i-1)+j]+=2*((r_c[k][i]-r_i[k][i])/(pow(r_i[k][i],4)))*(1/r_c[k][i])*(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j]);
+              if (StringTools::isEqual(r_c[k][i], 0.0) || StringTools::isEqual((pow(r_i[k][i],4)), 0.0))
+              {    
+                  std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                  exit(-1);
+              }
+              dS[3*(i-1)+j]+=2*((r_c[k][i]-r_i[k][i])/(pow(r_i[k][i],4)))*(1/r_c[k][i])*(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j]);
           }
         }
 	dS[3*(i-1)+j]+=2*(10e-3)*(xyzf[3*(i-1)+j]-xyz_stor[3*(i-1)+j]);
@@ -447,6 +487,11 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
       for (int j=1;j<=3;j++){
         for (int k=1;k<=natoms;k++){
           if (i!=k){
+              if (StringTools::isEqual(r_c[i][k], 0.0))
+              {    
+                  std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                  exit(-1);
+              }
             d2S[3*(i-1)+j][3*(i-1)+j]+=2*((1/pow(r_i[i][k], 4)) + (1/pow(r_i[i][k], 3))*(1/r_c[i][k]) + (1/pow(r_i[i][k]*r_c[i][k], 3))*pow(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j], 2));
           }
         }

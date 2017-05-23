@@ -1024,7 +1024,7 @@ void ICoord::make_bonds()
   for (int i=0;i<natoms;i++)
     for (int j=0;j<i;j++)
     {
-       MAX_BOND_DIST = (getR(i) + getR(j))/2;
+       MAX_BOND_DIST = (getR(i) + getR(j))/2.0;
        if (farBond>1.0) MAX_BOND_DIST *= farBond;
        double d = distance(i,j);
        if (d<MAX_BOND_DIST)
@@ -1363,7 +1363,13 @@ double ICoord::torsion_val(int i, int j, int k, int l)
 
   double u = (ux1*ux1+uy1*uy1+uz1*uz1)*(ux2*ux2+uy2*uy2+uz2*uz2);
 
-  if (u!=0.0)
+  if (StringTools::isEqual(u, 0.0))
+  {
+      std::cout << "ERROR: Zero detected on line 1376 " << __LINE__ << " of file " << __FILE__ << std::endl;
+      //exit(-1);
+      tval = 0.;
+  }
+  else if (!StringTools::isEqual(u, 0.0))
   {
      double a = (ux1*ux2+uy1*uy2+uz1*uz2)/sqrt(u);
      if (a>1) a=1; else if (a<-1) a=-1;
@@ -1371,8 +1377,6 @@ double ICoord::torsion_val(int i, int j, int k, int l)
      if (ux1*(uy2*z2-uz2*y2)+uy1*(uz2*x2-ux2*z2)+
          uz1*(ux2*y2-uy2*x2) < 0.0) tval *=-1;
   }
-  else
-    tval = 0.;
 
   if (tval>3.14159) tval-=2*3.14159;
   if (tval<-3.14159) tval+=2*3.14159;
@@ -1385,10 +1389,19 @@ double ICoord::angle_val(int i, int j, int k)
    double D1 = distance(i,j);
    double D2 = distance(j,k);
    double D3 = distance(i,k);
-   
    assert (D1 != 0 and D2 != 0);
-   double cos = ( D1*D1 + D2*D2 - D3*D3 ) / ( 2*D1*D2);
- 
+   
+   double cos = 0.0;
+   if ( (!StringTools::isEqual(D1, 0.0)) && (!StringTools::isEqual(D2, 0.0)) )
+   {
+       cos = ( D1*D1 + D2*D2 - D3*D3 ) / ( 2*D1*D2);
+   }
+   else
+   {
+       std::cout << "ERROR: Zero detected on line 1401 " << __LINE__ << " of file " << __FILE__ << std::endl;
+       exit(-1);
+   }
+
    if (cos > 1) cos = 1;
    if (cos < -1) cos = -1;
 
@@ -1641,7 +1654,7 @@ double ICoord::close_bond(int i)
   int a1 = bonds[i][0];
   int a2 = bonds[i][1];
   double d = distance(a1,a2);
-  double dr = (getR(a1) + getR(a2))/2;
+  double dr = (getR(a1) + getR(a2))/2.0;
 //  val = exp(-(d*d-dr*dr));
   val = exp(-A*(d-dr));
   if (val > 1) val = 1;
@@ -1660,8 +1673,8 @@ double ICoord::close_angle(int i)
   int a3 = angles[i][2];
   double d1 = distance(a1,a2);
   double d2 = distance(a2,a3);
-  double dr1 = (getR(a1) + getR(a2))/2;
-  double dr2 = (getR(a2) + getR(a3))/2;
+  double dr1 = (getR(a1) + getR(a2))/2.0;
+  double dr2 = (getR(a2) + getR(a3))/2.0;
   val1 = exp(-A*(d1-dr1));
   val2 = exp(-A*(d2-dr2));
   if (val1 > 1) val1 = 1;
@@ -1683,9 +1696,9 @@ double ICoord::close_tor(int i)
   double d1 = distance(a1,a2);
   double d2 = distance(a2,a3);
   double d3 = distance(a3,a4);
-  double dr1 = (getR(a1) + getR(a2))/2;
-  double dr2 = (getR(a2) + getR(a3))/2;
-  double dr3 = (getR(a3) + getR(a4))/2;
+  double dr1 = (getR(a1) + getR(a2))/2.0;
+  double dr2 = (getR(a2) + getR(a3))/2.0;
+  double dr3 = (getR(a3) + getR(a4))/2.0;
   val1 = exp(-A*(d1-dr1));
   val2 = exp(-A*(d2-dr2));
   val3 = exp(-A*(d3-dr3));

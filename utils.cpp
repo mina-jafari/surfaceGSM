@@ -681,7 +681,12 @@ void Utils::mwc_to_ang(double** angs, double** mwc, int nstring, int natoms, dou
   for (int i=0;i<nstring;i++){
     for (int j=1;j<=natoms;j++){
       for (int k=1;k<=3;k++){
-	angs[i][3*(j-1)+k]=mwc[i][3*(j-1)+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
+          if (StringTools::isEqual(amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+          {
+              std::cout << "ERROR: Zero detected on line 692 " << __LINE__ << " of file " << __FILE__ << std::endl;
+              exit(-1);
+          }
+          angs[i][3*(j-1)+k]=mwc[i][3*(j-1)+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
       }
     }
   }
@@ -691,7 +696,12 @@ void Utils::mwc_to_ang(double* angs, double* mwc, int natoms, double* amasses){
 
   for (int j=0;j<natoms;j++){
     for (int k=0;k<3;k++){
-      angs[3*j+k]=mwc[3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
+        if (StringTools::isEqual(amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+        {
+            std::cout << "ERROR: Zero detected on line 710 " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+        angs[3*j+k]=mwc[3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
     }
   }
 }
@@ -702,7 +712,13 @@ void Utils::ang_to_mwc(double** mwc, double** ang, int nstring, int natoms, doub
   for (int i=0;i<nstring;i++){
     for (int j=0;j<natoms;j++){
       for (int k=0;k<3;k++){
-        mwc[i][3*j+k]=ang[i][3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
+          if (amasses[j] > 0.000001)
+              mwc[i][3*j+k]=ang[i][3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
+          else
+          {
+              std::cout << "ERROR: Smaller than zero detected on line 727 " << __LINE__ << " of file " << __FILE__ << std::endl;
+              exit(-1);
+          }
       }
     }
   }
@@ -710,9 +726,15 @@ void Utils::ang_to_mwc(double** mwc, double** ang, int nstring, int natoms, doub
 
 void Utils::ang_to_mwc(double* mwc, double* ang, int natoms, double* amasses){
 
-  for (int j=0;j<natoms;j++){
-    for (int k=0;k<3;k++){
-      mwc[3*j+k]=ang[3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
+    for (int j=0;j<natoms;j++){
+        for (int k=0;k<3;k++){
+            if (amasses[j] > 0.000001)
+                mwc[3*j+k]=ang[3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
+            else
+            {
+                std::cout << "ERROR: Smaller than zero detected on line 743 " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+          }
     }
   }
 
@@ -725,7 +747,13 @@ void Utils::mwcgrad_to_anggrad(double** ang_grad, double** mwc_grad, int nstring
   for (int i=0;i<nstring;i++){
     for (int j=0;j<natoms;j++){
       for (int k=0;k<3;k++){
-        ang_grad[i][3*j+k]=mwc_grad[i][3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
+          if (amasses[j] > 0.000001)
+              ang_grad[i][3*j+k]=mwc_grad[i][3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
+          else
+          {
+              std::cout << "ERROR: Smaller than zero detected on line 762 " << __LINE__ << " of file " << __FILE__ << std::endl;
+              exit(-1);
+          }
       }
     }
   }
@@ -735,7 +763,13 @@ void Utils::mwcgrad_to_anggrad(double* ang_grad, double* mwc_grad, int natoms, d
 
   for (int j=0;j<natoms;j++){
     for (int k=0;k<3;k++){
-      ang_grad[3*j+k]=mwc_grad[3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
+        if (amasses[j] > 0.000001)
+            ang_grad[3*j+k]=mwc_grad[3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
+        else
+        {
+            std::cout << "ERROR: Smaller than zero detected on line 778 " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
     }
   }
   
@@ -747,7 +781,12 @@ void Utils::anggrad_to_mwcgrad(double** mwc_grad, double** ang_grad, int nstring
   for (int i=0;i<nstring;i++){
     for (int j=0;j<natoms;j++){
       for (int k=0;k<3;k++){
-        mwc_grad[i][3*j+k]=ang_grad[i][3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
+          if (StringTools::isEqual(amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+          {
+              std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+              exit(-1);
+          }
+          mwc_grad[i][3*j+k]=ang_grad[i][3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
       }
     }
   }
@@ -757,7 +796,12 @@ void Utils::anggrad_to_mwcgrad(double* mwc_grad, double* ang_grad, int natoms, d
 
   for (int j=0;j<natoms;j++){
     for (int k=0;k<3;k++){
-      mwc_grad[3*j+k]=ang_grad[3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
+        if (StringTools::isEqual(amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+        {
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+        mwc_grad[3*j+k]=ang_grad[3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
     }
   }
 }
@@ -850,17 +894,32 @@ double Utils::randomf(double a, double b){
   gettimeofday(&t1, NULL);
   srand(t1.tv_usec*t1.tv_sec);
 
+  double randn = 0.0;
   double range = b-a;
-  double randn = a + double(range*rand()/(RAND_MAX));
+  if (!StringTools::isEqual(RAND_MAX, 0.0))
+      randn = a + double(range*rand()/(RAND_MAX));
+  else
+  {
+      std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+      exit(-1);
+  }
   return randn;
 }
 
 /// normalize vector
 void Utils::normalize(double* u, int LEN){
   double dp=Utils::dotProd(u,u,LEN); // dot product
-  double vm=sqrt(dp); // magnitude
+  double vm = 0.0;
+  if (dp > 0.000001)
+      vm=sqrt(dp); // magnitude
   for (int i=0; i<LEN; i++){
-    u[i]=u[i]/vm;
+      if (!StringTools::isEqual(vm, 0.0))
+          u[i]=u[i]/vm;
+      else
+      {
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
   }   
 }
 
@@ -977,8 +1036,10 @@ void Utils::ludcmp(double **a, int n, int *indx, double *d){
     big=0.0;
     for (j=0;j<n;j++)
       if ((temp=fabs(a[i][j]))>big) big=temp;
-    if (big ==0) cout << "Singular matrix!\n";
-    vv[i]=1.0/big;
+    if (StringTools::isEqual(big, 0.0))
+        cout << "Singular matrix!\n";
+    else
+        vv[i]=1.0/big;
   }
 
   for (j=0;j<n;j++){
@@ -1009,10 +1070,18 @@ void Utils::ludcmp(double **a, int n, int *indx, double *d){
       vv[imax]=vv[j];
     }
     indx[j]=imax;
-    if (a[j][j] == 0.0) a[j][j]=1e-20;
+    if (a[j][j] == 0.0) 
+        a[j][j]=1e-20;
     if (j!=n) {
-      dum=1.0/a[j][j];
-      for (i=j+1;i<=n;i++) a[i][j] *= dum;
+        if (!StringTools::isEqual(a[j][j], 0.0))
+            dum=1.0/a[j][j];
+        else
+        {
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+        for (i=j+1;i<=n;i++)
+            a[i][j] *= dum;
     }
   }
   delete [] vv;
@@ -1033,8 +1102,15 @@ void Utils::lubksb(double **a, int n, int *indx, double b[]){
   }
   for (i=n;i>=0;i--){
     sum=b[i];
-    for (j=i+1;j<=n;j++) sum -= a[i][j]*b[j];
-    b[i]=sum/a[i][i];
+    for (j=i+1;j<=n;j++) 
+        sum -= a[i][j]*b[j];
+    if (!StringTools::isEqual(a[i][i], 0.0))
+        b[i]=sum/a[i][i];
+    else
+    {
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
   }
 }
 
@@ -1106,18 +1182,30 @@ void Utils::gramschmidt(int LEN, double* v_out, double* u_in, double* v_in){
   double udotv = Utils::dotProd(v_in, u_in, LEN);
   double udotu = Utils::dotProd(u_in, u_in, LEN);
   for(int i=0;i<LEN;i++){
-    v_out[i] = v_in[i]-udotv*u_in[i]/udotu;
+      if (!StringTools::isEqual(udotu, 0.0))
+          v_out[i] = v_in[i]-udotv*u_in[i]/udotu;
+      else
+      {
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
   }
 }
-
 
 // find tanget copy to y1
 void Utils::splineTangents(int LEN, double* x, double* y, double* y2, double* y1){
   double sig, dx;
   for(int i=0;i<LEN-1;i++){
-    sig = (y[i+1]-y[i])/(x[i+1]-x[i]);
-    dx = x[i+1]-x[i];
-    y1[i] = sig - dx*y2[i]/3.0 - dx*y2[i+1]/6.0;
+      if (!StringTools::isEqual((x[i+1]-x[i]), 0.0))
+          sig = (y[i+1]-y[i])/(x[i+1]-x[i]);
+      else
+      {
+          std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          exit(-1);
+      }
+
+      dx = x[i+1]-x[i];
+      y1[i] = sig - dx*y2[i]/3.0 - dx*y2[i+1]/6.0;
   }
   y1[LEN] = sig + dx*y2[LEN-1]/6.0 + dx*y2[LEN]/3.0;
 }
@@ -1173,12 +1261,18 @@ void Utils::anggrads_to_mwcgrads(double** temparray, int nn, int natoms, double*
   for (int i=0;i<nn;i++){
     for (int j=0;j<natoms;j++){
       for (int k=0;k<3;k++){
-        temparray[i][3*j+k]/=ANGtoBOHR*sqrt((double)amasses[j]);
+          if (!StringTools::isEqual((double)amasses[j], 0.0))
+              if (!StringTools::isEqual(ANGtoBOHR, 0.0))
+                temparray[i][3*j+k]/=ANGtoBOHR*sqrt((double)amasses[j]);
+          if (StringTools::isEqual((double)amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+          {
+              std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+              exit(-1);
+          }
       }
     }
   }
 }
-
 
 
 double Utils::dotProd(double* v, double* u, int LEN){

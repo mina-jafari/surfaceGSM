@@ -2141,7 +2141,7 @@ void GString::starting_string(double* dq, int nnodes)
     if (nnmax-n!=1)
       newic.dq0[newic.nicd0-1] = -dqmag/(nnmax-n);
     else
-      newic.dq0[newic.nicd0-1] = -dqmag/2;
+      newic.dq0[newic.nicd0-1] = -dqmag/2.0;
     if (isSSM)
       newic.dq0[newic.nicd0-1] = -dqmag; //CPMZ check
 
@@ -2286,7 +2286,7 @@ int GString::addNode(int n1, int n2, int n3)
     if (nnmax-nn!=1)
       newic.dq0[newic.nicd0-1] = -dqmag/(nnmax-nn);
     else
-      newic.dq0[newic.nicd0-1] = -dqmag/2;
+      newic.dq0[newic.nicd0-1] = -dqmag/2.0;
     if (isSSM)
       newic.dq0[newic.nicd0-1] = -dqmag; //CPMZ check
 
@@ -2446,7 +2446,7 @@ int GString::addCNode(int n1)
 //    newic.bmatp_to_U();
 //    newic.opt_constraint(ictan);
     newic.bmat_create();
-    newic.dq0[newic.nicd0-1] = -dqmag/2;
+    newic.dq0[newic.nicd0-1] = -dqmag/2.0;
 
     printf(" dq0[constraint]: %1.2f \n",newic.dq0[newic.nicd0-1]);
     int success = newic.ic_to_xyz();
