@@ -81,7 +81,7 @@ class SurfaceClass
         // finds sites within the given radius of the specified atom(atomIndex)
         // and the binding type. Atom indexing starts from one.
         void findNearbySites(const int atomIndex, const double range, 
-                             const std::string siteType);
+                const std::string siteType);
         void findAllSites();
         bool writeToFile(std::string &outFile);
 };

@@ -1,5 +1,5 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 #ifndef ASE_H
 #define ASE_H
 
@@ -18,39 +18,39 @@
 
 class ASE
 {
-  private:
-  
-  int nscffail;
-  int firstrun;
+    private:
 
-   int runNum;
-   int runend;
-   string aseoutfile;
-   string scrdir;
-   string scrBaseDir;
-   string runName;
-   string runName0;
-   string fileloc;
+        int nscffail;
+        int firstrun;
 
-   int natoms;
-   int* anumbers;
-   string* anames;
+        int runNum;
+        int runend;
+        string aseoutfile;
+        string scrdir;
+        string scrBaseDir;
+        string runName;
+        string runName0;
+        string fileloc;
 
-   double get_energy_grad(string file, double* grad, int natoms);
+        int natoms;
+        int* anumbers;
+        string* anames;
 
-  public:
+        double get_energy_grad(string file, double* grad, int natoms);
 
-   double grads(double* coords, double* grads);
-   void alloc(int natoms);
-   void init(string infilename, int natoms, int* anumbers, string* anames, int run, int rune);
-   void freemem();
-   void write_xyz_grad(double* coords, double* grad, string filename);
+    public:
 
-   int ncpu;
-   int gradcalls;
+        double grads(double* coords, double* grads);
+        void alloc(int natoms);
+        void init(string infilename, int natoms, int* anumbers, string* anames, int run, int rune);
+        void freemem();
+        void write_xyz_grad(double* coords, double* grad, string filename);
 
-   double energy0;
-   double energy;
+        int ncpu;
+        int gradcalls;
+
+        double energy0;
+        double energy;
 
 };
 

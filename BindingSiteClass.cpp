@@ -13,7 +13,7 @@ BindingSiteClass::BindingSiteClass()
 }
 
 BindingSiteClass::BindingSiteClass(std::string inType, double inX, double inY, double inZ):
-                                   mType("TT")
+    mType("TT")
 {
     for (int i=0; i<3; i++)
     {
@@ -45,9 +45,9 @@ double BindingSiteClass::getZ() const
 
 void BindingSiteClass::getXYZ(double* carts)
 {
-  carts[0] = mCoordinate[0];
-  carts[1] = mCoordinate[1];
-  carts[2] = mCoordinate[2];
+    carts[0] = mCoordinate[0];
+    carts[1] = mCoordinate[1];
+    carts[2] = mCoordinate[2];
 }
 
 void BindingSiteClass::setType (std::string inType)
