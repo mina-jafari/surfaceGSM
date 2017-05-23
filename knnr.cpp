@@ -477,17 +477,28 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
 #else
     //inverse weighting
     for (int i=0;i<k;i++)
-        if (knnd[i] > 0.00001)
+    {
+        //if (knnd[i] > 0.00001)
+        if ((knnd[i] - 0.0) > 0.00001)
             knnw[i] = 1./knnd[i];
         else
             knnw[i] = 1000000.;
+    }
 #endif
 
     double norm = 0.;
     for (int i=0;i<k;i++)
         norm += knnw[i];
     for (int i=0;i<k;i++)
+    {
+        if (StringTools::isEqual(norm, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
         knnw[i] = knnw[i] / norm;
+    }
 
     if (norm < 0.000001)
     {
@@ -678,12 +689,24 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
     gnorm = sqrt(gnorm);
     for (int i=0;i<k;i++)
     {
+        if (StringTools::isEqual(gnorm, 0.0) || StringTools::isEqual(N3, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
         gerr[i] = sqrt(gerr[i]/N3);
         govl[i] = govl[i] / gnorm;
     }
     double gerra = 0.;
     for (int i=0;i<k;i++)
         gerra += gerr[i];
+    if (StringTools::isEqual(k, 0.0) || StringTools::isEqual(sqrt(N3), 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+            << __FILE__ << std::endl;
+        exit(-1);
+    }
     gerra = gerra / k / sqrt(N3);
 
     printf(" gerr:");
@@ -723,6 +746,12 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
         gradrms += gradq0[i] * gradq0[i];
         double ge1 = gradqf[i] - gradq0[i];
         graderr1 += ge1 * ge1;
+    }
+    if (StringTools::isEqual(N3, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+            << __FILE__ << std::endl;
+        exit(-1);
     }
     gradrms = sqrt(gradrms/N3);
     graderr1 = sqrt(graderr1/N3);
@@ -782,6 +811,12 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
     delete [] knnd;
     delete [] knnw;
 
+    if (StringTools::isEqual(gradrms, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+            << __FILE__ << std::endl;
+        exit(-1);
+    }
     return graderr1/gradrms;
     //  return error1;
 }
@@ -865,7 +900,7 @@ double KNNR::grad_knnr(double* coords, double &Ep, double* g1, double* Ut, int k
 #else
     //inverse weighting
     for (int i=0;i<k;i++)
-        if (knnd[i] > 0.00001)
+        if ((knnd[i] - 0.0) > 0.00001)
             knnw[i] = 1./knnd[i];
         else
             knnw[i] = 1000000.;
@@ -875,7 +910,15 @@ double KNNR::grad_knnr(double* coords, double &Ep, double* g1, double* Ut, int k
     for (int i=0;i<k;i++)
         norm += knnw[i];
     for (int i=0;i<k;i++)
+    {
+        if (StringTools::isEqual(norm, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
         knnw[i] = knnw[i] / norm;
+    }
 
     if (norm < 0.000001)
     {

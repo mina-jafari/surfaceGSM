@@ -953,6 +953,12 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
     double n1 = distance(i,j);
     double n2 = distance(j,k);
 
+    if (StringTools::isEqual(n1, 0.0) || StringTools::isEqual(n2, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     u[0] = u[0]/n1;  
     u[1] = u[1]/n1;  
     u[2] = u[2]/n1;  
@@ -985,6 +991,12 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
 
     double n3 = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
     //printf(" n3: %1.3f \n",n3);
+    if (StringTools::isEqual(n3, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     w[0] = w[0]/n3;
     w[1] = w[1]/n3;
     w[2] = w[2]/n3;
@@ -993,6 +1005,12 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
     double* wv = new double[3]; 
     cross(uw,u,w);
     cross(wv,w,v);
+
+    if (StringTools::isEqual(n1, 0.0) || StringTools::isEqual(n2, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
 
     dqadx[0] = uw[0]/n1;
     dqadx[1] = uw[1]/n1;
@@ -1058,6 +1076,12 @@ void ICoord::bmatp_dqtdx(int i, int j, int k, int l, double* dqtdx) {
     double n3 = distance(k,l);
 
     //printf(" n1,n2,n3: %1.3f %1.3f %1.3f \n",n1,n2,n3);
+    if (StringTools::isEqual(n1, 0.0) || StringTools::isEqual(n2, 0.0) ||
+            StringTools::isEqual(n3, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
 
     u[0] = u[0]/n1;  
     u[1] = u[1]/n1;  
@@ -1099,6 +1123,12 @@ void ICoord::bmatp_dqtdx(int i, int j, int k, int l, double* dqtdx) {
 
 
     //CPMZ possible error in uw calc
+    if (StringTools::isEqual((n1*sin2phiu), 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     dqtdx[0]  = uw[0]/(n1*sin2phiu);
     dqtdx[1]  = uw[1]/(n1*sin2phiu);
     dqtdx[2]  = uw[2]/(n1*sin2phiu);
@@ -1111,6 +1141,12 @@ void ICoord::bmatp_dqtdx(int i, int j, int k, int l, double* dqtdx) {
     dqtdx[7]   =  vw[1]/(n3*sin2phiv) - ( uw[1]*cosphiu/(n2*sin2phiu) - vw[1]*cosphiv/(n2*sin2phiv) );
     dqtdx[8]   =  vw[2]/(n3*sin2phiv) - ( uw[2]*cosphiu/(n2*sin2phiu) - vw[2]*cosphiv/(n2*sin2phiv) );
 #endif
+    if (StringTools::isEqual((n2*sin2phiu), 0.0) || StringTools::isEqual((n2*sin2phiv), 0.0) ||
+            StringTools::isEqual((n3*sin2phiv), 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
 #if 1
     dqtdx[3]   = -uw[0]/(n1*sin2phiu) + ( uw[0]*cosphiu/(n2*sin2phiu) + vw[0]*cosphiv/(n2*sin2phiv) );
     dqtdx[4]   = -uw[1]/(n1*sin2phiu) + ( uw[1]*cosphiu/(n2*sin2phiu) + vw[1]*cosphiv/(n2*sin2phiv) );
@@ -1234,6 +1270,12 @@ void ICoord::update_bfgs()
 
     //printf(" dgGdg: %1.3f dxtdg: %1.3f \n",dgGdg,dxtdg);
 
+    if (StringTools::isEqual(dxtdg, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     for (int i=0;i<len0;i++)
         for (int j=0;j<len0;j++)
             Hinv[i*len0+j] += (1+dgGdg/dxtdg) * dxdx[i*len0+j]/dxtdg;
@@ -1356,14 +1398,16 @@ void ICoord::update_bfgsp(int makeHint)
 
     //  printf(" dgtdx: %1.3f dxHdx: %1.3f ",dgtdx,dxHdx);
 
-    if (dgtdx>0.)
+    //if (dgtdx>0.)
+    if ((dgtdx - 0.0) > 0.000001)
     {
         if (dgtdx<0.001) dgtdx = 0.001;
         for (int i=0;i<len0;i++)
             for (int j=0;j<len0;j++)
                 Hintp[i*len0+j] += dgdg[i*len0+j]/dgtdx;
     }
-    if (dxHdx>0.)
+    //if (dxHdx>0.)
+    if ((dxHdx - 0.0) > 0.000001)
     {
         if (dxHdx<0.001) dxHdx = 0.001;
         for (int i=0;i<len0;i++)
@@ -1535,6 +1579,11 @@ void ICoord::update_bofill()
     for (int j=0;j<len0;j++)
         dgmGdxtdx += dgmGdx[j]*dx[j];
 
+    if (StringTools::isEqual(dgmGdxtdx, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     for (int i=0;i<len0*len0;i++) Gms[i] = 0.;
     for (int i=0;i<len0;i++)
         for (int j=0;j<len0;j++)
@@ -1554,6 +1603,11 @@ void ICoord::update_bofill()
     for (int j=0;j<len0;j++)
         dxtGdx += dx[j]*Gdx[j];
 
+    if (StringTools::isEqual(dxtdx, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     for (int i=0;i<len0*len0;i++) Gpsb[i] = 0.;
     for (int i=0;i<len0;i++)
         for (int j=0;j<len0;j++)
@@ -1561,6 +1615,11 @@ void ICoord::update_bofill()
 
     double dxtdx2 = dxtdx*dxtdx;
     double xtdgmxtGdx = dxtdg - dxtGdx;
+    if (StringTools::isEqual(dxtdx2, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     for (int i=0;i<len0;i++)
         for (int j=0;j<len0;j++)
             Gpsb[i*len0+j] -= (xtdgmxtGdx)*dxdx[i*len0+j]/dxtdx2;
@@ -1573,6 +1632,11 @@ void ICoord::update_bofill()
     for (int i=0;i<len0;i++)
         EtE += dgmGdx[i]*dgmGdx[i];
 
+    if (StringTools::isEqual((dxtdx*EtE), 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     double phi = 1 - dxtE*dxtE/(dxtdx*EtE);
 
     //printf(" phi: %1.3f",phi);
@@ -2539,6 +2603,11 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
             double dE = energy - energyp;
             energyp = energy;
             //if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
+            if (StringTools::isEqual(dEpre, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             double ratio = dE/dEpre;
             sprintf(sbuff," ratio: %2.3f ",ratio); printout += sbuff;
 #if STEPCONTROLG
@@ -2874,6 +2943,11 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
             double dE = energy - energyp;
             energyp = energy;
             //if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
+            if (StringTools::isEqual(dEpre, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             double ratio = dE/dEpre;
             sprintf(sbuff," r: %2.2f ",ratio); printout += sbuff;
 #if STEPCONTROLG
@@ -3156,6 +3230,11 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
             double dE = energy - energyp;
             energyp = energy;
             //if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
+            if (StringTools::isEqual(dEpre, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             double ratio = dE/dEpre;
             sprintf(sbuff," ratio: %2.3f ",ratio); printout += sbuff;
             if (ratio < 0. && abs(dEpre)>0.05)
@@ -3392,6 +3471,11 @@ void ICoord::walk_up()
 
     double SCALEW = 1.0;
     double SCALE = SCALEQN*1.0;
+    if (StringTools::isEqual(SCALE, 0.0) || StringTools::isEqual(SCALEW, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     dq0[nicd0-1] = gradq[nicd0-1]/SCALE;
     if (fabs(dq0[nicd0-1])>MAXAD/SCALEW) dq0[nicd0-1] = sign(dq0[nicd0-1])*MAXAD/SCALEW;
     //  if (fabs(dq0[nicd0-1])>DMAX/SCALEW) dq0[nicd0-1] = sign(dq0[nicd0-1])*DMAX/SCALEW;
@@ -3466,6 +3550,11 @@ void ICoord::update_ic_qn()
     if (SCALE>10.0) SCALE = 10.;
     //printf(" GRADRMS: %1.3f PGRADRMS: %1.3f SCALE: %1.3f \n",gradrms,pgradrms,SCALE);
 
+    if (StringTools::isEqual(SCALE, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     for (int i=0;i<len0;i++) dq0[i] = 0.;
     for (int i=0;i<len;i++)
         for (int j=0;j<len;j++)
@@ -3537,7 +3626,14 @@ void ICoord::update_ic_eigen()
             gqe[i] += tmph[i*len+j]*gradq[j];
 
     for (int i=0;i<len;i++)
+    {
+        if (StringTools::isEqual(SCALE, 0.0) || StringTools::isEqual((eigen[i]+lambda1), 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqe0[i] = -gqe[i] / (eigen[i]+lambda1) / SCALE;
+    }
 
 #if 1
     for (int i=0;i<len;i++)
@@ -3568,6 +3664,11 @@ void ICoord::update_ic_eigen()
     sprintf(sbuff," ss: %1.3f (DMAX: %1.3f)",smag,DMAX); printout += sbuff;
     if (smag > DMAX)
     {
+        if (StringTools::isEqual(smag, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         for (int i=0;i<len;i++)
             dq0[i] = dq0[i]*DMAX/smag;
     }
@@ -3851,14 +3952,29 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
         dqe0[maxoln] = 0.;
     else
     {
+        if (StringTools::isEqual((abs(eigen[maxoln]) + lambda1), 0.0) ||
+                StringTools::isEqual(SCALE, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+
         dqe0[maxoln] = gqe[maxoln] / (abs(eigen[maxoln]) + lambda1) / SCALE;
         //    dqe0[maxoln] = gqe[maxoln] / SCALE;
         path_overlap_e_g = gqe[maxoln];
         sprintf(sbuff," gtse: %1.4f ",gqe[maxoln]); printout += sbuff;
     }
     for (int i=0;i<len;i++)
+    {
+        if (StringTools::isEqual((abs(eigen[i]) + lambda1), 0.0) ||
+                StringTools::isEqual(SCALE, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         if (i!=maxoln)
             dqe0[i] = -gqe[i] / (abs(eigen[i])+lambda1) / SCALE;
+    }
 
 
     //default move is "forward"
@@ -3958,6 +4074,11 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
     //  printf(" ss: %1.3f",smag);
     if (smag > DMAX)
     {
+        if (StringTools::isEqual(smag, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         for (int i=0;i<len;i++)
             dq0[i] = dq0[i]*DMAX/smag;
         //  printf(" scaled to %1.3f",DMAX);
@@ -3985,11 +4106,21 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
 
 #if !RIBBONS
     //adjust gradrms to account for eigenvector constraint
+    if (StringTools::isEqual(nicd0, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     gradrms = gradrms*gradrms*nicd0-gqe[maxoln]*gqe[maxoln];
     gradrms = sqrt(gradrms/nicd0);
 #endif
 #if RIBBONS
     //recalc gradrms to account for perpendicular constraint
+    if (StringTools::isEqual(nicd0, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     gradrms = gradrms*gradrms*nicd0-gqe[maxolnd]*gqe[maxolnd];
     gradrms = sqrt(gradrms/nicd0);
 
@@ -4206,10 +4337,23 @@ void ICoord::update_ic_eigen_ts(double* Cn)
         for (int j=0;j<len;j++)
             gqe[i] += tmph[i*len+j]*gradq[j];
 
+    if (StringTools::isEqual(SCALE, 0.0) || StringTools::isEqual((abs(eigen[maxoln]) + lambda0), 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     dqe0[maxoln] = gqe[maxoln] / (abs(eigen[maxoln]) + lambda0) / SCALE;
     for (int i=0;i<len;i++)
+    {
         if (i!=maxoln)
+            if (StringTools::isEqual((abs(eigen[i])+lambda1), 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             dqe0[i] = -gqe[i] / (abs(eigen[i])+lambda1) / SCALE;
+    }
 
 #if 0
     for (int i=0;i<len;i++)
@@ -4240,6 +4384,11 @@ void ICoord::update_ic_eigen_ts(double* Cn)
     //  printf(" ss: %1.3f",smag);
     if (smag > DMAX)
     {
+        if (StringTools::isEqual(smag, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         for (int i=0;i<len;i++)
             dq0[i] = dq0[i]*DMAX/smag;
         //  printf(" scaled to %1.3f",DMAX);
@@ -4448,6 +4597,11 @@ int ICoord::ic_to_xyz() {
                 xyzd[i] = sign(xyzd[i])*MAX_MOVE;
 #endif
 
+        if (StringTools::isEqual(SCALEBT, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         for (int i=0;i<N3;i++)
             xyz1[i] = coords[i] + xyzd[i]/SCALEBT;
 
@@ -4649,6 +4803,11 @@ int ICoord::ic_to_xyz_opt() {
                 xyzd[i] = sign(xyzd[i])*MAX_MOVE;
 #endif
 
+        if (StringTools::isEqual(SCALEBT, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         for (int i=0;i<N3;i++)
             xyz1[i] = coords[i] + xyzd[i]/SCALEBT;
 
@@ -5267,6 +5426,11 @@ double ICoord::prima_force()
         double sigma = 1.5; //was 1.25
         double f0 = 1.25;  //TS node extra force
         if (i!=1) f0 = 1.0; 
+        if (StringTools::isEqual(sigma, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         f1 = FMAG * f0 * exp(-dist[i]/sigma);
         sprintf(sbuff," %3.2f (%3.2f)",dist[i],f1); printout += sbuff;
 
@@ -5375,6 +5539,12 @@ int ICoord::davidson_H(int nval)
     int dcontinue = 1;
     double DIST = 0.025; //was 0.05
     int MAX_ITER = 10;
+    if (StringTools::isEqual(nval, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     if (len/nval>MAX_ITER)
         MAX_ITER = len/nval;
     printf(" maximum number of iterations: %i \n",MAX_ITER);
@@ -5418,6 +5588,11 @@ int ICoord::davidson_H(int nval)
                 g2[j] = gradq[j];
 
 
+            if (StringTools::isEqual(2*DIST, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             for (int j=0;j<len;j++)
                 y[wv][j] = (g1[j] - g2[j]) / (2*DIST);
 
@@ -5507,7 +5682,15 @@ int ICoord::davidson_H(int nval)
                 q1[j] = yn[i][j] - lamb[i]*b[i][j];
 
             for (int j=0;j<len;j++)
+            {
+                if (StringTools::isEqual((lamb[i] - eigen[j]), 0.0))
+                {    
+                    std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                        << __FILE__ << std::endl;
+                    exit(-1);
+                }
                 vecs[wv][j] = q1[j] / (lamb[i] - eigen[j]);
+            }
 
             for (int j=0;j<wv;j++)
             {

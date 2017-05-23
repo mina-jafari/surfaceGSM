@@ -674,6 +674,12 @@ void GString::String_Method_Optimization()
     double gradrms = 100.;
     emin = V_profile[0];
 
+    if (StringTools::isEqual(r3n, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     double gaddmax = ADD_NODE_TOL/r3n;
     newic.SCALEQN0 = SCALING;
     for (int i=0;i<nnmax;i++) icoords[i].SCALEQN0 = SCALING*1.0;
@@ -1616,6 +1622,12 @@ void GString::get_eigenv_finite(int enode, double** ictan)
 
     double a = abs(q0 - qm1);
     double b = abs(qp1 - q0);
+    if (StringTools::isEqual(a, 0.0) || StringTools::isEqual(a+b, 0.0) ||
+            StringTools::isEqual(b, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     double C = 2*( Em1/a/(a+b) - E0/a/b + Ep1/b/(a+b) );
     printf(" tHt: %1.3f a: %1.1f b: %1.1f C: %1.3f \n",tHt,a,b,C);
 
@@ -1891,6 +1903,11 @@ double GString::tangent_1b(double* ictan)
     for (int i=0;i<size_ic;i++)
         norm0 += ictan[i]*ictan[i];
     double norm = sqrt(norm0);
+    if (StringTools::isEqual(norm, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     for (int i=0;i<size_ic;i++)
         ictan[i] = ictan[i] / norm;
 
@@ -2139,7 +2156,14 @@ void GString::starting_string(double* dq, int nnodes)
         //    newic.opt_constraint(ictan);
         newic.bmat_create();
         if (nnmax-n!=1)
+        {
+            if (StringTools::isEqual((nnmax-n), 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             newic.dq0[newic.nicd0-1] = -dqmag/(nnmax-n);
+        }
         else
             newic.dq0[newic.nicd0-1] = -dqmag/2.0;
         if (isSSM)
@@ -2284,7 +2308,14 @@ int GString::addNode(int n1, int n2, int n3)
         //    newic.opt_constraint(ictan);
         newic.bmat_create();
         if (nnmax-nn!=1)
+        {
+            if (StringTools::isEqual((nnmax-nn), 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             newic.dq0[newic.nicd0-1] = -dqmag/(nnmax-nn);
+        }
         else
             newic.dq0[newic.nicd0-1] = -dqmag/2.0;
         if (isSSM)
@@ -2517,7 +2548,14 @@ void GString::com_rotate_move(int iR, int iP, int iN, double ff) {
     // displace center of mass
     double mfrac = 0.5;
     if (nnmax-nn+1!=1)
+    {
+        if (StringTools::isEqual((nnmax-nn+1), 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         mfrac = 1./(nnmax-nn+1);
+    }
     mfrac *= ff;
     //printf(" dXYZ frac: %1.2f \n",mfrac);
 
@@ -2541,6 +2579,11 @@ void GString::com_rotate_move(int iR, int iP, int iN, double ff) {
         mx0 += amasses[i] * xyz0[3*i];
         my0 += amasses[i] * xyz0[3*i+1];
         mz0 += amasses[i] * xyz0[3*i+2];
+    }
+    if (StringTools::isEqual(mass, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
     }
     mx0 = mx0 / mass; my0 = my0 / mass; mz0 = mz0 / mass;
     for (int i=0;i<natoms;i++)
@@ -2694,6 +2737,11 @@ void GString::starting_string_dm(double* dq)
 
         newic_dm.opt_constraint(ictan_dm);
         newic_dm.bmat_create();
+        if (StringTools::isEqual((nnmax-n), 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         newic_dm.dq0[newic_dm.nicd0-1] = -dqmag/(nnmax-n);
         printf(" dq0[constraint]: %1.2f \n",newic_dm.dq0[newic_dm.nicd0-1]);
         newic_dm.ic_to_xyz();
@@ -3163,6 +3211,11 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
     if (ptsn!=TSnode && climb && !find)
     {
         printf(" slowing down climb optimization \n");
+        if (StringTools::isEqual(newclimbscale, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         icoords[TSnode].DMAX = icoords[TSnode].DMAX/newclimbscale;
         if (newclimbscale<5.0)
             newclimbscale += 1.0;
@@ -3240,6 +3293,11 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
             for (int i=0;i<size_ic;i++)
                 norm += ictan[n][i]*ictan[n][i];
             norm = sqrt(norm);
+            if (StringTools::isEqual(norm, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             for (int i=0;i<size_ic;i++)
                 C[i] = ictan[n][i]/norm;
 
@@ -3345,6 +3403,11 @@ int GString::knnr_vs_opt(int n)
     double grms = 0.;
     for (int i=0;i<nicd;i++)
         grms += grads[n][i]*grads[n][i];
+    if (StringTools::isEqual(nicd, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     grms = sqrt(grms/nicd);
     if (V_profile[n] < -1000.)
     {
@@ -3586,6 +3649,11 @@ void GString::ic_reparam_g(double** dqa, double* dqmaga)
         //using average
         if (i==0)
         {
+            if (StringTools::isEqual(nn-2, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             for (int n=n0;n<nnmax;n++) rpart[n] = 0.;
             for (int n=n0+1;n<nnR;n++) 
                 rpart[n] = 1./(nn-2);
@@ -3781,6 +3849,11 @@ void GString::ic_reparam(double** dqa, double* dqmaga, int rtype)
         totaldqmag = 0.;
         for (int n=n0+1;n<nnmax;n++)
             totaldqmag += dqmaga[n];
+        if (StringTools::isEqual(nnmax-1, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqavg = totaldqmag/(nnmax-1);
 #if 1
         //printf(" spacing average: %1.2f ",dqavg);
@@ -3809,10 +3882,24 @@ void GString::ic_reparam(double** dqa, double* dqmaga, int rtype)
         if (rtype==0 && i==0)
         {
             if (!climb)
+            {
+                if (StringTools::isEqual(nnmax-1-n0, 0.0))
+                {    
+                    std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                        << __FILE__ << std::endl;
+                    exit(-1);
+                }
                 for (int n=n0+1;n<nnmax;n++)
                     rpart[n] = 1./(nnmax-1-n0);
+            }
             else
             {
+                if (StringTools::isEqual(TSnode-n0, 0.0) || StringTools::isEqual(nnmax-TSnode-1, 0.0))
+                {    
+                    std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                        << __FILE__ << std::endl;
+                    exit(-1);
+                }
                 for (int n=n0+1;n<TSnode;n++)
                     rpart[n] = 1./(TSnode-n0); //CPMZ just fixed
                 for (int n=TSnode+1;n<nnmax;n++)
@@ -3845,16 +3932,36 @@ void GString::ic_reparam(double** dqa, double* dqmaga, int rtype)
             double totaledq = 0.;
             for (int n=n0+1;n<nnmax;n++) 
                 totaledq += edist[n];
+            if (StringTools::isEqual(nnmax-1, 0.0) || StringTools::isEqual(totaledq, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
+                exit(-1);
+            }
             edqavg = totaledq/(nnmax-1);
 
             for (int n=n0+1;n<nnmax;n++)
                 rpart[n] = 1.0 + edist[n] / totaledq;
             for (int n=n0+1;n<nnmax;n++)
+            {
+                if (StringTools::isEqual(rpart[n], 0.0))
+                {    
+                    std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                        << __FILE__ << std::endl;
+                    exit(-1);
+                }
                 rpart[n] = 1/rpart[n];
+            }
             double norm = 0.;
             for (int n=n0+1;n<nnmax;n++)
                 norm += rpart[n];
             //norm = sqrt(norm);
+            if (StringTools::isEqual(norm, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
+                exit(-1);
+            }
             for (int n=n0+1;n<nnmax;n++)
                 rpart[n] = rpart[n]/norm;
         }
@@ -4044,6 +4151,12 @@ double GString::reparam_step_control(double* rpmovep, double* rpmove)
     for (int n=n0+1;n<nnmax-1;n++)
     {
         //printf(" rpmp/rpm: %1.2f %1.2f",rpmovep[n],rpmove[n]);
+        if (StringTools::isEqual(rpmovep[n], 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
         if (rpmove[n]/rpmovep[n]<-0.8 &&
                 fabs(rpmove[n])>0.02)
             slow = 1;
@@ -4111,6 +4224,12 @@ void GString::ic_reparam_new(double** dqa, double* dqmaga, int rtype)
         totaldqmag = 0.;
         for (int n=n0+1;n<nnmax;n++)
             totaldqmag += dqmaga[n];
+        if (StringTools::isEqual(nnmax-1, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqavg = totaldqmag/(nnmax-1);
 #if 1
         //printf(" spacing average: %1.2f ",dqavg);
@@ -4136,6 +4255,13 @@ void GString::ic_reparam_new(double** dqa, double* dqmaga, int rtype)
         //using average
         if (rtype==0 && i==0)
         {
+            if (StringTools::isEqual(nnmax-1, 0.0) || StringTools::isEqual(TSnode-n0, 0.0) ||
+                    StringTools::isEqual(nnmax-TSnode-1, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
+                exit(-1);
+            }
             if (!climb)
                 for (int n=n0+1;n<nnmax;n++)
                     rpart[n] = 1./(nnmax-1);
@@ -4329,6 +4455,12 @@ void GString::ic_reparam_h(double** dqa, double* dqmaga, int rtype)
         totaldqmag = 0.;
         for (int n=1;n<nnmax;n++)
             totaldqmag += dqmaga[n];
+        if (StringTools::isEqual(nnmax-1, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqavg = totaldqmag/(nnmax-1);
 #if 0
         //printf(" spacing average: %1.2f ",dqavg);
@@ -4354,6 +4486,13 @@ void GString::ic_reparam_h(double** dqa, double* dqmaga, int rtype)
         //using average
         if (rtype==0 && i==0)
         {
+            if (StringTools::isEqual(nnmax-1, 0.0) || StringTools::isEqual(TSnode, 0.0) ||
+                    StringTools::isEqual(nnmax-TSnode-1, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
+                exit(-1);
+            }
             if (!climb)
                 for (int n=1;n<nnmax;n++)
                     rpart[n] = 1./(nnmax-1);
@@ -4570,6 +4709,12 @@ void GString::ic_reparam_cut(int min, double** dqa, double* dqmaga, int rtype)
         totaldqmag = 0.;
         for (int n=1;n<nnmax;n++)
             totaldqmag += dqmaga[n];
+        if (StringTools::isEqual(nnmax-1, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqavg = totaldqmag/(nnmax-1);
 #if 0
         //printf(" spacing average: %1.2f ",dqavg);
@@ -4717,6 +4862,12 @@ void GString::ic_reparam_dm(double** dqa, double* dqmaga, int rtype)
         totaldqmag = 0.;
         for (int n=1;n<nnmax;n++)
             totaldqmag += dqmaga[n];
+        if (StringTools::isEqual(nnmax-1, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqavg = totaldqmag/(nnmax-1);
         //printf(" spacing average: %1.2f \n",dqavg);
 
@@ -4736,6 +4887,12 @@ void GString::ic_reparam_dm(double** dqa, double* dqmaga, int rtype)
             for (int n=1;n<nnmax-1;n++)
                 printf(" Vn[%i]-Vn[%i] %1.1f \n",n-1,n,dE[n]);
 
+            if (StringTools::isEqual(dEmax, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
+                exit(-1);
+            }
             for (int n=1;n<nnmax-1;n++)
             {
                 rpmove[n] = dqavg*(0.7*(dEmax - dE[n])/dEmax + 0.5) - dqmaga[n];
@@ -5559,6 +5716,12 @@ void GString::get_tangents_1e(double** dqa, double* dqmaga, double** ictan)
             double dE2 = abs(V_profile[n] - V_profile[n-1]);
             double dEmax = max(dE1,dE2);
             double dEmin = min(dE1,dE2);
+            if (StringTools::isEqual(dEmax+dEmin+0.00000001, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
+                exit(-1);
+            }
             if (V_profile[n+1]>V_profile[n-1])
                 f1 = dEmax/(dEmax+dEmin+0.00000001);
             else
@@ -6149,6 +6312,12 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[1] = xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[1]+2];
     double norm = sqrt(u1[0]*u1[0]+u1[1]*u1[1]);
+    if (StringTools::isEqual(norm, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+            << __FILE__ << std::endl;
+        exit(-1);
+    }
     u1[0] = u1[0]/norm; u1[1] = u1[1]/norm; u1[2] = u1[2]/norm;
     //printf(" u1: %4.3f %4.3f %4.3f \n",u1[0],u1[1],u1[2]);
 
@@ -6171,6 +6340,13 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[1] = xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[1]+2];
     norm = sqrt(u1[0]*u1[0]+u1[2]*u1[2]);
+
+    if (StringTools::isEqual(norm, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+            << __FILE__ << std::endl;
+        exit(-1);
+    }
     u1[0] = u1[0]/norm; u1[1] = u1[1]/norm; u1[2] = u1[2]/norm;
 
     angles[0] = angles[1] = angles[2] = 0.;
@@ -6194,6 +6370,13 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[1] = xyz1[3*a[2]+1] - xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[2]+2] - xyz1[3*a[1]+2];
     norm = sqrt(u1[1]*u1[1]+u1[2]*u1[2]);
+
+    if (StringTools::isEqual(norm, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+            << __FILE__ << std::endl;
+        exit(-1);
+    }
     u1[0] = u1[0]/norm; u1[1] = u1[1]/norm; u1[2] = u1[2]/norm;
 
     angles[0] = angles[1] = angles[2] = 0.;
@@ -6802,7 +6985,9 @@ int GString::past_ts()
 }
 
 
-void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, double endenergy, string strfileg, int& tscontinue, double gaddmax, int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan)
+void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, 
+        double endenergy, string strfileg, int& tscontinue, double gaddmax, 
+        int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan)
 {
     double r3n = sqrt(3*natoms);
     int nmax;
@@ -6932,9 +7117,25 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
                 }
             }
         if (isSSM)
+        {
+            if (StringTools::isEqual(nnR-1, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
+                exit(-1);
+            }
             gradrms = sqrt(gradrms/(nnR-1));
+        }
         else
+        {
+            if (StringTools::isEqual(nn-2, 0.0))
+            {    
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
+                exit(-1);
+            }
             gradrms = sqrt(gradrms/(nn-2));
+        }
         emaxp = emax;
         emax = -10000;
         nmax = 1;
@@ -7032,7 +7233,10 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
 
 
 
-void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double endenergy, string strfileg, int& tscontinue, double gaddmax, int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan, int finder, int climber, int do_tp, int& tp)
+void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms,
+        double endenergy, string strfileg, int& tscontinue, double gaddmax,
+        int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan,
+        int finder, int climber, int do_tp, int& tp)
 {
     double r3n = sqrt(3*natoms);
     int nmax;
@@ -7068,6 +7272,12 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
         {
             totalgrad += icoords[i].gradrms*r3n;
             gradrms += icoords[i].gradrms*icoords[i].gradrms;
+        }
+        if (StringTools::isEqual(nnmax-2-n0, 0.0))
+        {    
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                << __FILE__ << std::endl;
+            exit(-1);
         }
         gradrms = sqrt(gradrms/(nnmax-2-n0));
         emaxp = emax;
@@ -7136,8 +7346,10 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
                      || (icoords[nmax].gradrms<CONV_TOL*2.)))
 #endif
                 if (climb && !find && finder && fabs(emax-emaxp)<4. && nclimb<1 &&
-                        ((totalgrad < 0.2 && icoords[nmax].gradrms<CONV_TOL*10. && fabs(icoords[nmax].gradq[icoords[nmax].nicd0-1])<0.01)
-                         || (totalgrad < 0.1 && icoords[nmax].gradrms<CONV_TOL*10. && fabs(icoords[nmax].gradq[icoords[nmax].nicd0-1])<0.02) //was 0.03
+                        ((totalgrad < 0.2 && icoords[nmax].gradrms<CONV_TOL*10. && 
+                          fabs(icoords[nmax].gradq[icoords[nmax].nicd0-1])<0.01) || 
+                         (totalgrad < 0.1 && icoords[nmax].gradrms<CONV_TOL*10. && 
+                          fabs(icoords[nmax].gradq[icoords[nmax].nicd0-1])<0.02) //was 0.03
                          || (icoords[nmax].gradrms<CONV_TOL*5.)))
                 {
                     printf(" ** starting exact TS search at node %i ** \n",nmax);
@@ -7407,7 +7619,8 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
     } //if converged
 
     if (tscontinue!=0)
-        printf("\n opt_iters over: totalgrad: %1.3f gradrms: %1.4f tgrads: %i  ol(%i): %1.2f max E: %1.1f Erxn: %1.1f nmax: %i TSnode: %i ",totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
+        printf("\n opt_iters over: totalgrad: %1.3f gradrms: %1.4f tgrads: %i  ol(%i): %1.2f max E: %1.1f Erxn: %1.1f nmax: %i TSnode: %i ",
+                totalgrad,gradrms,gradJobCount,overlapn,overlap,emax-emin,V_profile[nnmax-1],nmax,TSnode0);
     if (flat) printf(" -FL-");
     if (tscontinue) printf("\n");
 
@@ -7424,6 +7637,12 @@ double GString::get_ssm_dqmag(double bdist)
     double dqmag = 0.;
 
     double minmax = (DQMAG_SSM_MAX - DQMAG_SSM_MIN);
+    if (StringTools::isEqual(DQMAG_SSM_SCALE, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+            << __FILE__ << std::endl;
+        exit(-1);
+    }
     double a = bdist/DQMAG_SSM_SCALE;
     if (a > 1.)
         a = 1.;

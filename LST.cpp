@@ -471,10 +471,12 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
                     if (i!=k){
                         if (StringTools::isEqual(r_c[k][i], 0.0) || StringTools::isEqual((pow(r_i[k][i],4)), 0.0))
                         {    
-                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                << __FILE__ << std::endl;
                             exit(-1);
                         }
-                        dS[3*(i-1)+j]+=2*((r_c[k][i]-r_i[k][i])/(pow(r_i[k][i],4)))*(1/r_c[k][i])*(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j]);
+                        dS[3*(i-1)+j]+=2*((r_c[k][i]-r_i[k][i])/(pow(r_i[k][i],4)))*
+                            (1/r_c[k][i])*(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j]);
                     }
                 }
                 dS[3*(i-1)+j]+=2*(10e-3)*(xyzf[3*(i-1)+j]-xyz_stor[3*(i-1)+j]);
@@ -487,12 +489,18 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
             for (int j=1;j<=3;j++){
                 for (int k=1;k<=natoms;k++){
                     if (i!=k){
-                        if (StringTools::isEqual(r_c[i][k], 0.0))
+                        if (StringTools::isEqual(pow(r_i[i][k], 4), 0.0) ||
+                                StringTools::isEqual(pow(r_i[i][k], 3), 0.0) ||
+                                StringTools::isEqual(r_c[i][k], 0.0) ||
+                                StringTools::isEqual(pow(r_i[i][k]*r_c[i][k], 3), 0.0))
                         {    
-                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                << __FILE__ << std::endl;
                             exit(-1);
                         }
-                        d2S[3*(i-1)+j][3*(i-1)+j]+=2*((1/pow(r_i[i][k], 4)) + (1/pow(r_i[i][k], 3))*(1/r_c[i][k]) + (1/pow(r_i[i][k]*r_c[i][k], 3))*pow(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j], 2));
+                        d2S[3*(i-1)+j][3*(i-1)+j] += 2*((1/pow(r_i[i][k], 4)) + 
+                                (1/pow(r_i[i][k], 3))*(1/r_c[i][k]) + (1/pow(r_i[i][k]*r_c[i][k], 3))*
+                                pow(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j], 2));
                     }
                 }
             }
@@ -503,7 +511,17 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
             for (int j=1;j<=natoms;j++){
                 for (int k=1;k<=3;k++){
                     if (i!=j){
-                        d2S[3*(i-1)+k][3*(j-1)+k]=-2*((1/pow(r_i[i][j], 4))-(1/pow(r_i[i][j], 3))*(1/r_c[i][j])+(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k]));
+                        if (StringTools::isEqual(pow(r_i[i][j], 4), 0.0) ||
+                                StringTools::isEqual(pow(r_i[i][j], 3), 0.0) ||
+                                StringTools::isEqual(r_c[i][j], 0.0) ||
+                                StringTools::isEqual(pow(r_i[i][j]*r_c[i][j], 3), 0.0))
+                        {    
+                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                << __FILE__ << std::endl;
+                            exit(-1);
+                        }
+                        d2S[3*(i-1)+k][3*(j-1)+k] =- 2*((1/pow(r_i[i][j], 4))-(1/pow(r_i[i][j], 3))*
+                                (1/r_c[i][j])+(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k]));
                     }
                 }
             }
@@ -515,7 +533,14 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
                 for (int k=1;k<=3;k++){
                     for (int m=1;m<=natoms;m++){
                         if (i!=m && k!=j){
-                            d2S[3*(i-1)+j][3*(i-1)+k]+=2*(1/pow(r_i[i][m]*r_c[i][m],3))*(xyzf[3*(i-1)+j]-xyzf[3*(m-1)+j])*(xyzf[3*(i-1)+k]-xyzf[3*(m-1)+k]);
+                            if (StringTools::isEqual(pow(r_i[i][m]*r_c[i][m],3), 0.0))
+                            {    
+                                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                    << __FILE__ << std::endl;
+                                exit(-1);
+                            }
+                            d2S[3*(i-1)+j][3*(i-1)+k] += 2*(1/pow(r_i[i][m]*r_c[i][m],3))*
+                                (xyzf[3*(i-1)+j]-xyzf[3*(m-1)+j])*(xyzf[3*(i-1)+k]-xyzf[3*(m-1)+k]);
                         }
                     }
                 }
@@ -528,7 +553,14 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
                 for (int k=1;k<=3;k++){
                     for (int m=1;m<=3;m++){
                         if (i!=j && k!=m){
-                            d2S[3*(i-1)+k][3*(j-1)+m]=-2*(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k])*(xyzf[3*(i-1)+m]-xyzf[3*(j-1)+m]);
+                            if (StringTools::isEqual(pow(r_i[i][j]*r_c[i][j], 3), 0.0))
+                            {    
+                                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                    << __FILE__ << std::endl;
+                                exit(-1);
+                            }
+                            d2S[3*(i-1)+k][3*(j-1)+m]=-2*(1/pow(r_i[i][j]*r_c[i][j], 3))*
+                                (xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k])*(xyzf[3*(i-1)+m]-xyzf[3*(j-1)+m]);
                         }
                     }
                 }
@@ -663,7 +695,15 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
             for (int j=1;j<=3;j++){
                 for (int k=1;k<=natoms;k++){
                     if (i!=k){
-                        dS[3*(i-1)+j]+=2*((r_c[k][i]-r_i[k][i])/(pow(r_i[k][i],4)))*(1/r_c[k][i])*(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j]);
+                        if (StringTools::isEqual(pow(r_i[k][i],4), 0.0) ||
+                                StringTools::isEqual(r_c[k][i], 0.0))
+                        {    
+                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                << __FILE__ << std::endl;
+                            exit(-1);
+                        }
+                        dS[3*(i-1)+j] += 2*((r_c[k][i]-r_i[k][i])/(pow(r_i[k][i],4)))*
+                            (1/r_c[k][i])*(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j]);
                     }
                 }
                 dS[3*(i-1)+j]+=2*(10e-3)*(xyzf[3*(i-1)+j]-xyz_stor[3*(i-1)+j]);
@@ -676,7 +716,18 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
             for (int j=1;j<=3;j++){
                 for (int k=1;k<=natoms;k++){
                     if (i!=k){
-                        d2S[3*(i-1)+j][3*(i-1)+j]+=2*((1/pow(r_i[i][k], 4)) + (1/pow(r_i[i][k], 3))*(1/r_c[i][k]) + (1/pow(r_i[i][k]*r_c[i][k], 3))*pow(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j], 2));
+                        if (StringTools::isEqual(pow(r_i[i][k], 4), 0.0) ||
+                                StringTools::isEqual(pow(r_i[i][k], 3), 0.0) ||
+                                StringTools::isEqual(r_c[i][k], 0.0) ||
+                                StringTools::isEqual(pow(r_i[i][k]*r_c[i][k], 3), 0.0))
+                        {    
+                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                << __FILE__ << std::endl;
+                            exit(-1);
+                        }
+                        d2S[3*(i-1)+j][3*(i-1)+j] += 2*((1/pow(r_i[i][k], 4)) + 
+                                (1/pow(r_i[i][k], 3))*(1/r_c[i][k]) + (1/pow(r_i[i][k]*r_c[i][k], 3))*
+                                pow(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j], 2));
                     }
                 }
             }
@@ -687,7 +738,17 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
             for (int j=1;j<=natoms;j++){
                 for (int k=1;k<=3;k++){
                     if (i!=j){
-                        d2S[3*(i-1)+k][3*(j-1)+k]=-2*((1/pow(r_i[i][j], 4))-(1/pow(r_i[i][j], 3))*(1/r_c[i][j])+(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k]));
+                        if (StringTools::isEqual(pow(r_i[i][j], 4), 0.0) ||
+                                StringTools::isEqual(pow(r_i[i][j], 3), 0.0) ||
+                                StringTools::isEqual(r_c[i][j], 0.0) ||
+                                StringTools::isEqual(pow(r_i[i][j]*r_c[i][j], 3), 0.0))
+                        {    
+                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                << __FILE__ << std::endl;
+                            exit(-1);
+                        }
+                        d2S[3*(i-1)+k][3*(j-1)+k] = -2*((1/pow(r_i[i][j], 4))-(1/pow(r_i[i][j], 3))*
+                                (1/r_c[i][j])+(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k]));
                     }
                 }
             }
@@ -699,7 +760,14 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
                 for (int k=1;k<=3;k++){
                     for (int m=1;m<=natoms;m++){
                         if (i!=m && k!=j){
-                            d2S[3*(i-1)+j][3*(i-1)+k]+=2*(1/pow(r_i[i][m]*r_c[i][m],3))*(xyzf[3*(i-1)+j]-xyzf[3*(m-1)+j])*(xyzf[3*(i-1)+k]-xyzf[3*(m-1)+k]);
+                        if (StringTools::isEqual(pow(r_i[i][m]*r_c[i][m],3), 0.0))
+                        {    
+                            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                << __FILE__ << std::endl;
+                            exit(-1);
+                        }
+                            d2S[3*(i-1)+j][3*(i-1)+k] += 2*(1/pow(r_i[i][m]*r_c[i][m],3))*
+                                (xyzf[3*(i-1)+j]-xyzf[3*(m-1)+j])*(xyzf[3*(i-1)+k]-xyzf[3*(m-1)+k]);
                         }
                     }
                 }
@@ -712,7 +780,14 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
                 for (int k=1;k<=3;k++){
                     for (int m=1;m<=3;m++){
                         if (i!=j && k!=m){
-                            d2S[3*(i-1)+k][3*(j-1)+m]=-2*(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k])*(xyzf[3*(i-1)+m]-xyzf[3*(j-1)+m]);
+                            if (StringTools::isEqual(pow(r_i[i][j]*r_c[i][j],3), 0.0))
+                            {    
+                                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                                    << __FILE__ << std::endl;
+                                exit(-1);
+                            }
+                            d2S[3*(i-1)+k][3*(j-1)+m] =- 2*(1/pow(r_i[i][j]*r_c[i][j], 3))*
+                                (xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k])*(xyzf[3*(i-1)+m]-xyzf[3*(j-1)+m]);
                         }
                     }
                 }

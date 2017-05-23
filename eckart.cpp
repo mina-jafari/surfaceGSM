@@ -1,6 +1,8 @@
 // Please see license.txt for licensing and copyright information //
 // Author: Paul Zimmerman, University of Michigan //
+#include <assert.h>
 #include "eckart.h"
+#include "stringtools.h"
 
 using namespace std;
 
@@ -102,6 +104,7 @@ void Eckart::centroid_to_origin(double* structure, int natoms){
         z += structure[3*i+2];
     }
 
+    assert((natoms - 0.0) > 0.000001);
     x *= 1/natoms;
     y *= 1/natoms;
     z *= 1/natoms;
@@ -192,6 +195,12 @@ void Eckart::Eckart_align(double* xyzreact, double* xyzprod, double tol, double*
         }
     }
 
+    if (StringTools::isEqual(total_mass, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     for (int i=0;i<3;i++){
         COMreact[i]/=total_mass;
         COMprod[i]/=total_mass;
@@ -253,6 +262,12 @@ void Eckart::Eckart_align(double* xyzreact, double* xyzprod, double tol, double*
 
         for (int j=0;j<3;j++){
             if (hess_evals[j]>0.01 || hess_evals[j]<-0.01){
+                if (StringTools::isEqual(hess_evals[j], 0.0))
+                {    
+                    std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file "
+                        << __FILE__ << std::endl;
+                    exit(-1);
+                }
                 hess_evals[j] = 1/hess_evals[j];
             }
         }
@@ -406,6 +421,13 @@ void Eckart::Eckart_align(double* xyzreact, double* xyzprod, double tol, double*
         }
     }
 
+    if (StringTools::isEqual(total_mass, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file "
+            << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     for (int i=0;i<3;i++){
         COMreact[i]/=total_mass;
         COMprod[i]/=total_mass;
@@ -466,6 +488,12 @@ void Eckart::Eckart_align(double* xyzreact, double* xyzprod, double tol, double*
 
         for (int j=0;j<3;j++){
             if (hess_evals[j]>0.01 || hess_evals[j]<-0.01){
+                if (StringTools::isEqual(hess_evals[j], 0.0))
+                {    
+                    std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file "
+                        << __FILE__ << std::endl;
+                    exit(-1);
+                }
                 hess_evals[j] = 1/hess_evals[j];
             }
         }
