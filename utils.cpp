@@ -681,7 +681,13 @@ void Utils::mwc_to_ang(double** angs, double** mwc, int nstring, int natoms, dou
     for (int i=0;i<nstring;i++){
         for (int j=1;j<=natoms;j++){
             for (int k=1;k<=3;k++){
-                if (StringTools::isEqual(amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+                if ((amasses[j] - 0.0) < 0.00000001)
+                {
+                    std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                        << " of file " << __FILE__ << std::endl;
+                    exit(-1);
+                }
+                if (StringTools::isEqual(sqrt(amasses[j]), 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
                 {
                     std::cout << "ERROR: Zero detected on line 692 " << __LINE__ << " of file " << __FILE__ << std::endl;
                     exit(-1);
@@ -696,7 +702,13 @@ void Utils::mwc_to_ang(double* angs, double* mwc, int natoms, double* amasses){
 
     for (int j=0;j<natoms;j++){
         for (int k=0;k<3;k++){
-            if (StringTools::isEqual(amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+            if ((amasses[j] - 0.0) < 0.00000001)
+            {
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
+            if (StringTools::isEqual(sqrt(amasses[j]), 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
             {
                 std::cout << "ERROR: Zero detected on line 710 " << __LINE__ << " of file " << __FILE__ << std::endl;
                 exit(-1);
@@ -712,13 +724,13 @@ void Utils::ang_to_mwc(double** mwc, double** ang, int nstring, int natoms, doub
     for (int i=0;i<nstring;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if (amasses[j] > 0.000001)
-                    mwc[i][3*j+k]=ang[i][3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
-                else
+                if ((amasses[j] - 0.0) < 0.00000001)
                 {
-                    std::cout << "ERROR: Smaller than zero detected on line 727 " << __LINE__ << " of file " << __FILE__ << std::endl;
+                    std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                        << " of file " << __FILE__ << std::endl;
                     exit(-1);
                 }
+                mwc[i][3*j+k]=ang[i][3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
             }
         }
     }
@@ -728,13 +740,13 @@ void Utils::ang_to_mwc(double* mwc, double* ang, int natoms, double* amasses){
 
     for (int j=0;j<natoms;j++){
         for (int k=0;k<3;k++){
-            if (amasses[j] > 0.000001)
-                mwc[3*j+k]=ang[3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
-            else
+            if ((amasses[j] - 0.0) < 0.00000001)
             {
-                std::cout << "ERROR: Smaller than zero detected on line 743 " << __LINE__ << " of file " << __FILE__ << std::endl;
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
                 exit(-1);
             }
+            mwc[3*j+k]=ang[3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
         }
     }
 
@@ -747,13 +759,13 @@ void Utils::mwcgrad_to_anggrad(double** ang_grad, double** mwc_grad, int nstring
     for (int i=0;i<nstring;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if (amasses[j] > 0.000001)
-                    ang_grad[i][3*j+k]=mwc_grad[i][3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
-                else
+                if ((amasses[j] - 0.0) < 0.00000001)
                 {
-                    std::cout << "ERROR: Smaller than zero detected on line 762 " << __LINE__ << " of file " << __FILE__ << std::endl;
+                    std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                        << " of file " << __FILE__ << std::endl;
                     exit(-1);
                 }
+                ang_grad[i][3*j+k]=mwc_grad[i][3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
             }
         }
     }
@@ -763,13 +775,13 @@ void Utils::mwcgrad_to_anggrad(double* ang_grad, double* mwc_grad, int natoms, d
 
     for (int j=0;j<natoms;j++){
         for (int k=0;k<3;k++){
-            if (amasses[j] > 0.000001)
-                ang_grad[3*j+k]=mwc_grad[3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
-            else
+            if ((amasses[j] - 0.0) < 0.00000001)
             {
-                std::cout << "ERROR: Smaller than zero detected on line 778 " << __LINE__ << " of file " << __FILE__ << std::endl;
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
                 exit(-1);
             }
+            ang_grad[3*j+k]=mwc_grad[3*j+k]*(ANGtoBOHR)*(sqrt(amasses[j]));
         }
     }
 
@@ -781,7 +793,13 @@ void Utils::anggrad_to_mwcgrad(double** mwc_grad, double** ang_grad, int nstring
     for (int i=0;i<nstring;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if (StringTools::isEqual(amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+                if ((amasses[j] - 0.0) < 0.00000001)
+                {
+                    std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                        << " of file " << __FILE__ << std::endl;
+                    exit(-1);
+                }
+                if (StringTools::isEqual(sqrt(amasses[j]), 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
                 {
                     std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
                     exit(-1);
@@ -796,7 +814,13 @@ void Utils::anggrad_to_mwcgrad(double* mwc_grad, double* ang_grad, int natoms, d
 
     for (int j=0;j<natoms;j++){
         for (int k=0;k<3;k++){
-            if (StringTools::isEqual(amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+            if ((amasses[j] - 0.0) < 0.00000001)
+            {
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
+            if (StringTools::isEqual(sqrt(amasses[j]), 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
             {
                 std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
                 exit(-1);
@@ -910,8 +934,13 @@ double Utils::randomf(double a, double b){
 void Utils::normalize(double* u, int LEN){
     double dp=Utils::dotProd(u,u,LEN); // dot product
     double vm = 0.0;
-    if (dp > 0.000001)
-        vm=sqrt(dp); // magnitude
+    if ((dp - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+    vm=sqrt(dp); // magnitude
     for (int i=0; i<LEN; i++){
         if (!StringTools::isEqual(vm, 0.0))
             u[i]=u[i]/vm;
@@ -1250,6 +1279,12 @@ void Utils::angs_to_mwcs(double** temparray, int nn, int natoms, double* amasses
     for (int i=0;i<nn;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
+                if (((double)amasses[j] - 0.0) < 0.00000001)
+                {
+                    std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                        << " of file " << __FILE__ << std::endl;
+                    exit(-1);
+                }
                 temparray[i][3*j+k]*=(ANGtoBOHR*sqrt((double)amasses[j]));
             }
         }
@@ -1261,14 +1296,18 @@ void Utils::anggrads_to_mwcgrads(double** temparray, int nn, int natoms, double*
     for (int i=0;i<nn;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if (!StringTools::isEqual((double)amasses[j], 0.0))
-                    if (!StringTools::isEqual(ANGtoBOHR, 0.0))
-                        temparray[i][3*j+k]/=ANGtoBOHR*sqrt((double)amasses[j]);
-                if (StringTools::isEqual((double)amasses[j], 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
+                if (((double)amasses[j] - 0.0) < 0.00000001)
+                {
+                    std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                        << " of file " << __FILE__ << std::endl;
+                    exit(-1);
+                }
+                if (StringTools::isEqual(sqrt((double)amasses[j]), 0.0) || StringTools::isEqual(ANGtoBOHR, 0.0))
                 {
                     std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
                     exit(-1);
                 }
+                temparray[i][3*j+k]/=ANGtoBOHR*sqrt((double)amasses[j]);
             }
         }
     }
@@ -1286,6 +1325,12 @@ double Utils::dotProd(double* v, double* u, int LEN){
 
 double Utils::vecMag(double* u, int LEN){
     double dp=Utils::dotProd(u,u,LEN);
+    if ((dp - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     double vm=sqrt(dp);
     return vm;
 }

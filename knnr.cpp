@@ -686,6 +686,12 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
             gnorm += gradq0[j] * gradq0[j];
         }
     //printf(" gnorm: %5.4f norm: %5.4f \n",gnorm,sqrt(gnorm));
+    if ((gnorm - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     gnorm = sqrt(gnorm);
     for (int i=0;i<k;i++)
     {
@@ -695,12 +701,24 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
                 << __FILE__ << std::endl;
             exit(-1);
         }
+        if ((gerr[i]/N3 - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         gerr[i] = sqrt(gerr[i]/N3);
         govl[i] = govl[i] / gnorm;
     }
     double gerra = 0.;
     for (int i=0;i<k;i++)
         gerra += gerr[i];
+    if ((N3 - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     if (StringTools::isEqual(k, 0.0) || StringTools::isEqual(sqrt(N3), 0.0))
     {    
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
@@ -751,6 +769,12 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
     {    
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
             << __FILE__ << std::endl;
+        exit(-1);
+    }
+    if ((gradrms/N3 - 0.0) < 0.00000001 || (graderr1/N3 - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
     gradrms = sqrt(gradrms/N3);
@@ -1557,6 +1581,12 @@ double KNNR::get_distance(double* xyz1, double* xyz2, ICoord& ic1, ICoord& ic2)
 
     for (int i=0;i<nic;i++)
         d += dq[i]*dq[i];
+    if ((d - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     d = sqrt(d);
 
 #if 0
@@ -1649,6 +1679,12 @@ double KNNR::get_distance_u(double* xyz1, double* xyz2, ICoord& ic1, ICoord& ic2
 
     for (int i=0;i<nicd;i++)
         d += dq[i]*dq[i];
+    if ((d - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     d = sqrt(d);
 
 #if 0

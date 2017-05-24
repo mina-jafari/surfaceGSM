@@ -977,6 +977,12 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
         double* vn = new double[3];
         vn[0]=0.; vn[1]=0.; vn[2]=1.;
         cross(w,u,vn);
+        if ((w[0]*w[0]+w[1]*w[1]+w[2]*w[2] - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         mag = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
         if (mag<THRESH)
         {
@@ -989,6 +995,12 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
     //  if (angle>3.0)
     //    printf(" w: %1.3f %1.3f %1.3f \n",w[0],w[1],w[2]);
 
+    if ((w[0]*w[0]+w[1]*w[1]+w[2]*w[2] - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     double n3 = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
     //printf(" n3: %1.3f \n",n3);
     if (StringTools::isEqual(n3, 0.0))
@@ -1860,6 +1872,12 @@ void ICoord::opt_constraint(double* C)
     double norm = 0.;
     for (int i=0;i<len;i++)
         norm += C[i]*C[i];
+    if ((norm - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     norm = sqrt(norm);
     for (int j=0;j<len;j++)
     {
@@ -1890,6 +1908,12 @@ void ICoord::opt_constraint(double* C)
     norm = 0.;
     for (int i=0;i<len;i++)
         norm += Cn[i]*Cn[i];
+    if ((norm - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     norm = sqrt(norm);
     //printf(" Cn norm: %1.2f \n",norm);
     for (int j=0;j<len;j++)
@@ -1950,6 +1974,12 @@ void ICoord::opt_constraint(double* C)
         double norm = 0.;
         for (int j=0;j<len;j++)
             norm += Ut[i*len+j] * Ut[i*len+j];
+        if ((norm - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         norm = sqrt(norm);
         if (abs(norm)<0.00001) printf(" WARNING: small norm: %1.7f \n",norm);
         if (abs(norm)<0.00001) norm = 1;
@@ -2424,6 +2454,12 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
     double norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Cn[i]*Cn[i];
+    if ((norm - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     norm = sqrt(norm);
     for (int j=0;j<len0;j++)
     {
@@ -2741,6 +2777,12 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
     double norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Cn[i]*Cn[i];
+    if ((norm - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     norm = sqrt(norm);
     for (int j=0;j<len0;j++)
     {
@@ -2764,6 +2806,12 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
     norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Dn[i]*Dn[i];
+    if ((norm - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     norm = sqrt(norm);
     for (int j=0;j<len0;j++)
     {
@@ -3090,6 +3138,12 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
     double norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Cn[i]*Cn[i];
+    if ((norm - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     norm = sqrt(norm);
     for (int j=0;j<len0;j++)
     {
@@ -3319,6 +3373,18 @@ void ICoord::force_notbonds()
     double gradrms1 = 0.;
     for (int i=0;i<N3;i++)
         gradrms1+=grad[i]*grad[i];
+    if ((gradrms1/N3 - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
+    if (StringTools::isEqual(N3, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     gradrms1 = sqrt(gradrms1/N3);
     //printf(" gradrms1: %4.3f \n",gradrms1);
 
@@ -3436,6 +3502,18 @@ int ICoord::grad_to_q() {
     gradrms = 0.;
     for (int i=0;i<nicd;i++)
         gradrms+=gradq[i]*gradq[i];
+    if ((gradrms/nicd - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
+    if (StringTools::isEqual(nicd, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
+
     gradrms = sqrt(gradrms/nicd);
     //print_gradq();
 
@@ -3660,6 +3738,12 @@ void ICoord::update_ic_eigen()
     smag = 0.;
     for (int i=0;i<len;i++)
         smag += dq0[i]*dq0[i];
+    if ((smag - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     smag = sqrt(smag);
     sprintf(sbuff," ss: %1.3f (DMAX: %1.3f)",smag,DMAX); printout += sbuff;
     if (smag > DMAX)
@@ -4069,6 +4153,12 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
     smag = 0.;
     for (int i=0;i<len;i++)
         smag += dq0[i]*dq0[i];
+    if ((smag - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     smag = sqrt(smag);
     sprintf(sbuff," ss: %1.3f (%1.3f)",smag,DMAX); printout += sbuff;
     //  printf(" ss: %1.3f",smag);
@@ -4112,6 +4202,12 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
         exit(-1);
     }
     gradrms = gradrms*gradrms*nicd0-gqe[maxoln]*gqe[maxoln];
+    if ((gradrms/nicd0 - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     gradrms = sqrt(gradrms/nicd0);
 #endif
 #if RIBBONS
@@ -4120,6 +4216,12 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
     {    
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         exit(-1);
+    }
+    if ((gradrms/nicd0 - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
     }
     gradrms = gradrms*gradrms*nicd0-gqe[maxolnd]*gqe[maxolnd];
     gradrms = sqrt(gradrms/nicd0);
@@ -4379,6 +4481,12 @@ void ICoord::update_ic_eigen_ts(double* Cn)
     smag = 0.;
     for (int i=0;i<len;i++)
         smag += dq0[i]*dq0[i];
+    if ((smag - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     smag = sqrt(smag);
     sprintf(sbuff," ss: %1.3f (DMAX: %1.3f)",smag,DMAX); printout += sbuff;
     //  printf(" ss: %1.3f",smag);
@@ -4638,6 +4746,12 @@ int ICoord::ic_to_xyz() {
         printf("\n");
 #endif
 
+        if ((mag - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         if (sqrt(mag)<0.0005) break; // was not sqrt, 0.00005
     }
 
@@ -4649,6 +4763,12 @@ int ICoord::ic_to_xyz() {
 
     //printf(" diff in xyz mag (end %2i) is: %1.4f \n",n+1,sqrt(mag)); 
     double MAXMAG = 0.025*natoms;
+    if ((mag - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     if (sqrt(mag)>MAXMAG)
     {
         //printf(" WARNING: diff in xyz mag (end) is: %1.4f, using first step, mag: %1.4f \n",sqrt(mag),sqrt(mag0));
@@ -4842,6 +4962,12 @@ int ICoord::ic_to_xyz_opt() {
         dqmag = 0.;
         for (int i=0;i<len;i++)
             dqmag += dq[i]*dq[i];
+        if ((dqmag - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmag = sqrt(dqmag);
         //printf(" dqmag: %1.3f",dqmag);
         if (dqmag<0.0001) break;
@@ -4871,6 +4997,12 @@ int ICoord::ic_to_xyz_opt() {
         printf("\n");
 #endif
 
+        if ((mag - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         if (sqrt(mag)<0.0005) break; // was not sqrt, 0.00005
 
     } //loop over back convert
@@ -4884,6 +5016,12 @@ int ICoord::ic_to_xyz_opt() {
     //printf(" diff in xyz mag (end) is: %1.4f \n",sqrt(mag)); 
     //printf(" dq[nicd0-1]: %1.2f ",dq[nicd0-1]);
     double MAXMAG = 0.025*natoms;
+    if ((mag - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     if (sqrt(mag)>MAXMAG)
     {
         // printf(" WARNING: diff in xyz mag (end) is: %1.4f, not stepping, mag0: %1.4f \n",sqrt(mag),sqrt(mag0));
@@ -5330,6 +5468,12 @@ int ICoord::create_prima(int nnodes0, int nbonds1, int nangles1, int ntor1, doub
     double norm = 0.;
     for (int j=0;j<len;j++)
         norm += Cp[j]*Cp[j];
+    if ((norm - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     norm = sqrt(norm);
     for (int j=0;j<len;j++)
     {
@@ -5705,6 +5849,12 @@ int ICoord::davidson_H(int nval)
             double mag = 0.;
             for (int j=0;j<len;j++)
                 mag += vecs[wv][j]*vecs[wv][j];
+            if ((mag - 0.0) < 0.00000001)
+            {
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             double norm = sqrt(mag);
             for (int j=0;j<len;j++)
             {

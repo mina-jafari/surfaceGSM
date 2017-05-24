@@ -257,6 +257,12 @@ void GString::String_Method_Optimization()
     nsplit = 0;
     n0 = 0;
     growing = 1;
+    if ((3*natoms - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     double r3n = sqrt(3*natoms);
 
 
@@ -1902,6 +1908,12 @@ double GString::tangent_1b(double* ictan)
     double norm0 = 0.;
     for (int i=0;i<size_ic;i++)
         norm0 += ictan[i]*ictan[i];
+    if ((norm0 - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     double norm = sqrt(norm0);
     if (StringTools::isEqual(norm, 0.0))
     {    
@@ -2727,6 +2739,12 @@ void GString::starting_string_dm(double* dq)
         double dqmag = 0.;
         for (int j=0;j<len_d;j++)
             dqmag += dq[j]*dq[j];
+        if ((dqmag - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmag = sqrt(dqmag);
         printf(" dqmag: %1.2f",dqmag);
 
@@ -3292,6 +3310,12 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
             double norm = 0.;
             for (int i=0;i<size_ic;i++)
                 norm += ictan[n][i]*ictan[n][i];
+            if ((norm - 0.0) < 0.00000001)
+            {
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             norm = sqrt(norm);
             if (StringTools::isEqual(norm, 0.0))
             {    
@@ -3408,6 +3432,12 @@ int GString::knnr_vs_opt(int n)
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
+    if ((grms/nicd - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+            exit(-1);
+    }
     grms = sqrt(grms/nicd);
     if (V_profile[n] < -1000.)
     {
@@ -3505,6 +3535,12 @@ int GString::check_close_dist(int n, double* dist, int* newbonds)
             double y0 = allcoords[n][3*i+1]-allcoords[n][3*j+1];
             double z0 = allcoords[n][3*i+2]-allcoords[n][3*j+2];
             //printf(" xyz: %2.1f %2.1f %2.1f \n",x0,y0,z0);
+            if ((x0*x0+y0*y0+z0*z0 - 0.0) < 0.00000001)
+            {
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             dist[i*natoms+j] = dist[j*natoms+i] = sqrt(x0*x0+y0*y0+z0*z0);
         }
 
@@ -3721,6 +3757,12 @@ void GString::ic_reparam_g(double** dqa, double* dqmaga)
         disprms = 0.;
         for (int n=n0+1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
+        if ((disprms - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         disprms = sqrt(disprms);
         lastdispr = disprms;
         //printf(" disprms: %1.3f \n",disprms);
@@ -4041,6 +4083,12 @@ void GString::ic_reparam(double** dqa, double* dqmaga, int rtype)
         disprms = 0.;
         for (int n=n0+1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
+        if ((disprms - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         disprms = sqrt(disprms);
         lastdispr = disprms;
         //printf(" disprms: %1.3f \n",disprms);
@@ -4333,6 +4381,12 @@ void GString::ic_reparam_new(double** dqa, double* dqmaga, int rtype)
         disprms = 0.;
         for (int n=n0+1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
+        if ((disprms - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         disprms = sqrt(disprms);
         lastdispr = disprms;
         //printf(" disprms: %1.3f \n",disprms);
@@ -4564,6 +4618,12 @@ void GString::ic_reparam_h(double** dqa, double* dqmaga, int rtype)
         disprms = 0.;
         for (int n=1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
+        if ((disprms - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         disprms = sqrt(disprms);
         //printf(" disprms: %1.3f \n",disprms);
 
@@ -4769,6 +4829,12 @@ void GString::ic_reparam_cut(int min, double** dqa, double* dqmaga, int rtype)
         disprms = 0.;
         for (int n=1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
+        if ((disprms - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         disprms = sqrt(disprms);
         //printf(" disprms: %1.3f \n",disprms);
 
@@ -5475,6 +5541,12 @@ void GString::get_tangents_1(double** dqa, double* dqmaga, double** ictan)
         for (int j=size_icp;j<size_ic;j++)
             dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
 #endif
+        if ((dqmaga[n] - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmaga[n] = sqrt(dqmaga[n]);
         //printf(" dqmaga: %1.2f",dqmaga[n]);
 
@@ -5587,6 +5659,12 @@ void GString::get_tangents_1g(double** dqa, double* dqmaga, double** ictan)
             dqmaga[nlist[2*n]] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
         }
 #endif
+        if ((dqmaga[nlist[2*n]] - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmaga[nlist[2*n]] = sqrt(dqmaga[nlist[2*n]]);
         //printf(" dqmaga: %1.2f",dqmaga[nlist[2*n]]);
     }
@@ -5881,6 +5959,12 @@ void GString::get_tangents(double** dqa, double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<size_ic;j++)
             dqmaga[n] += ictan[n][j]*ictan[n][j];
+        if ((dqmaga[n] - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmaga[n] = sqrt(dqmaga[n]);
         //printf(" dqmaga: %1.2f",dqmaga[n]);
     }
@@ -5967,6 +6051,12 @@ void GString::get_tangents_dm(double** dqa, double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<size_ic_dm;j++)
             dqmaga[n] += ictan[n][j]*ictan[n][j];
+        if ((dqmaga[n] - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmaga[n] = sqrt(dqmaga[n]);
         //printf(" dqmaga: %1.2f",dqmaga[n]);
 #endif
@@ -6037,6 +6127,12 @@ void GString::get_distances(double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<size_ic;j++) //CPMZ: - ntor?
             dqmaga[n] += ictan[n][j]*ictan[n][j];
+        if ((dqmaga[n] - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmaga[n] = sqrt(dqmaga[n]);
 #endif
     } //loop n over nnmax
@@ -6089,6 +6185,12 @@ void GString::get_distances_dm(double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<len_d;j++)
             dqmaga[n] += dqa[n][j]*dqa[n][j];
+        if ((dqmaga[n] - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmaga[n] = sqrt(dqmaga[n]);
         // printf(" dqmaga[%i]: %1.2f \n",n,dqmaga[n]);
 
@@ -6099,6 +6201,12 @@ void GString::get_distances_dm(double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<size_ic_dm;j++)
             dqmaga[n] += ictan[n][j]*ictan[n][j];
+        if ((dqmaga[n] - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
         dqmaga[n] = sqrt(dqmaga[n]);
         // printf(" dqmaga[%i]: %1.2f \n",n,dqmaga[n]);
     }
@@ -6311,6 +6419,12 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[0] = xyz1[3*a[1]+0];
     u1[1] = xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[1]+2];
+    if ((u1[0]*u1[0]+u1[1]*u1[1] - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     double norm = sqrt(u1[0]*u1[0]+u1[1]*u1[1]);
     if (StringTools::isEqual(norm, 0.0))
     {    
@@ -6339,6 +6453,12 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[0] = xyz1[3*a[1]+0];
     u1[1] = xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[1]+2];
+    if ((u1[0]*u1[0]+u1[2]*u1[2] - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     norm = sqrt(u1[0]*u1[0]+u1[2]*u1[2]);
 
     if (StringTools::isEqual(norm, 0.0))
@@ -6369,6 +6489,12 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[0] = xyz1[3*a[2]+0] - xyz1[3*a[1]+0];
     u1[1] = xyz1[3*a[2]+1] - xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[2]+2] - xyz1[3*a[1]+2];
+    if ((u1[1]*u1[1]+u1[2]*u1[2] - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     norm = sqrt(u1[1]*u1[1]+u1[2]*u1[2]);
 
     if (StringTools::isEqual(norm, 0.0))
@@ -6989,6 +7115,12 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms,
         double endenergy, string strfileg, int& tscontinue, double gaddmax, 
         int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan)
 {
+    if ((3*natoms - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     double r3n = sqrt(3*natoms);
     int nmax;
     double emax;
@@ -7124,6 +7256,12 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms,
                     << __FILE__ << std::endl;
                 exit(-1);
             }
+            if ((gradrms/(nnR-1) - 0.0) < 0.00000001)
+            {
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
+                exit(-1);
+            }
             gradrms = sqrt(gradrms/(nnR-1));
         }
         else
@@ -7132,6 +7270,12 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms,
             {    
                 std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
                     << __FILE__ << std::endl;
+                exit(-1);
+            }
+            if ((gradrms/(nn-2) - 0.0) < 0.00000001)
+            {
+                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                    << " of file " << __FILE__ << std::endl;
                 exit(-1);
             }
             gradrms = sqrt(gradrms/(nn-2));
@@ -7238,6 +7382,12 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms,
         int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan,
         int finder, int climber, int do_tp, int& tp)
 {
+    if ((3*natoms - 0.0) < 0.00000001)
+    {
+        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     double r3n = sqrt(3*natoms);
     int nmax;
     int nnmaxp = nnmax;
@@ -7277,6 +7427,12 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms,
         {    
             std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
                 << __FILE__ << std::endl;
+            exit(-1);
+        }
+        if ((gradrms/(nnmax-2-n0) - 0.0) < 0.00000001)
+        {
+            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                << " of file " << __FILE__ << std::endl;
             exit(-1);
         }
         gradrms = sqrt(gradrms/(nnmax-2-n0));
