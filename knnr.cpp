@@ -472,6 +472,11 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
 #if 1
     //exponential weighting
     double alpha = 0.05;
+    if (StringTools::isEqual(alpha, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     for (int i=0;i<k;i++)
         knnw[i] = exp(-knnd[i]/alpha);
 #else
@@ -919,6 +924,11 @@ double KNNR::grad_knnr(double* coords, double &Ep, double* g1, double* Ut, int k
 #if 1
     //exponential weighting
     double alpha = 0.15;
+    if (StringTools::isEqual(alpha, 0.0))
+    {    
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        exit(-1);
+    }
     for (int i=0;i<k;i++)
         knnw[i] = exp(-knnd[i]/alpha);
 #else
