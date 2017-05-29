@@ -4201,9 +4201,9 @@ double GString::reparam_step_control(double* rpmovep, double* rpmove)
         //printf(" rpmp/rpm: %1.2f %1.2f",rpmovep[n],rpmove[n]);
         if (StringTools::isEqual(rpmovep[n], 0.0))
         {    
-            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
-                << __FILE__ << std::endl;
-            exit(-1);
+            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file.\n" 
+            << "Adding 10^-4 to the value." << std::endl;
+            rpmovep[n] += 0.0001;
         }
         if (rpmove[n]/rpmovep[n]<-0.8 &&
                 fabs(rpmove[n])>0.02)

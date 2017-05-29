@@ -1365,11 +1365,9 @@ double ICoord::torsion_val(int i, int j, int k, int l)
 
     if (StringTools::isEqual(u, 0.0))
     {
-        std::cout << "ERROR: Zero detected on line 1376 " << __LINE__ << " of file " << __FILE__ << std::endl;
-        //exit(-1);
         tval = 0.;
     }
-    else if (!StringTools::isEqual(u, 0.0))
+    else
     {
         if ((u - 0.0) < 0.00000001)
         {
@@ -1377,11 +1375,14 @@ double ICoord::torsion_val(int i, int j, int k, int l)
                 << " of file " << __FILE__ << std::endl;
             exit(-1);
         }
-        double a = (ux1*ux2+uy1*uy2+uz1*uz2)/sqrt(u);
-        if (a>1) a=1; else if (a<-1) a=-1;
+        double a = (ux1*ux2+uy1*uy2+uz1*uz2) / sqrt(u);
+        if (a>1)
+            a=1;
+        else if (a<-1)
+            a=-1;
         tval = acos(a);
-        if (ux1*(uy2*z2-uz2*y2)+uy1*(uz2*x2-ux2*z2)+
-                uz1*(ux2*y2-uy2*x2) < 0.0) tval *=-1;
+        if (ux1*(uy2*z2-uz2*y2)+uy1*(uz2*x2-ux2*z2)+uz1*(ux2*y2-uy2*x2) < 0.0)
+            tval *=-1;
     }
 
     if (tval>3.14159) tval-=2*3.14159;
@@ -1404,7 +1405,7 @@ double ICoord::angle_val(int i, int j, int k)
     }
     else
     {
-        std::cout << "ERROR: Zero detected on line 1401 " << __LINE__ << " of file " << __FILE__ << std::endl;
+        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
 

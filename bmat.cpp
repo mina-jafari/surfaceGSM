@@ -1,5 +1,6 @@
 // Please see license.txt for licensing and copyright information //
 // Author: Paul Zimmerman, University of Michigan //
+#include <math.h>
 #include "icoord.h"
 #include "utils.h"
 #include "/export/apps/Intel/Compiler/11.1/075/mkl/include/mkl.h"
@@ -4451,7 +4452,8 @@ void ICoord::update_ic_eigen_ts(double* Cn)
         if (i!=maxoln)
             if (StringTools::isEqual((abs(eigen[i])+lambda1), 0.0))
             {    
-                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+                std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
+                    << __FILE__ << std::endl;
                 exit(-1);
             }
             dqe0[i] = -gqe[i] / (abs(eigen[i])+lambda1) / SCALE;
@@ -4612,24 +4614,45 @@ int ICoord::ic_to_xyz() {
 #endif
 
     int MAX_STEPS = 30; //was 6
-
     int success = 1;
-
     int N3 = 3*natoms;
     //int len0 = min(N3,nbonds+nangles+ntor);
     int len = nicd0;
+
     double** xyzall = new double*[MAX_STEPS+2];
     for (int i=0;i<MAX_STEPS+2;i++)
         xyzall[i] = new double[N3];
     double* magall = new double[MAX_STEPS+2];
-    for (int i=0;i<MAX_STEPS+2;i++)
-        magall[i] = 100.;
+    //for (int i=0;i<MAX_STEPS+2;i++)
+    //    magall[i] = 100.;
+    
     double* xyz1 = new double[N3];
     double* xyzd = new double[N3];
     //double* xyzd0 = new double[N3];
     double* btit = new double[N3*len];
     double* dq = new double[len];
     double* qn = new double[len]; //target IC values
+
+    // initialization
+    for (int i=0; i<MAX_STEPS+2; i++)
+    {
+        magall[i] = 100.;
+        for (int j=0; j<N3; j++)
+        {
+            xyzall[i][j] = 0.0;
+            xyz1[j] = 0.0;
+            xyzd[j] = 0.0;
+        }
+    }
+    for (int i=0; i<len; i++)
+    {
+        dq[i] = 0.0;
+        qn[i] = 0.0;
+    }
+    for (int i=0; i<N3*len; i++)
+    {
+        btit[i] = 0.0;
+    }
 
     for (int i=0;i<N3;i++)
         xyzall[0][i] = coords[i];
@@ -4687,7 +4710,9 @@ int ICoord::ic_to_xyz() {
 
         mag = 0.;
         for (int i=0;i<N3;i++)
-            mag += xyzd[i]*xyzd[i];
+            mag = mag + pow(xyzd[i], 2);
+            //mag += xyzd[i]*xyzd[i];
+        std::cout << "MAG 1: " << mag << std::endl;
 
 #if 0
         //was on, why does it exist?
@@ -4748,11 +4773,12 @@ int ICoord::ic_to_xyz() {
 
         if ((mag - 0.0) < 0.00000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "ERROR: Negative value in sqrt detected on line " << __LINE__ 
                 << " of file " << __FILE__ << std::endl;
             exit(-1);
         }
-        if (sqrt(mag)<0.0005) break; // was not sqrt, 0.00005
+        if (sqrt(mag)<0.0005)
+            break; // was not sqrt, 0.00005
     }
 
 #if 0
