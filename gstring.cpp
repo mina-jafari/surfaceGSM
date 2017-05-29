@@ -130,8 +130,9 @@ void GString::get_diff_bonds(ICoord ic1, ICoord ic2, ICoord& ic3)
 
 void GString::update_coord_binding_site(double* xyz1, int b1, int a1)
 {
-    BindingSiteClass bsite;
-    bsite = surfs[0].getBindingSite1(b1);
+    BindingSite bsite;
+    //bsite = surfs[0].getBindingSite1(b1);
+    bsite = *(surfs[0].getBindingSite(b1));
     bsite.getXYZ(&xyz1[3*a1]);
 }
 
@@ -148,9 +149,9 @@ void GString::setup_surface_sites()
 
     string nstr = StringTools::int2str(runNum,4,"0");
     //sites = new BindingSiteClass[nnmax];
-    surfs = new SurfaceClass[nnmax];
+    surfs = new Surface[nnmax];
 
-    string stype = surftype;
+    SLAB_TYPE stype = stringToSlabType(surftype);
     for (int i=0;i<nnmax;i++)
         surfs[i].setSurfaceType(stype);
     for (int i=0;i<nnmax;i++)

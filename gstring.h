@@ -21,8 +21,8 @@
 #include "stringtools.h"
 #include "pTable.h"
 #include "eckart.h"
-#include "SurfaceClass.h"
-#include "BindingSiteClass.h"
+#include "Surface.h"
+#include "BindingSite.h"
 
 void print_xyz_gen(int natoms, string* anames, double* coords);
 
@@ -77,8 +77,8 @@ class GString {
 
         void get_diff_bonds(ICoord ic1, ICoord ic2, ICoord& ic3);
         void setup_surface_sites();
-        SurfaceClass* surfs; //one surf per node
-        BindingSiteClass* sites; //
+        Surface* surfs; //one surf per node
+        //BindingSite* sites; //
         int nbsites;
         void update_coord_binding_site(double* xyz1, int b1, int a1);
         string surftype;
