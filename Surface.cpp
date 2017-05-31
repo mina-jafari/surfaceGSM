@@ -242,12 +242,12 @@ bool Surface::setSlabSize()
 
 bool Surface::isFound(const double &inX, const double &inY, const double &inZ)
 {
-    const double tolerance = 0.15;
+    const double tolerance = 0.20;
     for (unsigned int i=0; i<mSlabAtoms.size(); ++i)
     {
         if (  ((mSlabAtoms[i].coordinates().x() <= (inX + tolerance)) && (mSlabAtoms[i].coordinates().x() >= (inX - tolerance)) ) &&
-                ((mSlabAtoms[i].coordinates().y() <= (inY + tolerance)) && (mSlabAtoms[i].coordinates().y() >= (inY - tolerance)) ) &&   
-                ((mSlabAtoms[i].coordinates().z() <= (inZ + tolerance)) && (mSlabAtoms[i].coordinates().z() >= (inZ - tolerance)) )  )   
+                ((mSlabAtoms[i].coordinates().y() <= (inY + tolerance)) && (mSlabAtoms[i].coordinates().y() >= (inY - tolerance)) ))// &&   
+                //((mSlabAtoms[i].coordinates().z() <= (inZ + tolerance)) && (mSlabAtoms[i].coordinates().z() >= (inZ - tolerance)) )  )   
         {   
             return (true);
         }   
@@ -269,7 +269,7 @@ int Surface::findHollow()
                 double hollowX = mNthAtom[0] - offX;
                 double hollowY = mNthAtom[1] - offY;
                 double hollowZ = mNthAtom[2] + m_DELTA_Z;
-                if (hollowX >= -0.05 && hollowY >= -0.05)
+                if (hollowX >= -0.25 && hollowY >= -0.25)
                 {   
                     BindingSite aSite(HOLLOW, hollowX, hollowY, hollowZ);
                     mBindingSites.push_back(aSite);
@@ -288,7 +288,7 @@ int Surface::findHollow()
                 double hollowX = mNthAtom[0] - offX;
                 double hollowY = mNthAtom[1] - offY;
                 double hollowZ = mNthAtom[2] + m_DELTA_Z;
-                if (hollowX >= -0.05 && hollowY >= -0.05)
+                if (hollowX >= -0.25 && hollowY >= -0.25)
                 {   
                     BindingSite aSite(HOLLOW, hollowX, hollowY, hollowZ);
                     mBindingSites.push_back(aSite);
@@ -317,7 +317,7 @@ int Surface::findHollow()
                 double hollowX = mNthAtom[0] - offX;
                 double hollowY = mNthAtom[1] - offY;
                 double hollowZ = mNthAtom[2] + m_DELTA_Z;
-                if (hollowX >= -0.05 && hollowY >= -0.05)
+                if (hollowX >= -0.25 && hollowY >= -0.25)
                 {   
                     BindingSite aSite(HOLLOW, hollowX, hollowY, hollowZ);
                     mBindingSites.push_back(aSite);
@@ -353,7 +353,7 @@ int Surface::findHcp()
                 double hcpX = mNthAtom[0] - offX;
                 double hcpY = mNthAtom[1] - offY;
                 double hcpZ = mNthAtom[2] + m_DELTA_Z;
-                if (hcpX >= -0.05 && hcpY >= -0.05)
+                if (hcpX >= -0.25 && hcpY >= -0.25)
                 {
                     BindingSite aSite(HCP, hcpX, hcpY, hcpZ);
                     mBindingSites.push_back(aSite);
@@ -380,7 +380,7 @@ int Surface::findHcp()
                     double hcpX = mNthAtom[0] - offX;
                     double hcpY = mNthAtom[1] - offY;
                     double hcpZ = mNthAtom[2] + m_DELTA_Z;
-                    if (hcpX >= -0.05 && hcpY >= -0.05)
+                    if (hcpX >= -0.25 && hcpY >= -0.25)
                     {
                         BindingSite aSite(HCP, hcpX, hcpY, hcpZ);
                         mBindingSites.push_back(aSite);
@@ -411,7 +411,7 @@ int Surface::findHcp()
                 {
                     if (isFound(hcpX, hcpY, mThirdLayerZ))
                     {
-                        if (hcpX >= -0.05 && hcpY >= -0.05)
+                        if (hcpX >= -0.25 && hcpY >= -0.25)
                         {
                             BindingSite aSite(HCP, hcpX, hcpY, hcpZ);
                             mBindingSites.push_back(aSite);
@@ -474,7 +474,7 @@ int Surface::findFcc()
                 {
                     if (isFound(fccX, fccY, mThirdLayerZ))
                     {
-                        if (fccX >= -0.05 && fccY >= -0.05)
+                        if (fccX >= -0.25 && fccY >= -0.25)
                         {
                             BindingSite aSite(FCC, fccX, fccY, fccZ);
                             mBindingSites.push_back(aSite);
@@ -531,7 +531,7 @@ int Surface::findAtop()
             atopY = mNthAtom[1] - offY;
             atopZ = mNthAtom[2] + m_DELTA_Z;
 
-            if (atopX >= -0.05 && atopY >= -0.05)
+            if (atopX >= -0.25 && atopY >= -0.25)
             {
                 BindingSite aSite(ATOP, atopX, atopY, atopZ);
                 mBindingSites.push_back(aSite);
@@ -557,7 +557,7 @@ int Surface::findLongBridge()
                 LbrgX = mNthAtom[0] - offX;
                 LbrgY = mNthAtom[1] - offY;
                 LbrgZ = mNthAtom[2] + m_DELTA_Z;
-                if (LbrgX >= -0.05 && LbrgY >= -0.05)
+                if (LbrgX >= -0.25 && LbrgY >= -0.25)
                 {
                     BindingSite aSite(LONG_BRIDGE, LbrgX, LbrgY, LbrgZ);
                     mBindingSites.push_back(aSite);
@@ -583,7 +583,7 @@ int Surface::findLongBridge()
                     LbrgX = mNthAtom[0] - offX;
                     LbrgY = mNthAtom[1] - offY;
                     LbrgZ = mNthAtom[2] + m_DELTA_Z;
-                    if (LbrgX >= -0.05 && LbrgY >= -0.05)
+                    if (LbrgX >= -0.25 && LbrgY >= -0.25)
                     {
                         BindingSite aSite(LONG_BRIDGE, LbrgX, LbrgY, LbrgZ);
                         mBindingSites.push_back(aSite);
@@ -602,7 +602,7 @@ int Surface::findLongBridge()
                     LbrgX = mNthAtom[0] - offX;
                     LbrgY = mNthAtom[1] - offY;
                     LbrgZ = mNthAtom[2] + m_DELTA_Z;
-                    if (LbrgX >= -0.05 && LbrgY >= -0.05)
+                    if (LbrgX >= -0.25 && LbrgY >= -0.25)
                     {
                         BindingSite aSite(LONG_BRIDGE, LbrgX, LbrgY, LbrgZ);
                         mBindingSites.push_back(aSite);
@@ -638,7 +638,7 @@ int Surface::findShortBridge()
                 SbrgY = mNthAtom[1] - offY;
                 SbrgZ = mNthAtom[2] + m_DELTA_Z;
 
-                if (SbrgX >= -0.05 || SbrgY > -0.05)
+                if (SbrgX >= -0.25 || SbrgY > -0.25)
                 {
                     BindingSite aSite(SHORT_BRIDGE, SbrgX, SbrgY, SbrgZ);
                     mBindingSites.push_back(aSite);
@@ -661,7 +661,7 @@ int Surface::findShortBridge()
                 SbrgY = mNthAtom[1] - offY;
                 SbrgZ = mNthAtom[2] + m_DELTA_Z;
 
-                if (SbrgX >= -0.05 || SbrgY > -0.05)
+                if (SbrgX >= -0.25 || SbrgY > -0.25)
                 {
                     BindingSite aSite(SHORT_BRIDGE, SbrgX, SbrgY, SbrgZ);
                     mBindingSites.push_back(aSite);
@@ -696,7 +696,7 @@ int Surface::findBridge()
                     offY = j * mDeltaX;
                     brgX = mNthAtom[0] - offX;
                     brgY = mNthAtom[1] - offY;
-                    if (brgX >= -0.05 && brgY >= -0.05)
+                    if (brgX >= -0.25 && brgY >= -0.25)
                     {
                         BindingSite aSite(BRIDGE, brgX, brgY, brgZ);
                         mBindingSites.push_back(aSite);
@@ -724,7 +724,7 @@ int Surface::findBridge()
                         offY = k * mDistance;
                         brgX = mNthAtom[0] - offX;
                         brgY = mNthAtom[1] - offY;
-                        if ((brgX >= -0.05 && brgY >= -0.05) && (brgX <= mNthAtom[0]-k/2*mDeltaX && brgY <= mNthAtom[1]))
+                        if ((brgX >= -0.25 && brgY >= -0.25) && (brgX <= mNthAtom[0]-k/2*mDeltaX && brgY <= mNthAtom[1]))
                         {
                             BindingSite aSite(BRIDGE, brgX, brgY, brgZ);
                             mBindingSites.push_back(aSite);
@@ -740,7 +740,7 @@ int Surface::findBridge()
                         offY = k * mDistance;
                         brgX = mNthAtom[0] - offX;
                         brgY = mNthAtom[1] - offY;
-                        if ((brgX >= -0.05 && brgY >= -0.05) && (brgX <= mNthAtom[0]-(k+1)/2*mDeltaX && brgY <= mNthAtom[1]))
+                        if ((brgX >= -0.25 && brgY >= -0.25) && (brgX <= mNthAtom[0]-(k+1)/2*mDeltaX && brgY <= mNthAtom[1]))
                         {
                             BindingSite aSite(BRIDGE, brgX, brgY, brgZ);
                             mBindingSites.push_back(aSite);
@@ -757,7 +757,7 @@ int Surface::findBridge()
                     offY = j * mDistance;
                     brgX = mNthAtom[0] - offX;
                     brgY = mNthAtom[1] - offY;
-                    if ((brgX >= -0.05 && brgY >= -0.05) && (brgX <= mNthAtom[0]-i*mDeltaX && brgY <= mNthAtom[1]))
+                    if ((brgX >= -0.25 && brgY >= -0.25) && (brgX <= mNthAtom[0]-i*mDeltaX && brgY <= mNthAtom[1]))
                     {
                         BindingSite aSite(BRIDGE, brgX, brgY, brgZ);
                         mBindingSites.push_back(aSite);
