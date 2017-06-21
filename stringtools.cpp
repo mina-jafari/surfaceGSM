@@ -370,7 +370,7 @@ bool StringTools::findstr(ifstream &fstr, string tag, string & outline){
 
 bool StringTools::isEqual(double a, double b)
 {
-    const double epsilon = 0.000001;
+    const double epsilon = 0.00000001;
     bool isequal = true;
 
     if (std::abs(a - b) < epsilon)

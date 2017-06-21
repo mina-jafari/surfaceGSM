@@ -691,11 +691,11 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
             gnorm += gradq0[j] * gradq0[j];
         }
     //printf(" gnorm: %5.4f norm: %5.4f \n",gnorm,sqrt(gnorm));
-    if ((gnorm - 0.0) < 0.00000001)
+    if ((gnorm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        gnorm = 0.000000001;
     }
     gnorm = sqrt(gnorm);
     for (int i=0;i<k;i++)
@@ -706,21 +706,22 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
                 << __FILE__ << std::endl;
             exit(-1);
         }
-        if ((gerr[i]/N3 - 0.0) < 0.00000001)
+        double temp = gerr[i]/N3;
+        if ((temp - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            temp = 0.000000001;
         }
-        gerr[i] = sqrt(gerr[i]/N3);
+        gerr[i] = sqrt(temp);
         govl[i] = govl[i] / gnorm;
     }
     double gerra = 0.;
     for (int i=0;i<k;i++)
         gerra += gerr[i];
-    if ((N3 - 0.0) < 0.00000001)
+    if ((N3 - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
@@ -776,14 +777,22 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
             << __FILE__ << std::endl;
         exit(-1);
     }
-    if ((gradrms/N3 - 0.0) < 0.00000001 || (graderr1/N3 - 0.0) < 0.00000001)
+    double temp1 = gradrms/N3;
+    double temp2 = graderr1/N3;
+    if ((temp1 - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        temp1 = 0.000000001;
     }
-    gradrms = sqrt(gradrms/N3);
-    graderr1 = sqrt(graderr1/N3);
+    if ((temp2 - 0.0) < 0.000000001)
+    {
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        temp2 = 0.000000001;
+    }
+    gradrms = sqrt(temp1);
+    graderr1 = sqrt(temp2);
 
     printf(" dist/graderrs(1): %4.3f %6.5f \n",totdist,graderr1);
     printf(" dist/grel(1): %4.3f %5.4f \n",totdist,graderr1/gradrms);
@@ -1591,11 +1600,11 @@ double KNNR::get_distance(double* xyz1, double* xyz2, ICoord& ic1, ICoord& ic2)
 
     for (int i=0;i<nic;i++)
         d += dq[i]*dq[i];
-    if ((d - 0.0) < 0.00000001)
+    if ((d - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        d = 0.000000001;
     }
     d = sqrt(d);
 
@@ -1689,11 +1698,11 @@ double KNNR::get_distance_u(double* xyz1, double* xyz2, ICoord& ic1, ICoord& ic2
 
     for (int i=0;i<nicd;i++)
         d += dq[i]*dq[i];
-    if ((d - 0.0) < 0.00000001)
+    if ((d - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        d = 0.000000001;
     }
     d = sqrt(d);
 

@@ -985,7 +985,10 @@ SLAB_TYPE stringToSlabType(std::string in)
     else if (in == "ANY")
         return ANY;
     else
-        throw std::exception();
+    {
+        std::cout << "ERROR: Slab type should be set on the second line of slab input file." << std::endl;
+        exit(-1);
+    }
 }
 
 void Surface::addBindingSites(BindingSite BS1, BindingSite BS2, BindingSite BS3)

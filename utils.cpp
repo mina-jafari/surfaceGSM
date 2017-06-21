@@ -681,7 +681,7 @@ void Utils::mwc_to_ang(double** angs, double** mwc, int nstring, int natoms, dou
     for (int i=0;i<nstring;i++){
         for (int j=1;j<=natoms;j++){
             for (int k=1;k<=3;k++){
-                if ((amasses[j] - 0.0) < 0.00000001)
+                if ((amasses[j] - 0.0) < 0.000000001)
                 {
                     std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                         << " of file " << __FILE__ << std::endl;
@@ -702,7 +702,7 @@ void Utils::mwc_to_ang(double* angs, double* mwc, int natoms, double* amasses){
 
     for (int j=0;j<natoms;j++){
         for (int k=0;k<3;k++){
-            if ((amasses[j] - 0.0) < 0.00000001)
+            if ((amasses[j] - 0.0) < 0.000000001)
             {
                 std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
@@ -724,7 +724,7 @@ void Utils::ang_to_mwc(double** mwc, double** ang, int nstring, int natoms, doub
     for (int i=0;i<nstring;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if ((amasses[j] - 0.0) < 0.00000001)
+                if ((amasses[j] - 0.0) < 0.000000001)
                 {
                     std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                         << " of file " << __FILE__ << std::endl;
@@ -740,7 +740,7 @@ void Utils::ang_to_mwc(double* mwc, double* ang, int natoms, double* amasses){
 
     for (int j=0;j<natoms;j++){
         for (int k=0;k<3;k++){
-            if ((amasses[j] - 0.0) < 0.00000001)
+            if ((amasses[j] - 0.0) < 0.000000001)
             {
                 std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
@@ -759,7 +759,7 @@ void Utils::mwcgrad_to_anggrad(double** ang_grad, double** mwc_grad, int nstring
     for (int i=0;i<nstring;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if ((amasses[j] - 0.0) < 0.00000001)
+                if ((amasses[j] - 0.0) < 0.000000001)
                 {
                     std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                         << " of file " << __FILE__ << std::endl;
@@ -775,7 +775,7 @@ void Utils::mwcgrad_to_anggrad(double* ang_grad, double* mwc_grad, int natoms, d
 
     for (int j=0;j<natoms;j++){
         for (int k=0;k<3;k++){
-            if ((amasses[j] - 0.0) < 0.00000001)
+            if ((amasses[j] - 0.0) < 0.000000001)
             {
                 std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
@@ -793,7 +793,7 @@ void Utils::anggrad_to_mwcgrad(double** mwc_grad, double** ang_grad, int nstring
     for (int i=0;i<nstring;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if ((amasses[j] - 0.0) < 0.00000001)
+                if ((amasses[j] - 0.0) < 0.000000001)
                 {
                     std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                         << " of file " << __FILE__ << std::endl;
@@ -814,7 +814,7 @@ void Utils::anggrad_to_mwcgrad(double* mwc_grad, double* ang_grad, int natoms, d
 
     for (int j=0;j<natoms;j++){
         for (int k=0;k<3;k++){
-            if ((amasses[j] - 0.0) < 0.00000001)
+            if ((amasses[j] - 0.0) < 0.000000001)
             {
                 std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
@@ -934,11 +934,11 @@ double Utils::randomf(double a, double b){
 void Utils::normalize(double* u, int LEN){
     double dp=Utils::dotProd(u,u,LEN); // dot product
     double vm = 0.0;
-    if ((dp - 0.0) < 0.00000001)
+    if ((dp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        dp = 0.000000001;
     }
     vm=sqrt(dp); // magnitude
     for (int i=0; i<LEN; i++){
@@ -1279,7 +1279,7 @@ void Utils::angs_to_mwcs(double** temparray, int nn, int natoms, double* amasses
     for (int i=0;i<nn;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if (((double)amasses[j] - 0.0) < 0.00000001)
+                if (((double)amasses[j] - 0.0) < 0.000000001)
                 {
                     std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                         << " of file " << __FILE__ << std::endl;
@@ -1296,7 +1296,7 @@ void Utils::anggrads_to_mwcgrads(double** temparray, int nn, int natoms, double*
     for (int i=0;i<nn;i++){
         for (int j=0;j<natoms;j++){
             for (int k=0;k<3;k++){
-                if (((double)amasses[j] - 0.0) < 0.00000001)
+                if (((double)amasses[j] - 0.0) < 0.000000001)
                 {
                     std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
                         << " of file " << __FILE__ << std::endl;
@@ -1325,11 +1325,11 @@ double Utils::dotProd(double* v, double* u, int LEN){
 
 double Utils::vecMag(double* u, int LEN){
     double dp=Utils::dotProd(u,u,LEN);
-    if ((dp - 0.0) < 0.00000001)
+    if ((dp - 0.0) < 0.000000001)
     {
         std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        dp = 0.000000001;
     }
     double vm=sqrt(dp);
     return vm;

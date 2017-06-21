@@ -121,11 +121,11 @@ int ICoord::mm_grad(){
     gradrms = 0;
     for (int i=0;i<3*natoms;i++)
         gradrms += grad[i]*grad[i];
-    if ((gradrms - 0.0) < 0.00000001)
+    if ((gradrms - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        gradrms = 0.000000001;
     }
     gradrms = sqrt(gradrms);
 
@@ -158,11 +158,11 @@ int ICoord::mm_grad(ICoord shadow){
     gradrms = 0;
     for (int i=0;i<3*natoms;i++)
         gradrms += grad[i]*grad[i];
-    if ((gradrms - 0.0) < 0.00000001)
+    if ((gradrms - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        gradrms = 0.000000001;
     }
     gradrms = sqrt(gradrms);
 
@@ -213,13 +213,14 @@ void ICoord::imptor_grad_all(){
 void ICoord::vdw_grad_1(int i, int j, double scale){
 
     double R = ffR[i] + ffR[j];
-    if ((ffeps[i] * ffeps[j] - 0.0) < 0.00000001)
+    double temp = ffeps[i] * ffeps[j];
+    if ((temp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        temp = 0.000000001;
     }
-    double eps = sqrt( ffeps[i] * ffeps[j] );
+    double eps = sqrt(temp);
 
     double* dx = new double[3];
     dx[0] = coords[3*i+0]-coords[3*j+0];
@@ -296,11 +297,11 @@ void ICoord::lin_grad_1(int i, int j, double scale){
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
-    if ((norm - 0.0) < 0.00000001)
+    if ((norm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        norm = 0.0000001;
     }
     norm = sqrt(norm);
     dx[0] = dx[0] / norm;
@@ -446,11 +447,11 @@ void ICoord::torsion_grad_1(int i, int j, int k, int l){
     rjk[1] = -rkj[1];
     rjk[2] = -rkj[2];
     double R2 = rkj[0]*rkj[0]+rkj[1]*rkj[1]+rkj[2]*rkj[2];
-    if ((R2 - 0.0) < 0.00000001)
+    if ((R2 - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        R2 = 0.0000001;
     }
     double R = sqrt(R2);
 
@@ -547,11 +548,11 @@ void ICoord::imptor_grad_1(int i, int j, int k, int l){
     rjk[1] = -rkj[1];
     rjk[2] = -rkj[2];
     double R2 = rkj[0]*rkj[0]+rkj[1]*rkj[1]+rkj[2]*rkj[2];
-    if ((R2 - 0.0) < 0.00000001)
+    if ((R2 - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        R2 = 0.000000001;
     }
     double R = sqrt(R2);
 

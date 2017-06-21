@@ -408,7 +408,6 @@ int ICoord::copy_ic(ICoord ic1)
 
 void ICoord::make_bonds_1(int i)
 {
-    printf("    make_bonds_1 for %2i \n",i+1);
     int nf = 0;
     for (int j=0;j<natoms;j++)
         //if (i!=j) Mina
@@ -419,6 +418,7 @@ void ICoord::make_bonds_1(int i)
             double d = distance(i,j);
             if (d<MAX_BOND_DIST && !bond_exists(i,j))
             {
+                printf("    make_bonds_1 for %2i \n",i+1);
                 printf("     found bond: %2i %2i dist: %6.2f \n",i+1,j+1,d);
                 bonds[nbonds][0]=i;
                 bonds[nbonds][1]=j;
