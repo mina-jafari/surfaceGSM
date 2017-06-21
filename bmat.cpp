@@ -1,6 +1,7 @@
 // Please see license.txt for licensing and copyright information //
 // Author: Paul Zimmerman, University of Michigan //
 #include <math.h>
+#include <fstream>
 #include "icoord.h"
 #include "utils.h"
 #include "/export/apps/Intel/Compiler/11.1/075/mkl/include/mkl.h"
@@ -140,6 +141,7 @@ int ICoord::bmatp_create() {
     for (int i=0;i<max_size_ic*N3;i++)
         bmatp[i] = 0.;
 
+    // 2 atoms per bond, 3 cordinates per atom (3 * 2 = 6)
     double* dqbdx = new double[6];
     for (int i=0;i<nbonds;i++)
     {
@@ -147,6 +149,14 @@ int ICoord::bmatp_create() {
         int a1=bonds[i][0];
         int a2=bonds[i][1];
         bmatp_dqbdx(a1,a2,dqbdx);
+        for (int kk=0; kk<6; kk++)
+            if (dqbdx[kk] != dqbdx[kk])
+            {
+                std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                    " of file " << __FILE__ << " element " << kk << " of dqbdx is " <<
+                    dqbdx[kk] << std::endl;
+                exit(1);
+            }
         double FACTOR = 1;
         //if (!xyzic[a1])
         if (anumbers[a1]>0)
@@ -164,6 +174,7 @@ int ICoord::bmatp_create() {
         }
     }
 
+    // 3 atoms per angle, 3 cordinates per atom (3 * 3 = 9)
     double* dqadx = new double[9];
     for (int i=nbonds;i<nbonds+nangles;i++)
     {
@@ -172,6 +183,14 @@ int ICoord::bmatp_create() {
         int a2=angles[i-nbonds][1];
         int a3=angles[i-nbonds][2];
         bmatp_dqadx(a1,a2,a3,dqadx);
+        for (int kk=0; kk<9; kk++)
+            if (dqadx[kk] != dqadx[kk])
+            {
+                std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                    " of file " << __FILE__ << " element " << kk << " of dqadx is " <<
+                    dqadx[kk] << std::endl;
+                exit(1);
+            }
         //if (!xyzic[a1])
         {
             bmatp[i*N3+3*a1+0] = dqadx[0];
@@ -191,6 +210,7 @@ int ICoord::bmatp_create() {
             bmatp[i*N3+3*a3+2] = dqadx[8];
         }
     }
+    // 4 atoms per torsion, 3 cordinates per atom (3 * 4 = 12)
     double* dqtdx = new double[12];
     for (int i=nbonds+nangles;i<nbonds+nangles+ntor;i++)
     {
@@ -200,6 +220,14 @@ int ICoord::bmatp_create() {
         int a3=torsions[i-nbonds-nangles][2];
         int a4=torsions[i-nbonds-nangles][3];
         bmatp_dqtdx(a1,a2,a3,a4,dqtdx);
+        for (int kk=0; kk<12; kk++)
+            if (dqtdx[kk] != dqtdx[kk])
+            {
+                std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                    " of file " << __FILE__ << " element " << kk << " of dqtdx is " <<
+                    dqtdx[kk] << std::endl;
+                exit(1);
+            }
         //if (!xyzic[a1])
         {
             bmatp[i*N3+3*a1+0] = dqtdx[0]; //*1.8897
@@ -234,8 +262,64 @@ int ICoord::bmatp_create() {
             bmatp[(len_icp+cxyzic++)*N3+3*i+2] = 1.0;
         }
 
+    for (int i=0;i<max_size_ic*N3;i++)
+        if (bmatp[i] != bmatp[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                " of file " << __FILE__ << " element " << i << " of bmatp is " <<
+                bmatp[i] << std::endl;
+            exit(1);
+        }
     //printf(" \n after creating bmatp \n");
 
+    std::ofstream myfile;
+    myfile.open("bmat.csv");
+    for (int i=0;i<nbonds;i++)
+    {
+        for (int j=0;j<natoms;j++)
+        {
+            for (int k=0;k<3;k++)
+                myfile << bmatp[i*size_xyz+3*j+k] << ",";
+        }
+        myfile << "\n";
+    }
+    myfile << "\n";
+    myfile << "\n";
+
+    for (int i=nbonds;i<nbonds+nangles;i++)
+    {
+        for (int j=0;j<natoms;j++)
+        {
+            for (int k=0;k<3;k++)
+                myfile << bmatp[i*size_xyz+3*j+k] << ",";
+        }
+        myfile << "\n";
+    }
+    myfile << "\n";
+    myfile << "\n";
+
+    for (int i=nbonds+nangles;i<nbonds+nangles+ntor;i++)
+    {
+        for (int j=0;j<natoms;j++)
+        {
+            for (int k=0;k<3;k++)
+                myfile << bmatp[i*size_xyz+3*j+k] << ",";
+        }
+        myfile << "\n";
+    }
+    myfile << "\n";
+    myfile << "\n";
+
+    for (int i=nbonds+nangles+ntor;i<nbonds+nangles+ntor+cxyzic;i++)
+    {
+        for (int j=0;j<natoms;j++)
+        {
+            for (int k=0;k<3;k++)
+                myfile << bmatp[i*size_xyz+3*j+k] << ",";
+        }
+        myfile << "\n";
+    }
+    myfile.close();
 #if 0
     printf(" printing bond contributions \n");
     for (int i=0;i<nbonds;i++)
@@ -342,6 +426,13 @@ int ICoord::bmatp_to_U()
     //  printf(" before diagonalize: mkl_threads: %i \n",mkl_get_max_threads());
     //  fflush(stdout);
     Diagonalize(G,e,len);
+    for (int i=0; i<len*len; i++) 
+        if (G[i] != G[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ << " of "
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
     int len_d = N3-6;
     if (nxyzic>0)
         len_d = N3;
@@ -352,7 +443,7 @@ int ICoord::bmatp_to_U()
     for (int i=0;i<len_d;i++)
         if (e[len-1-i]<0.001)
         {
-            //printf(" small ev: %1.4f\n",e[len-1-i]);
+            printf(" small ev: %10.8f\n",e[len-1-i]);
             lowev++;
         }
     if (lowev>0)
@@ -366,6 +457,27 @@ int ICoord::bmatp_to_U()
     for (int i=0;i<redset;i++)
         for (int j=0;j<len;j++)
             Ut[(len_d+i)*len+j] = G[i*len+j];
+    for (int i=0; i<len*len; i++)
+    {
+        if (Ut[i] != Ut[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ << " of "
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
+        if (Ut[i] < 0.0000000001)
+            Ut[i] = 0.0;
+    }
+    std::ofstream myfile;
+    myfile.open("Ut.csv");
+    for (int i=0; i<len; i++)
+    {
+        for (int j=0; j<len; j++)
+        {
+            myfile << Ut[i+j] << ",";
+        }
+        myfile << "\n";
+    }
 
 #if 0
     printf(" Ut eigenvalues:");
@@ -490,10 +602,10 @@ int ICoord::bmat_create()
 #if 1
     for (int i=0;i<len_d;i++)
         for (int j=0;j<nbonds;j++)
-            q[i] += Ut[len*i+j]*distance(bonds[j][0],bonds[j][1]);
+            q[i] += Ut[len*i+j] * distance(bonds[j][0],bonds[j][1]);
     for (int i=0;i<len_d;i++)
         for (int j=0;j<nangles;j++)
-            q[i] += Ut[len*i+nbonds+j]*angle_val(angles[j][0],angles[j][1],angles[j][2])*3.14159/180;
+            q[i] += Ut[len*i+nbonds+j] * angle_val(angles[j][0],angles[j][1],angles[j][2]) * 3.14159/180;
     for (int j=0;j<ntor;j++) torfix[j] = 0.;
     for (int j=0;j<ntor;j++)
     {
@@ -509,16 +621,18 @@ int ICoord::bmat_create()
     //printf(" torfix: "); for (int j=0;j<ntor;j++) printf(" %1.1f",torfix[j]); printf("\n");
     for (int i=0;i<len_d;i++)
         for (int j=0;j<ntor;j++)
-            q[i] += Ut[len*i+nbonds+nangles+j]*(torfix[j]+torsion_val(torsions[j][0],torsions[j][1],torsions[j][2],torsions[j][3]))*3.14159/180;
+            q[i] += Ut[len*i+nbonds+nangles+j] * 
+                (torfix[j]+torsion_val(torsions[j][0],torsions[j][1],torsions[j][2],torsions[j][3])) * 
+                3.14159/180;
     for (int i=0;i<len_d;i++) 
     {
         int cxyzic = 0;
         for (int j=0;j<natoms;j++)
             if (xyzic[j])
             {
-                q[i] += Ut[len*i+len_icp+cxyzic++]*coords[3*j+0];
-                q[i] += Ut[len*i+len_icp+cxyzic++]*coords[3*j+1];
-                q[i] += Ut[len*i+len_icp+cxyzic++]*coords[3*j+2];
+                q[i] += Ut[len*i+len_icp+cxyzic++] * coords[3*j+0];
+                q[i] += Ut[len*i+len_icp+cxyzic++] * coords[3*j+1];
+                q[i] += Ut[len*i+len_icp+cxyzic++] * coords[3*j+2];
             }
     }
 #endif
@@ -553,16 +667,44 @@ int ICoord::bmat_create()
 #endif
 
     //printf(" now making bmat in delocalized internals (len: %i len_d: %i) \n",len,len_d);
-
+    for (int i=0;i<max_size_ic*N3;i++)
+        if (bmatp[i] != bmatp[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                " of file " << __FILE__ << " element " << i << " of bmatp." << std::endl;
+            exit(1);
+        }
+    for (int i=0;i<len*len;i++)
+        if (Ut[i] != Ut[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                " of file " << __FILE__ << " element " << i << " of Ut." << std::endl;
+            exit(1);
+        }
+    for (int i=0;i<len_d*N3;i++)
+        if (bmat[i] != bmat[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                " of file " << __FILE__ << " element " << i << " of bmat." << std::endl;
+            exit(1);
+        }
+    for (int i=0;i<len_d*N3;i++)
+        bmat[i] = 0.;
 #if 1
     mat_times_mat(bmat,Ut,bmatp,len_d,N3,len);
 #else
-    for (int i=0;i<len_d*N3;i++) bmat[i] = 0.;
     for (int i=0;i<len_d;i++)
         for (int j=0;j<N3;j++)
             for (int k=0;k<len;k++)
                 bmat[i*N3+j] += Ut[i*len+k]*bmatp[k*N3+j];
 #endif
+    for (int i=0;i<len_d*N3;i++)
+        if (bmat[i] != bmat[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                " of file " << __FILE__ << " element " << i << " of bmat." << std::endl;
+            exit(1);
+        }
 
 #if 0
     printf(" printing bmat in coordinates U \n");
@@ -585,10 +727,10 @@ int ICoord::bmat_create()
         bbti[i] = 0.0;
     }
 
+    //for (int i=0;i<len_d*len_d;i++) bbt[i] = 0.;
 #if 1
     mat_times_mat_bt(bbt,bmat,bmat,len_d,len_d,N3);
 #else
-    for (int i=0;i<len_d*len_d;i++) bbt[i] = 0.;
     for (int i=0;i<len_d;i++)
         for (int j=0;j<len_d;j++)
             for (int k=0;k<N3;k++)
@@ -598,9 +740,25 @@ int ICoord::bmat_create()
     for (int i=0;i<len_d*len_d;i++)
         bbti[i] = bbt[i];
 
+    for (int i=0;i<len_d*len_d;i++)
+        if (bbt[i] != bbt[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                " of file " << __FILE__ << " element " << i << " of bbti." << std::endl;
+            exit(-1);
+        }
     //need to invert bbt, then bbt-1 * bmat = bt-1
     // printf(" before invert bbti \n"); fflush(stdout);
     Invert(bbti,len_d);
+    //MINA
+    for (int i=0;i<len_d*len_d;i++)
+        if (bbti[i] != bbti[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ <<
+                " of file " << __FILE__ << " element " << i << " of bbti." << std::endl;
+            exit(-1);
+        }
+
 
 #if 0
     printf("\n\n Debug: eigenvalues of bbt \n");
@@ -644,15 +802,22 @@ int ICoord::bmat_create()
     // for (int i=0;i<len_d;i++)
     // for (int j=0;j<N3;j++)
     //   bmatti[i*N3+j] = 0.;
+    for (int i=0;i<len_d*N3;i++) bmatti[i] = 0.;
 #if 1
     mat_times_mat(bmatti,bbti,bmat,len_d,N3,len_d);
+    int size_ic = nbonds+nangles+ntor+nxyzic+150; //buffer of 150 for new primitives
 #else
-    for (int i=0;i<len_d*N3;i++) bmatti[i] = 0.;
     for (int i=0;i<len_d;i++)
         for (int j=0;j<N3;j++)
             for (int k=0;k<len_d;k++)
                 bmatti[i*N3+j] += bbti[i*len_d+k]*bmat[k*N3+j];
 #endif
+    for (int i=0; i<len_d*N3; i++)
+       if (bmatti[i] != bmatti[i])
+       {
+           std::cout << "ERROR: nan in bmatti " << __LINE__ << "  " << __FILE__ << std::endl;
+           exit(-1);
+       }
 
     // printf(" dealloc \n");
     delete [] bbt;
@@ -879,6 +1044,16 @@ void ICoord::bmatp_dqbdx(int i, int j, double* dqbdx) {
     u[0] = coords[3*i+0]-coords[3*j+0];
     u[1] = coords[3*i+1]-coords[3*j+1];
     u[2] = coords[3*i+2]-coords[3*j+2];
+    if (abs(coords[3*i+0]) > 100 || abs(coords[3*i+1]) > 100 ||
+            abs(coords[3*i+2]) > 100 || abs(coords[3*j+0]) > 100 || 
+            abs(coords[3*i+0]) > 100)
+    {
+        std::cout << "RRRRRRRRRRRRRRR\n" <<
+            "u0: " << u[0] << " u1: " << u[1] << " u2: " << u[2] << std::endl;
+        std::cout << coords[3*i+0] << "  " << coords[3*j+0] << "  " <<
+            coords[3*i+1] << "  " << coords[3*j+1] << "  " << coords[3*i+2] <<
+            "  " << coords[3*j+2] << std::endl;
+    }
 
     double norm = distance(i,j);
     //double norm = sqrt(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);
@@ -978,13 +1153,14 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
         double* vn = new double[3];
         vn[0]=0.; vn[1]=0.; vn[2]=1.;
         cross(w,u,vn);
-        if ((w[0]*w[0]+w[1]*w[1]+w[2]*w[2] - 0.0) < 0.00000001)
+        if ((w[0]*w[0]+w[1]*w[1]+w[2]*w[2] - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            mag = sqrt(0.000000001);
         }
-        mag = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
+        else
+            mag = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
         if (mag<THRESH)
         {
             //      printf(" Linear angle(b) detected, w: %1.6f %1.6f %1.6f \n",w[0],w[1],w[2]);
@@ -996,13 +1172,14 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
     //  if (angle>3.0)
     //    printf(" w: %1.3f %1.3f %1.3f \n",w[0],w[1],w[2]);
 
-    if ((w[0]*w[0]+w[1]*w[1]+w[2]*w[2] - 0.0) < 0.00000001)
+    double temp = w[0]*w[0]+w[1]*w[1]+w[2]*w[2];
+    if ((temp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        temp = 0.000000001;
     }
-    double n3 = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
+    double n3 = sqrt(temp);
     //printf(" n3: %1.3f \n",n3);
     if (StringTools::isEqual(n3, 0.0))
     {    
@@ -1258,20 +1435,20 @@ void ICoord::update_bfgs()
         for (int j=0;j<len0;j++)
             dxdg[i*len0+j] = dx[i]*dg[j];
 
+    for (int i=0;i<len0*len0;i++) dxdgG[i] = 0.;
 #if 1
     mat_times_mat_bt(dxdgG,dxdg,G,len0);
 #else
-    for (int i=0;i<len0*len0;i++) dxdgG[i] = 0.;
     for (int i=0;i<len0;i++)
         for (int j=0;j<len0;j++)
             for (int k=0;k<len0;k++)
                 dxdgG[i*len0+j] += dxdg[i*len0+k]*G[k*len0+j];
 #endif
 
+    for (int i=0;i<len0*len0;i++) Gdgdx[i] = 0.;
 #if 1
     mat_times_mat_at_bt(Gdgdx,dxdg,G,len0);
 #else
-    for (int i=0;i<len0*len0;i++) Gdgdx[i] = 0.;
     for (int i=0;i<len0;i++)
         for (int j=0;j<len0;j++)
             for (int k=0;k<len0;k++)
@@ -1480,20 +1657,20 @@ void ICoord::Hintp_to_Hint()
         tmp[i] = 0.0;
     }
 
+    for (int i=0;i<len0*len_d;i++) tmp[i] = 0.;
 #if 1
     mat_times_mat_bt(tmp,Ut,Hintp,len_d,len0,len0);
 #else
-    for (int i=0;i<len0*len_d;i++) tmp[i] = 0.;
     for (int i=0;i<len_d;i++)
         for (int j=0;j<len0;j++)
             for (int k=0;k<len0;k++)
                 tmp[i*len0+j] += Ut[i*len0+k]*Hintp[k*len0+j];
 #endif
 
+    for (int i=0;i<len_d*len_d;i++) Hint[i] = 0.;
 #if 1
     mat_times_mat_bt(Hint,tmp,Ut,len_d,len_d,len0);
 #else   
-    for (int i=0;i<len_d*len_d;i++) Hint[i] = 0.;
     for (int i=0;i<len_d;i++)
         for (int j=0;j<len_d;j++)
             for (int k=0;k<len0;k++)
@@ -1594,8 +1771,19 @@ void ICoord::update_bofill()
 
     if (StringTools::isEqual(dgmGdxtdx, 0.0))
     {    
-        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        std::cout << "Warning: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        std::cout << "Return update_bofill()" << std::endl;
+        delete [] dg;
+        delete [] dx;
+        delete [] G;
+        delete [] Gms;
+        delete [] Gpsb;
+        delete [] dxdx;
+        delete [] dgmGdx;
+        delete [] dgmGdxdx;
+        delete [] dxdgmGdx;
+        delete [] Gdx;
+        return;
     }
     for (int i=0;i<len0*len0;i++) Gms[i] = 0.;
     for (int i=0;i<len0;i++)
@@ -1618,8 +1806,19 @@ void ICoord::update_bofill()
 
     if (StringTools::isEqual(dxtdx, 0.0))
     {    
-        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        std::cout << "Warning: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        std::cout << "Return update_bofill()" << std::endl;
+        delete [] dg;
+        delete [] dx;
+        delete [] G;
+        delete [] Gms;
+        delete [] Gpsb;
+        delete [] dxdx;
+        delete [] dgmGdx;
+        delete [] dgmGdxdx;
+        delete [] dxdgmGdx;
+        delete [] Gdx;
+        return;
     }
     for (int i=0;i<len0*len0;i++) Gpsb[i] = 0.;
     for (int i=0;i<len0;i++)
@@ -1630,8 +1829,19 @@ void ICoord::update_bofill()
     double xtdgmxtGdx = dxtdg - dxtGdx;
     if (StringTools::isEqual(dxtdx2, 0.0))
     {    
-        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        std::cout << "Warning: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        std::cout << "Return update_bofill()" << std::endl;
+        delete [] dg;
+        delete [] dx;
+        delete [] G;
+        delete [] Gms;
+        delete [] Gpsb;
+        delete [] dxdx;
+        delete [] dgmGdx;
+        delete [] dgmGdxdx;
+        delete [] dxdgmGdx;
+        delete [] Gdx;
+        return;
     }
     for (int i=0;i<len0;i++)
         for (int j=0;j<len0;j++)
@@ -1647,8 +1857,19 @@ void ICoord::update_bofill()
 
     if (StringTools::isEqual((dxtdx*EtE), 0.0))
     {    
-        std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        std::cout << "Warning: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        std::cout << "Return update_bofill()" << std::endl;
+        delete [] dg;
+        delete [] dx;
+        delete [] G;
+        delete [] Gms;
+        delete [] Gpsb;
+        delete [] dxdx;
+        delete [] dgmGdx;
+        delete [] dgmGdxdx;
+        delete [] dxdgmGdx;
+        delete [] Gdx;
+        return;
     }
     double phi = 1 - dxtE*dxtE/(dxtdx*EtE);
 
@@ -1762,10 +1983,10 @@ void ICoord::make_Hint()
         for (int k=0;k<size_ic;k++)
             tmp[i*size_ic+k] = Ut[i*size_ic+k]*Hdiagp[k];
 
+    for (int i=0;i<len0*len0;i++) Hint[i] = 0.;
 #if 1
     mat_times_mat_bt(Hint,tmp,Ut,len0,len0,size_ic);
 #else
-    for (int i=0;i<len0*len0;i++) Hint[i] = 0.;
     for (int i=0;i<len0;i++)
         for (int j=0;j<len0;j++)
             for (int k=0;k<size_ic;k++)
@@ -1849,7 +2070,7 @@ void ICoord::make_Hint()
 
 void ICoord::opt_constraint(double* C) 
 {
-    int len_icp =	nbonds+nangles+ntor;
+    int len_icp = nbonds+nangles+ntor;
     int len = len_icp + nxyzic;
 
 #if 0
@@ -1873,11 +2094,11 @@ void ICoord::opt_constraint(double* C)
     double norm = 0.;
     for (int i=0;i<len;i++)
         norm += C[i]*C[i];
-    if ((norm - 0.0) < 0.00000001)
+    if ((norm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        norm = 0.000000001;
     }
     norm = sqrt(norm);
     for (int j=0;j<len;j++)
@@ -1891,10 +2112,12 @@ void ICoord::opt_constraint(double* C)
     }
 
     double* dots = new double[len];
-    for (int i=0;i<len;i++) dots[i] =0.;
-
     double* Cn = new double[len];
-    for (int i=0;i<len;i++) Cn[i] =0.;
+    for (int i=0;i<len;i++)
+    {
+        dots[i] = 0.;
+        Cn[i] = 0.0;
+    }
 
     for (int i=0;i<len;i++)
         for (int j=0;j<len;j++)
@@ -1909,11 +2132,11 @@ void ICoord::opt_constraint(double* C)
     norm = 0.;
     for (int i=0;i<len;i++)
         norm += Cn[i]*Cn[i];
-    if ((norm - 0.0) < 0.00000001)
+    if ((norm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        norm = 0.000000001;
     }
     norm = sqrt(norm);
     //printf(" Cn norm: %1.2f \n",norm);
@@ -1947,7 +2170,7 @@ void ICoord::opt_constraint(double* C)
     printf("\n");
 #endif
 
-    for (int i=0;i<len;i++) dots[i] =0.;
+    for (int i=0;i<len;i++) dots[i] = 0.;
 
     for (int i=0;i<len;i++) 
         for (int j=0;j<len;j++)
@@ -1975,11 +2198,11 @@ void ICoord::opt_constraint(double* C)
         double norm = 0.;
         for (int j=0;j<len;j++)
             norm += Ut[i*len+j] * Ut[i*len+j];
-        if ((norm - 0.0) < 0.00000001)
+        if ((norm - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            norm = 0.000000001;
         }
         norm = sqrt(norm);
         if (abs(norm)<0.00001) printf(" WARNING: small norm: %1.7f \n",norm);
@@ -2455,11 +2678,12 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
     double norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Cn[i]*Cn[i];
-    if ((norm - 0.0) < 0.00000001)
+    if ((norm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        norm = 0.000000001;
+        std::cout << "Warning: Cn norm is very small" << std::endl;
     }
     norm = sqrt(norm);
     for (int j=0;j<len0;j++)
@@ -2778,11 +3002,11 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
     double norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Cn[i]*Cn[i];
-    if ((norm - 0.0) < 0.00000001)
+    if ((norm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        norm = 0.000000001;
     }
     norm = sqrt(norm);
     for (int j=0;j<len0;j++)
@@ -2807,11 +3031,11 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
     norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Dn[i]*Dn[i];
-    if ((norm - 0.0) < 0.00000001)
+    if ((norm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        norm = 0.000000001;
     }
     norm = sqrt(norm);
     for (int j=0;j<len0;j++)
@@ -3139,11 +3363,11 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
     double norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Cn[i]*Cn[i];
-    if ((norm - 0.0) < 0.00000001)
+    if ((norm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        norm = 0.000000001;
     }
     norm = sqrt(norm);
     for (int j=0;j<len0;j++)
@@ -3374,19 +3598,20 @@ void ICoord::force_notbonds()
     double gradrms1 = 0.;
     for (int i=0;i<N3;i++)
         gradrms1+=grad[i]*grad[i];
-    if ((gradrms1/N3 - 0.0) < 0.00000001)
-    {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
-            << " of file " << __FILE__ << std::endl;
-            exit(-1);
-    }
     if (StringTools::isEqual(N3, 0.0))
     {    
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
+    double temp = gradrms1/N3;
+    if ((temp - 0.0) < 0.000000001)
+    {
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        temp = 0.000000001;
+    }
 
-    gradrms1 = sqrt(gradrms1/N3);
+    gradrms1 = sqrt(temp);
     //printf(" gradrms1: %4.3f \n",gradrms1);
 
     if (gradrms1>0.01) gradrms1 = 0.01;
@@ -3503,19 +3728,20 @@ int ICoord::grad_to_q() {
     gradrms = 0.;
     for (int i=0;i<nicd;i++)
         gradrms+=gradq[i]*gradq[i];
-    if ((gradrms/nicd - 0.0) < 0.00000001)
-    {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
-            << " of file " << __FILE__ << std::endl;
-            exit(-1);
-    }
     if (StringTools::isEqual(nicd, 0.0))
     {    
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
+    double temp = gradrms/nicd;
+    if ((temp - 0.0) < 0.000000001)
+    {
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
+            << " of file " << __FILE__ << std::endl;
+        temp = 0.000000001;
+    }
 
-    gradrms = sqrt(gradrms/nicd);
+    gradrms = sqrt(temp);
     //print_gradq();
 
 #if 1
@@ -3739,11 +3965,11 @@ void ICoord::update_ic_eigen()
     smag = 0.;
     for (int i=0;i<len;i++)
         smag += dq0[i]*dq0[i];
-    if ((smag - 0.0) < 0.00000001)
+    if ((smag - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        smag = 0.000000001;
     }
     smag = sqrt(smag);
     sprintf(sbuff," ss: %1.3f (DMAX: %1.3f)",smag,DMAX); printout += sbuff;
@@ -4154,11 +4380,11 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
     smag = 0.;
     for (int i=0;i<len;i++)
         smag += dq0[i]*dq0[i];
-    if ((smag - 0.0) < 0.00000001)
+    if ((smag - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        smag = 0.000000001;
     }
     smag = sqrt(smag);
     sprintf(sbuff," ss: %1.3f (%1.3f)",smag,DMAX); printout += sbuff;
@@ -4203,13 +4429,14 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
         exit(-1);
     }
     gradrms = gradrms*gradrms*nicd0-gqe[maxoln]*gqe[maxoln];
-    if ((gradrms/nicd0 - 0.0) < 0.00000001)
+    double temp = gradrms/nicd0;
+    if ((temp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        temp = 0.000000001;
     }
-    gradrms = sqrt(gradrms/nicd0);
+    gradrms = sqrt(temp);
 #endif
 #if RIBBONS
     //recalc gradrms to account for perpendicular constraint
@@ -4218,14 +4445,15 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
-    if ((gradrms/nicd0 - 0.0) < 0.00000001)
+    double temp = gradrms/nicd0;
+    if ((temp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        temp = 0.000000001;
     }
     gradrms = gradrms*gradrms*nicd0-gqe[maxolnd]*gqe[maxolnd];
-    gradrms = sqrt(gradrms/nicd0);
+    gradrms = sqrt(temp);
 
     //  gradrms = 0.;
     //  for (int i=0;i<len;i++)
@@ -4483,11 +4711,11 @@ void ICoord::update_ic_eigen_ts(double* Cn)
     smag = 0.;
     for (int i=0;i<len;i++)
         smag += dq0[i]*dq0[i];
-    if ((smag - 0.0) < 0.00000001)
+    if ((smag - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        smag = 0.000000001;
     }
     smag = sqrt(smag);
     sprintf(sbuff," ss: %1.3f (DMAX: %1.3f)",smag,DMAX); printout += sbuff;
@@ -4605,6 +4833,7 @@ void ICoord::print_q(){
 
 
 int ICoord::ic_to_xyz() {
+    std::cout << "In ic_to_xyz()" << std::endl;
 
 #if 0
     printf(" frozen:");
@@ -4631,7 +4860,7 @@ int ICoord::ic_to_xyz() {
     //double* xyzd0 = new double[N3];
     double* btit = new double[N3*len];
     double* dq = new double[len];
-    double* qn = new double[len]; //target IC values
+    //double* qn = new double[len]; //target IC values
 
     // initialization
     for (int i=0; i<MAX_STEPS+2; i++)
@@ -4647,7 +4876,7 @@ int ICoord::ic_to_xyz() {
     for (int i=0; i<len; i++)
     {
         dq[i] = 0.0;
-        qn[i] = 0.0;
+        //qn[i] = 0.0;
     }
     for (int i=0; i<N3*len; i++)
     {
@@ -4659,12 +4888,13 @@ int ICoord::ic_to_xyz() {
 
     update_ic();
     bmatp_create();
+    check_eigenVals();
     bmat_create();
 
     for (int i=0;i<len;i++)
         dq[i] = dq0[i];
-    for (int i=0;i<len;i++)
-        qn[i] = q[i] + dq[i];
+    //for (int i=0;i<len;i++)
+    //    qn[i] = q[i] + dq[i];
 
 #if 0
     printf(" qn:");
@@ -4688,16 +4918,41 @@ int ICoord::ic_to_xyz() {
     {
         trans(btit,bmatti,N3,len);
 
-        for (int i=0;i<N3;i++) xyzd[i] = 0.;
+        for (int i=0;i<N3;i++) 
+            xyzd[i] = 0.;
         for (int i=0;i<N3;i++)
             for (int j=0;j<len;j++) 
+            {
+                if (btit[len*i+j] != btit[len*i+j])
+                {
+                    std::cout << "btit[len*i+j] contains nan " << btit[len*i+j] 
+                        << "  len*i+j: " << len*i+j << std::endl;
+                    exit(1);
+                }
+                if (dq[j] != dq[j])
+                {
+                    std::cout << "dq[j] contains nan " << dq[j] << "  j: " << j << std::endl;
+                    exit(1);
+                }
                 xyzd[i] += btit[len*i+j] * dq[j];
+                /*if (xyzd[i] > 2 || xyzd[i] < -2)
+                {
+                    std::cout << "Warning: Large xyzd value found 22." << std::endl;
+                    std::cout << "btit " << btit[len*i+j] << "  dq " << dq[j] << std::endl;
+                }*/
+            }
+
+        //for (int i=0;i<N3;i++)
+        //    std::cout << "XYZ 22 " << xyzd[i] << std::endl;
 
         if (frozen!=NULL)
             for (int i=0;i<natoms;i++)
                 if (frozen[i])
                     xyzd[3*i+0] = xyzd[3*i+1] = xyzd[3*i+2] = 0.;
 
+        for (int i=0;i<natoms;i++)
+            if (anames[i] == "X")
+                xyzd[3*i+0] = xyzd[3*i+1] = xyzd[3*i+2] = 0.;
 #if 0
         if (n==0)
         {
@@ -4710,9 +4965,7 @@ int ICoord::ic_to_xyz() {
 
         mag = 0.;
         for (int i=0;i<N3;i++)
-            mag = mag + pow(xyzd[i], 2);
-            //mag += xyzd[i]*xyzd[i];
-        std::cout << "MAG 1: " << mag << std::endl;
+            mag += xyzd[i]*xyzd[i];
 
 #if 0
         //was on, why does it exist?
@@ -4727,7 +4980,10 @@ int ICoord::ic_to_xyz() {
 #if 0
         for (int i=0;i<N3;i++)
             if (abs(xyzd[i])>MAX_MOVE)
+            {
                 xyzd[i] = sign(xyzd[i])*MAX_MOVE;
+                std::cout << "Warning: Adjusting xyzd value" << std::endl;
+            }
 #endif
 
         if (StringTools::isEqual(SCALEBT, 0.0))
@@ -4736,9 +4992,22 @@ int ICoord::ic_to_xyz() {
             exit(-1);
         }
         for (int i=0;i<N3;i++)
+        {
+            if (xyzd[i] != xyzd[i])
+                std::cout << "xyzd[i] contains nan " << xyzd[i] << std::endl;
+            if (coords[i] != coords[i])
+                std::cout << "coords[i] contains nan " << coords[i] << std::endl;
             xyz1[i] = coords[i] + xyzd[i]/SCALEBT;
+            if (xyz1[i] != xyz1[i])
+                std::cout << "xyz1[i] contains nan " << xyz1[i] << std::endl;
+        }
 
 #if 0
+        std::cout << " Printing xyzd values:" << std::endl;
+        printf(" %2i \n\n",natoms);
+        for (int i=0;i<natoms;i++)
+            printf(" %10.7f %10.7f %10.7f \n",xyzd[3*i+0],xyzd[3*i+1],xyzd[3*i+2]);
+        std::cout << "\n Printing xyz1 values:" << std::endl;
         printf(" %2i \n\n",natoms);
         for (int i=0;i<natoms;i++)
             printf(" %2s %10.7f %10.7f %10.7f \n",anames[i].c_str(),xyz1[3*i+0],xyz1[3*i+1],xyz1[3*i+2]);
@@ -4761,8 +5030,8 @@ int ICoord::ic_to_xyz() {
         bmatp_create();
         bmat_create();
 
-        for (int i=0;i<len;i++)
-            dq[i] = qn[i] - q[i];
+        //for (int i=0;i<len;i++)
+        //    dq[i] = qn[i] - q[i];
 
 #if 0
         printf(" dq: \n");
@@ -4771,14 +5040,20 @@ int ICoord::ic_to_xyz() {
         printf("\n");
 #endif
 
-        if ((mag - 0.0) < 0.00000001)
+        if ((mag - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on line " << __LINE__ 
+            std::cout << "Warning: Close to zero value in sqrt detected on line " << __LINE__ 
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            mag = 0.000000001;
+            std::cout << "Setting 'mag' on line " << __LINE__ << " of file " << __FILE__
+                << " to 0.00000001." << std::endl;
+            //exit(-1);
         }
         if (sqrt(mag)<0.0005)
+        {
+            //std::cout << "Mag close to zero. Break" << std::endl;
             break; // was not sqrt, 0.00005
+        }
     }
 
 #if 0
@@ -4789,11 +5064,11 @@ int ICoord::ic_to_xyz() {
 
     //printf(" diff in xyz mag (end %2i) is: %1.4f \n",n+1,sqrt(mag)); 
     double MAXMAG = 0.025*natoms;
-    if ((mag - 0.0) < 0.00000001)
+    if ((mag - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        mag = 0.000000001;
     }
     if (sqrt(mag)>MAXMAG)
     {
@@ -4801,6 +5076,7 @@ int ICoord::ic_to_xyz() {
         ixflag++;
         double maglow = 100.;
         int nlow = -1;
+        // finding minimum magall[n] and setting it equal to maglow
         for (int n=0;n<MAX_STEPS+2;n++)
             if (magall[n]<maglow)
             {
@@ -4832,7 +5108,7 @@ int ICoord::ic_to_xyz() {
     delete [] magall;
     delete [] xyzall;
     delete [] dq;
-    delete [] qn;
+    //delete [] qn;
 
     return success;
 }
@@ -4841,6 +5117,7 @@ int ICoord::ic_to_xyz() {
 
 int ICoord::ic_to_xyz_opt() {
 
+    std::cout << " In ic_to_xyz_opt() " << std::endl;
     int MAX_STEPS = 30; //was 8
 
     int rflag = 0;
@@ -4853,14 +5130,34 @@ int ICoord::ic_to_xyz_opt() {
     for (int i=0;i<MAX_STEPS+2;i++)
         xyzall[i] = new double[N3];
     double* magall = new double[MAX_STEPS+2];
-    for (int i=0;i<MAX_STEPS+2;i++)
-        magall[i] = 100.;
     double* xyz1 = new double[N3];
     double* xyzp = new double[N3];
     double* xyzd = new double[N3];
     double* btit = new double[N3*len];
     double* dq = new double[len];
     double* qn = new double[len]; //target IC values
+
+    // initialization
+    for (int i=0; i<MAX_STEPS+2; i++)
+    {
+        magall[i] = 100.;
+        for (int j=0; j<N3; j++)
+        {
+            xyzall[i][j] = 0.0;
+            xyz1[j] = 0.0;
+            xyzp[j] = 0.0;
+            xyzd[j] = 0.0;
+        }
+    }
+    for (int i=0; i<len; i++)
+    {
+        dq[i] = 0.0;
+        qn[i] = 0.0;
+    }
+    for (int i=0; i<N3*len; i++)
+    {
+        btit[i] = 0.0;
+    }
 
     update_ic();
     int len_icp = nbonds+nangles+ntor;
@@ -4936,17 +5233,29 @@ int ICoord::ic_to_xyz_opt() {
         for (int i=0;i<N3;i++) xyzd[i] = 0.;
         for (int i=0;i<N3;i++)
             for (int j=0;j<len;j++) 
+            {
                 xyzd[i] += btit[len*i+j] * dq[j];
+                /*if (xyzd[i] > 1 || xyzd[i] < -1)
+                {
+                    std::cout << "Warning: Large xyzd value found 11." << std::endl;
+                    std::cout << "btit " << btit[len*i+j] << "  dq " << dq[j] << std::endl;
+                }*/
+            }
+        //for (int i=0;i<N3;i++)
+        //    std::cout << "XYZ " << xyzd[i] << std::endl;
 
         if (frozen!=NULL)
             for (int i=0;i<natoms;i++)
                 if (frozen[i])
                     xyzd[3*i+0] = xyzd[3*i+1] = xyzd[3*i+2] = 0.;
 
-#if 0
+#if 1
         for (int i=0;i<N3;i++)
             if (abs(xyzd[i])>MAX_MOVE)
+            {
                 xyzd[i] = sign(xyzd[i])*MAX_MOVE;
+                std::cout << "Warning: Adjusting xyzd value" << std::endl;
+            }
 #endif
 
         if (StringTools::isEqual(SCALEBT, 0.0))
@@ -4988,11 +5297,11 @@ int ICoord::ic_to_xyz_opt() {
         dqmag = 0.;
         for (int i=0;i<len;i++)
             dqmag += dq[i]*dq[i];
-        if ((dqmag - 0.0) < 0.00000001)
+        if ((dqmag - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmag = 0.000000001;
         }
         dqmag = sqrt(dqmag);
         //printf(" dqmag: %1.3f",dqmag);
@@ -5023,11 +5332,11 @@ int ICoord::ic_to_xyz_opt() {
         printf("\n");
 #endif
 
-        if ((mag - 0.0) < 0.00000001)
+        if ((mag - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            mag = 0.000000001;
         }
         if (sqrt(mag)<0.0005) break; // was not sqrt, 0.00005
 
@@ -5042,11 +5351,11 @@ int ICoord::ic_to_xyz_opt() {
     //printf(" diff in xyz mag (end) is: %1.4f \n",sqrt(mag)); 
     //printf(" dq[nicd0-1]: %1.2f ",dq[nicd0-1]);
     double MAXMAG = 0.025*natoms;
-    if ((mag - 0.0) < 0.00000001)
+    if ((mag - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        mag = 0.000000001;
     }
     if (sqrt(mag)>MAXMAG)
     {
@@ -5494,11 +5803,11 @@ int ICoord::create_prima(int nnodes0, int nbonds1, int nangles1, int ntor1, doub
     double norm = 0.;
     for (int j=0;j<len;j++)
         norm += Cp[j]*Cp[j];
-    if ((norm - 0.0) < 0.00000001)
+    if ((norm - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        norm = 0.000000001;
     }
     norm = sqrt(norm);
     for (int j=0;j<len;j++)
@@ -5875,11 +6184,11 @@ int ICoord::davidson_H(int nval)
             double mag = 0.;
             for (int j=0;j<len;j++)
                 mag += vecs[wv][j]*vecs[wv][j];
-            if ((mag - 0.0) < 0.00000001)
+            if ((mag - 0.0) < 0.000000001)
             {
-                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
-                exit(-1);
+                mag = 0.000000001;
             }
             double norm = sqrt(mag);
             for (int j=0;j<len;j++)
@@ -6063,3 +6372,33 @@ int ICoord::davidson_H(int nval)
     return nnegfound;
 }
 
+void ICoord::check_eigenVals()
+{
+    int len = nbonds + nangles + ntor + nxyzic;
+    int N3 = 3*natoms;
+    // e: array of eigen values
+    double* e = new double[len];
+    double* G = new double[len*len];
+    for (int i=0;i<len*len;i++) 
+        G[i] = 0.;
+    mat_times_mat_bt(G,bmatp,bmatp,len,len,N3);
+    Diagonalize(G,e,len);
+    for (int i=0; i<len*len; i++) 
+        if (G[i] != G[i])
+        {
+            std::cout << "ERROR: nan detected on line " << __LINE__ << " of "
+                << __FILE__ << std::endl;
+            exit(-1);
+        }
+    int len_d = N3;
+
+    int lowev = 0;
+    for (int i=0;i<len_d;i++)
+        if (e[len-1-i]<0.001)
+        {
+            printf(" small ev TT: %10.8f\n",e[len-1-i]);
+            lowev++;
+        }
+    if (lowev>0)
+        printf(" lowev TT: %i",lowev);
+}

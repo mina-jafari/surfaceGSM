@@ -91,6 +91,7 @@ class ICoord {
         // function to make arrays?
 
         int isTM(int anum);
+        int isSemiconductor(int anum);
 
         // Gradient terms
         double* bmat;
@@ -311,6 +312,7 @@ class ICoord {
         void save_hessp(string filename);
         void read_hessp(string filename);
         void read_hessxyz(string filename, int write);
+        void check_eigenVals();
 
 };
 

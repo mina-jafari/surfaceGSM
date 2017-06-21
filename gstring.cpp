@@ -245,12 +245,12 @@ void GString::String_Method_Optimization()
     finder = 0;
 #endif
 
-    double emax;
-    double emaxp;
-    double emin;
-    double overlap;
-    int overlapn;
-    int nmax;
+    double emax = 0.0;
+    double emaxp = 0.0;
+    double emin = 0.0;
+    double overlap = 0.0;
+    int overlapn = 0;
+    int nmax = 0;
     gradJobCount = 0;
     gradFailCount = 0;
     climb = 0;
@@ -258,9 +258,9 @@ void GString::String_Method_Optimization()
     nsplit = 0;
     n0 = 0;
     growing = 1;
-    if ((3*natoms - 0.0) < 0.00000001)
+    if ((3*natoms - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
             exit(-1);
     }
@@ -312,10 +312,10 @@ void GString::String_Method_Optimization()
     double xdistmin = 1000.;
     double xdistmax = -1000.;
     for (int i=0;i<natoms;i++)
-        if (coords[0][3*i]>xdistmax)
+        if (coords[0][3*i] > xdistmax)
             xdistmax = coords[0][3*i];
     for (int i=0;i<natoms;i++)
-        if (coords[0][3*i]<xdistmin)
+        if (coords[0][3*i] < xdistmin)
             xdistmin = coords[0][3*i];
     xdist = xdistmax-xdistmin + 1.0 + 0.25;
 
@@ -1371,8 +1371,8 @@ void GString::structure_init(string xyzfile){
         surftype = tok_line[0];
     if (surftype == "none")
     {
-        std::cout << "ERROR: not an ASE generated input file" << std::endl;
-        std::cout << "Set syrface type on the second line of " << std::endl;
+        std::cout << "ERROR: not an ASE generated input file." << std::endl;
+        std::cout << "Set surface type on the second line of initial###.xyz file." << std::endl;
     }
     if (isSSM)
         printf(" found surftype: %s \n",surftype.c_str());
@@ -1406,7 +1406,8 @@ void GString::structure_init(string xyzfile){
     {
         anames[i]="X";
         anumbers[i]=0;
-        amasses[i]=-1.;
+        //amasses[i]=-1.;
+        amasses[i]=0.;
     }
 
     coords = new double*[1+nnmax];
@@ -1909,11 +1910,11 @@ double GString::tangent_1b(double* ictan)
     double norm0 = 0.;
     for (int i=0;i<size_ic;i++)
         norm0 += ictan[i]*ictan[i];
-    if ((norm0 - 0.0) < 0.00000001)
+    if ((norm0 - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        norm0 = 0.000000001;
     }
     double norm = sqrt(norm0);
     if (StringTools::isEqual(norm, 0.0))
@@ -2740,11 +2741,11 @@ void GString::starting_string_dm(double* dq)
         double dqmag = 0.;
         for (int j=0;j<len_d;j++)
             dqmag += dq[j]*dq[j];
-        if ((dqmag - 0.0) < 0.00000001)
+        if ((dqmag - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmag = 0.000000001;
         }
         dqmag = sqrt(dqmag);
         printf(" dqmag: %1.2f",dqmag);
@@ -3223,8 +3224,12 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
 
     //previously only for find mode
     int optlastnode = 0;
-    if (isSSM && V_profile[nnmax-1] > V_profile[nnmax-2] && climb && fp>0)
+    //if (isSSM && V_profile[nnmax-1] > V_profile[nnmax-2] && climb && fp>0)
+    if (isSSM && V_profile[nnmax-1] > V_profile[nnmax-2] && fp>0)
+    {
         optlastnode = 1;
+        std::cout << "Optimizing last node." << std::endl;
+    }
 
 
     if (ptsn!=TSnode && climb && !find)
@@ -3288,7 +3293,8 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
         if (omp_get_num_threads()>1 && active[n]>0)
             printf(" tid: %i/%i node: %i status: %i \n",omp_get_thread_num()+1,omp_get_num_threads(),n,active[n]);
 #endif
-        if (active[n]>0 && n!=nnmax-1)
+        //if (active[n]>0 && n!=nnmax-1)
+        if (active[n]>0)
         {
             //printf(" os1l"); fflush(stdout);
             int exsteps = 1; //multiplier for nodes near TSnode in energy
@@ -3311,11 +3317,11 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
             double norm = 0.;
             for (int i=0;i<size_ic;i++)
                 norm += ictan[n][i]*ictan[n][i];
-            if ((norm - 0.0) < 0.00000001)
+            if ((norm - 0.0) < 0.000000001)
             {
-                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
-                exit(-1);
+                norm = 0.000000001;
             }
             norm = sqrt(norm);
             if (StringTools::isEqual(norm, 0.0))
@@ -3433,13 +3439,14 @@ int GString::knnr_vs_opt(int n)
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
-    if ((grms/nicd - 0.0) < 0.00000001)
+    double temp = grms/nicd;
+    if ((temp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-            exit(-1);
+        temp = 0.000000001;
     }
-    grms = sqrt(grms/nicd);
+    grms = sqrt(temp);
     if (V_profile[n] < -1000.)
     {
         V_profile[n] = 0.;
@@ -3536,13 +3543,14 @@ int GString::check_close_dist(int n, double* dist, int* newbonds)
             double y0 = allcoords[n][3*i+1]-allcoords[n][3*j+1];
             double z0 = allcoords[n][3*i+2]-allcoords[n][3*j+2];
             //printf(" xyz: %2.1f %2.1f %2.1f \n",x0,y0,z0);
-            if ((x0*x0+y0*y0+z0*z0 - 0.0) < 0.00000001)
+            double temp = x0*x0+y0*y0+z0*z0;
+            if ((temp - 0.0) < 0.000000001)
             {
-                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
-                exit(-1);
+                temp = 0.000000001;
             }
-            dist[i*natoms+j] = dist[j*natoms+i] = sqrt(x0*x0+y0*y0+z0*z0);
+            dist[i*natoms+j] = dist[j*natoms+i] = sqrt(temp);
         }
 
     for (int i=0;i<natoms;i++)
@@ -3758,11 +3766,11 @@ void GString::ic_reparam_g(double** dqa, double* dqmaga)
         disprms = 0.;
         for (int n=n0+1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
-        if ((disprms - 0.0) < 0.00000001)
+        if ((disprms - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            disprms = 0.000000001;
         }
         disprms = sqrt(disprms);
         lastdispr = disprms;
@@ -4084,11 +4092,11 @@ void GString::ic_reparam(double** dqa, double* dqmaga, int rtype)
         disprms = 0.;
         for (int n=n0+1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
-        if ((disprms - 0.0) < 0.00000001)
+        if ((disprms - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            disprms = 0.000000001;
         }
         disprms = sqrt(disprms);
         lastdispr = disprms;
@@ -4202,9 +4210,10 @@ double GString::reparam_step_control(double* rpmovep, double* rpmove)
         //printf(" rpmp/rpm: %1.2f %1.2f",rpmovep[n],rpmove[n]);
         if (StringTools::isEqual(rpmovep[n], 0.0))
         {    
-            std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file.\n" 
-            << "Adding 10^-4 to the value." << std::endl;
-            rpmovep[n] += 0.0001;
+            std::cout << "Warning: Zero detected on line " << __LINE__ << " of file "
+                << __FILE__ << std::endl;
+            std::cout << "Adding 10^-3 to the value." << std::endl;
+            rpmovep[n] += 0.0010;
         }
         if (rpmove[n]/rpmovep[n]<-0.8 &&
                 fabs(rpmove[n])>0.02)
@@ -4382,11 +4391,11 @@ void GString::ic_reparam_new(double** dqa, double* dqmaga, int rtype)
         disprms = 0.;
         for (int n=n0+1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
-        if ((disprms - 0.0) < 0.00000001)
+        if ((disprms - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            disprms = 0.000000001;
         }
         disprms = sqrt(disprms);
         lastdispr = disprms;
@@ -4619,11 +4628,11 @@ void GString::ic_reparam_h(double** dqa, double* dqmaga, int rtype)
         disprms = 0.;
         for (int n=1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
-        if ((disprms - 0.0) < 0.00000001)
+        if ((disprms - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            disprms = 0.000000001;
         }
         disprms = sqrt(disprms);
         //printf(" disprms: %1.3f \n",disprms);
@@ -4830,11 +4839,11 @@ void GString::ic_reparam_cut(int min, double** dqa, double* dqmaga, int rtype)
         disprms = 0.;
         for (int n=1;n<nnmax-1;n++)
             disprms += rpmove[n]*rpmove[n];
-        if ((disprms - 0.0) < 0.00000001)
+        if ((disprms - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            disprms = 0.000000001;
         }
         disprms = sqrt(disprms);
         //printf(" disprms: %1.3f \n",disprms);
@@ -5522,6 +5531,9 @@ void GString::get_tangents_1(double** dqa, double* dqmaga, double** ictan)
         // tangent in redundant coordinates
         for (int i=0;i<size_ic;i++) ictan[n][i] = 0.;
         tangent_1(ictan[n]);
+        if (ictan[n] != ictan[n])
+            std::cout << "ERROR: NaN detected on line " << __LINE__ 
+                << " of file " << __FILE__ << std::endl;
 
         dqmaga[n] = 0.;
 #if 1
@@ -5542,14 +5554,13 @@ void GString::get_tangents_1(double** dqa, double* dqmaga, double** ictan)
         for (int j=size_icp;j<size_ic;j++)
             dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
 #endif
-        if ((dqmaga[n] - 0.0) < 0.00000001)
+        if ((dqmaga[n] - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmaga[n] = 0.000000001;
         }
         dqmaga[n] = sqrt(dqmaga[n]);
-        //printf(" dqmaga: %1.2f",dqmaga[n]);
 
     }
 
@@ -5660,11 +5671,11 @@ void GString::get_tangents_1g(double** dqa, double* dqmaga, double** ictan)
             dqmaga[nlist[2*n]] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
         }
 #endif
-        if ((dqmaga[nlist[2*n]] - 0.0) < 0.00000001)
+        if ((dqmaga[nlist[2*n]] - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmaga[nlist[2*n]] = 0.000000001;
         }
         dqmaga[nlist[2*n]] = sqrt(dqmaga[nlist[2*n]]);
         //printf(" dqmaga: %1.2f",dqmaga[nlist[2*n]]);
@@ -5795,7 +5806,7 @@ void GString::get_tangents_1e(double** dqa, double* dqmaga, double** ictan)
             double dE2 = abs(V_profile[n] - V_profile[n-1]);
             double dEmax = max(dE1,dE2);
             double dEmin = min(dE1,dE2);
-            if (StringTools::isEqual(dEmax+dEmin+0.00000001, 0.0))
+            if (StringTools::isEqual(dEmax+dEmin+0.000000001, 0.0))
             {    
                 std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
                     << __FILE__ << std::endl;
@@ -5960,11 +5971,11 @@ void GString::get_tangents(double** dqa, double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<size_ic;j++)
             dqmaga[n] += ictan[n][j]*ictan[n][j];
-        if ((dqmaga[n] - 0.0) < 0.00000001)
+        if ((dqmaga[n] - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmaga[n] = 0.000000001;
         }
         dqmaga[n] = sqrt(dqmaga[n]);
         //printf(" dqmaga: %1.2f",dqmaga[n]);
@@ -6052,11 +6063,11 @@ void GString::get_tangents_dm(double** dqa, double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<size_ic_dm;j++)
             dqmaga[n] += ictan[n][j]*ictan[n][j];
-        if ((dqmaga[n] - 0.0) < 0.00000001)
+        if ((dqmaga[n] - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmaga[n] = 0.000000001;
         }
         dqmaga[n] = sqrt(dqmaga[n]);
         //printf(" dqmaga: %1.2f",dqmaga[n]);
@@ -6128,11 +6139,11 @@ void GString::get_distances(double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<size_ic;j++) //CPMZ: - ntor?
             dqmaga[n] += ictan[n][j]*ictan[n][j];
-        if ((dqmaga[n] - 0.0) < 0.00000001)
+        if ((dqmaga[n] - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmaga[n] = 0.000000001;
         }
         dqmaga[n] = sqrt(dqmaga[n]);
 #endif
@@ -6186,11 +6197,11 @@ void GString::get_distances_dm(double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<len_d;j++)
             dqmaga[n] += dqa[n][j]*dqa[n][j];
-        if ((dqmaga[n] - 0.0) < 0.00000001)
+        if ((dqmaga[n] - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmaga[n] = 0.000000001;
         }
         dqmaga[n] = sqrt(dqmaga[n]);
         // printf(" dqmaga[%i]: %1.2f \n",n,dqmaga[n]);
@@ -6202,11 +6213,11 @@ void GString::get_distances_dm(double* dqmaga, double** ictan)
         dqmaga[n] = 0.;
         for (int j=0;j<size_ic_dm;j++)
             dqmaga[n] += ictan[n][j]*ictan[n][j];
-        if ((dqmaga[n] - 0.0) < 0.00000001)
+        if ((dqmaga[n] - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            dqmaga[n] = 0.000000001;
         }
         dqmaga[n] = sqrt(dqmaga[n]);
         // printf(" dqmaga[%i]: %1.2f \n",n,dqmaga[n]);
@@ -6420,13 +6431,14 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[0] = xyz1[3*a[1]+0];
     u1[1] = xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[1]+2];
-    if ((u1[0]*u1[0]+u1[1]*u1[1] - 0.0) < 0.00000001)
+    double temp = u1[0]*u1[0]+u1[1]*u1[1];
+    if ((temp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        temp = 0.000000001;
     }
-    double norm = sqrt(u1[0]*u1[0]+u1[1]*u1[1]);
+    double norm = sqrt(temp);
     if (StringTools::isEqual(norm, 0.0))
     {    
         std::cout << "ERROR: Zero detected on line " << __LINE__ << " of file " 
@@ -6454,9 +6466,9 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[0] = xyz1[3*a[1]+0];
     u1[1] = xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[1]+2];
-    if ((u1[0]*u1[0]+u1[2]*u1[2] - 0.0) < 0.00000001)
+    if ((u1[0]*u1[0]+u1[2]*u1[2] - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
@@ -6490,13 +6502,14 @@ void GString::rotate_structure(double* xyz0, int* a)
     u1[0] = xyz1[3*a[2]+0] - xyz1[3*a[1]+0];
     u1[1] = xyz1[3*a[2]+1] - xyz1[3*a[1]+1];
     u1[2] = xyz1[3*a[2]+2] - xyz1[3*a[1]+2];
-    if ((u1[1]*u1[1]+u1[2]*u1[2] - 0.0) < 0.00000001)
+    temp = u1[1]*u1[1]+u1[2]*u1[2];
+    if ((temp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        temp = 0.000000001;
     }
-    norm = sqrt(u1[1]*u1[1]+u1[2]*u1[2]);
+    norm = sqrt(temp);
 
     if (StringTools::isEqual(norm, 0.0))
     {    
@@ -7116,9 +7129,9 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms,
         double endenergy, string strfileg, int& tscontinue, double gaddmax, 
         int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan)
 {
-    if ((3*natoms - 0.0) < 0.00000001)
+    if ((3*natoms - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
@@ -7257,13 +7270,14 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms,
                     << __FILE__ << std::endl;
                 exit(-1);
             }
-            if ((gradrms/(nnR-1) - 0.0) < 0.00000001)
+            double temp = gradrms/(nnR-1);
+            if ((temp - 0.0) < 0.000000001)
             {
-                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
-                exit(-1);
+                temp = 0.000000001;
             }
-            gradrms = sqrt(gradrms/(nnR-1));
+            gradrms = sqrt(temp);
         }
         else
         {
@@ -7273,13 +7287,14 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms,
                     << __FILE__ << std::endl;
                 exit(-1);
             }
-            if ((gradrms/(nn-2) - 0.0) < 0.00000001)
+            double temp = gradrms/(nn-2);
+            if ((temp - 0.0) < 0.000000001)
             {
-                std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+                std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                     << " of file " << __FILE__ << std::endl;
-                exit(-1);
+                temp = 0.000000001;
             }
-            gradrms = sqrt(gradrms/(nn-2));
+            gradrms = sqrt(temp);
         }
         emaxp = emax;
         emax = -10000;
@@ -7365,7 +7380,8 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms,
         {
             printf(" running string up to node: %i from %i \n",nnR,n0);
             nnmax = nnR;
-            for (int n=1;n<nnmax-1;n++)
+            //for (int n=1;n<nnmax-1;n++)
+            for (int n=1;n<nnmax;n++)
                 active[n] = 1;
             for (int n=1;n<nnmax-1;n++)
                 icoords[n].OPTTHRESH = CONV_TOL;
@@ -7383,9 +7399,9 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms,
         int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan,
         int finder, int climber, int do_tp, int& tp)
 {
-    if ((3*natoms - 0.0) < 0.00000001)
+    if ((3*natoms - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
         exit(-1);
     }
@@ -7430,13 +7446,14 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms,
                 << __FILE__ << std::endl;
             exit(-1);
         }
-        if ((gradrms/(nnmax-2-n0) - 0.0) < 0.00000001)
+        double temp = gradrms/(nnmax-2-n0);
+        if ((temp - 0.0) < 0.000000001)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
-            exit(-1);
+            temp = 0.000000001;
         }
-        gradrms = sqrt(gradrms/(nnmax-2-n0));
+        gradrms = sqrt(temp);
         emaxp = emax;
         emax = -10000;
         nmax = 1;
@@ -7601,8 +7618,11 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms,
         //standard GSM convergence criteria
         if (!isSSM)
         {
-            if (find && icoords[TSnode0].gradrms < CONV_TOL && emax<V_profile[TSnode0]+0.01) { tscontinue = 0; break; } //adjustable parameter
-            if (find && totalgrad < 0.1 && icoords[TSnode0].gradrms < 2.5*CONV_TOL && emaxp + 0.01 > emax && emaxp - 0.01 < emax && nclimb<0) { tscontinue = 0; break; } //adjustable parameter
+            if (find && icoords[TSnode0].gradrms < CONV_TOL && emax<V_profile[TSnode0]+0.01) 
+            { tscontinue = 0; break; } //adjustable parameter
+            if (find && totalgrad < 0.1 && icoords[TSnode0].gradrms < 2.5*CONV_TOL && 
+                    emaxp + 0.01 > emax && emaxp - 0.01 < emax && nclimb<0) 
+            { tscontinue = 0; break; } //adjustable parameter
             if (!climber && !finder && totalgrad<0.05) { tscontinue = 0; break; } //end even if not TS search
         }
         else if (isSSM && !added)
@@ -7897,7 +7917,8 @@ void GString::add_last_node(int type)
         printf(" too many nodes, cannot add (%i/%i) \n",nnR,nnmax0);
         return;
     }
-    int noptsteps = 15;
+    //int noptsteps = 15;
+    int noptsteps = 50;
     int size_ic = icoords[nnR-1].nbonds + icoords[nnR-1].nangles + icoords[nnR-1].ntor + icoords[nnR-1].nxyzic;
     icoords[nnR].OPTTHRESH = CONV_TOL;
     if (type==1)

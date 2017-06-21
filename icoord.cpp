@@ -55,7 +55,14 @@ int ICoord::init(int nat, string* anam, int* anum, double* xyz){
         anames[i] = anam[i];
 
     for (int i=0;i<3*natoms;i++)
+    {
         coords[i]=xyz[i];
+        if (coords[i] != coords[i])
+        {
+            std::cout << "ERROR: nan on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+    }
     for (int i=0;i<3*natoms;i++)
         coords0[i]=xyz[i];
 
@@ -99,7 +106,14 @@ int ICoord::reset(double* xyz){
     // printf(" resetting icoord via xyz structure \n");
 
     for (int i=0;i<3*natoms;i++)
+    {
         coords[i]=xyz[i];
+        if (coords[i] != coords[i])
+        {
+            std::cout << "ERROR: nan on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+    }
     for (int i=0;i<3*natoms;i++)
         coords0[i]=xyz[i];
 
@@ -129,7 +143,14 @@ int ICoord::reset(int nat, string* anam, int* anum, double* xyz){
         anames[i] = anam[i];
 
     for (int i=0;i<3*natoms;i++)
+    {
         coords[i]=xyz[i];
+        if (coords[i] != coords[i])
+        {
+            std::cout << "ERROR: nan on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            exit(-1);
+        }
+    }
     for (int i=0;i<3*natoms;i++)
         coords0[i]=xyz[i];
 
@@ -172,6 +193,9 @@ void ICoord::create_xyz()
 int ICoord::ic_create()
 {
     make_bonds();
+    //std::cout << nbonds << std::endl;
+    //for (int i=0;i<nbonds;i++)
+    //    printf("WWW %i %i \n",bonds[i][0]+1, bonds[i][1]+1);
 
     if (isOpt)
     {
@@ -180,7 +204,14 @@ int ICoord::ic_create()
         if (use_xyz)
         {
             get_xyzic(); // Mina
+            //std::cout << nbonds << std::endl;
+            //for (int i=0;i<nbonds;i++)
+            //    printf("GGG %i %i \n",bonds[i][0]+1, bonds[i][1]+1);
             bond_frags_xyz();
+            //std::cout << nbonds << std::endl;
+            //for (int i=0;i<nbonds;i++)
+            //    printf("BBB %i %i \n",bonds[i][0]+1, bonds[i][1]+1);
+            //exit(1);
         }
         else
             bond_frags();
@@ -465,16 +496,17 @@ void ICoord::make_frags()
     frags = new int[natoms];
     nfrags = 0;
     int* atominfrag = new int[natoms];
-    for (int i=0;i<natoms;i++) atominfrag[i] = 0;
-
-    for (int i=0;i<natoms;i++) frags[i] = -1;
+    for (int i=0;i<natoms;i++)
+    {
+        atominfrag[i] = 0;
+        frags[i] = -1;
+    }
 
     for (int i=0;i<nbonds;i++)
     {
         atominfrag[bonds[i][0]] = 1;
         atominfrag[bonds[i][1]] = 1;
 
-        // is this first if statement ever trigerred? Mina  TODO
         if ( frags[bonds[i][0]] == -1 && frags[bonds[i][1]] == -1 )
         {
             frags[bonds[i][0]] = nfrags;
@@ -503,12 +535,38 @@ void ICoord::make_frags()
                 for (int j=0;j<natoms;j++)
                     if (frags[j]==f2)
                         frags[j] = f1;
-                if (f2==nfrags-1)
-                    nfrags--;
+                //if (f2==nfrags-1)
+                //    nfrags--;
             }
         }
     } //loop i over nbonds
 
+    //Mina
+    //Check if there are frags with no atoms in them
+    int* fragCheck = new int[nfrags];
+    for (int i=0; i<nfrags; i++)
+        fragCheck[i] = 0;
+    for (int i=0; i<natoms; i++)
+    {
+        for (int j=0; j<nfrags; j++)
+        {
+            if (frags[i] == j)
+                fragCheck[j] += 1;
+        }
+    }
+    //Delete frags with no atoms in them
+    int temp = nfrags;
+    for (int j=temp-1; j>-1; j--)
+    {
+        if (fragCheck[j] == 0)
+        {
+            for (int i=0; i<natoms; i++)
+                if (frags[i] == j+1)
+                    frags[i] = j;
+            nfrags--;
+        }
+    }
+    
     int foundxyz = 0;
     for (int i=0;i<natoms;i++)
         if (!atominfrag[i])
@@ -532,7 +590,7 @@ void ICoord::make_frags()
 void ICoord::bond_frags_xyz()
 {
     printf(" in bond_frags_xyz() \n");
-    if (nfrags<2) return;
+    //if (nfrags<2) return;
 
     int found = 0;
     int found2 = 0;
@@ -547,20 +605,22 @@ void ICoord::bond_frags_xyz()
     {
         for (int n2=0;n2<n1;n2++)
         {
-            if (natoms<150)
-                printf(" connecting frag %i to frag %i: ",n1+1,n2+1);
+            //if (natoms<150)
+            //    printf(" connecting frag %i to frag %i: ",n1+1,n2+1);
 
-            //found = 0; Mina
-            //found2 = 0; Mina
+            found = 0;
+            found2 = 0;
             double close = 0.;
             mclose = 1000.;
+            // find atoms that are not in the same fragment. Loop until finding
+            // the closest distance
             for (int i=0;i<natoms;i++)
             {
                 for (int j=0;j<natoms;j++)
                 {
                     if (frags[i]==n1 && frags[j]==n2)
                     {
-                        if (isTM(i)==0 && isTM(j)==0)
+                        //if (isTM(i)==0 && isTM(j)==0)
                         {
                             close = distance(i,j);
                             if (close<mclose)
@@ -574,14 +634,23 @@ void ICoord::bond_frags_xyz()
                     }
                 }
             }
+            if (found && !bond_exists(a1,a2))
+            {
+                printf(" connecting frag %i to frag %i: ",n1+1,n2+1);
+                printf(" bond pair1 added : %i %i \n",a1+1,a2+1);
+                bonds[nbonds][0] = a1;
+                bonds[nbonds][1] = a2;
+                bondd[nbonds] = mclose;
+                nbonds++;
+            } // if found
 
             //now connect a1 to next nearest
             mclose2 = 1000.;
             for (int i=0;i<natoms;i++)
             {
-                //if (frags[i]==n1 && i!=a1 && i!=a2)
+                //if ((frags[i]==n1 || frags[i] == n2) && i!=a1 && i!=a2)
                 if (frags[i]!=n1 && i!=a1 && i!=a2)
-                    //if (isTM(i)==0) Mina
+                    //if (isTM(i)==0)
                 {
                     close = distance(i,a1);
                     if (close<mclose2)
@@ -594,18 +663,10 @@ void ICoord::bond_frags_xyz()
                 } 
             }
 
-            if (found && !bond_exists(a1,a2))
-            {
-                printf(" bond pair1 added : %i %i ",a1+1,a2+1);
-                bonds[nbonds][0] = a1;
-                bonds[nbonds][1] = a2;
-                bondd[nbonds] = mclose;
-                nbonds++;
-            } // if found
-
             if (found2 && !bond_exists(b1,b2))
             {
-                printf(" bond pair2 added : %i %i ",b1+1,b2+1);
+                printf(" connecting frag %i to frag %i: ",n1+1,n2+1);
+                printf(" bond pair2 added : %i %i \n",b1+1,b2+1);
                 bonds[nbonds][0] = b1;
                 bonds[nbonds][1] = b2;
                 bondd[nbonds] = mclose2;
@@ -615,6 +676,26 @@ void ICoord::bond_frags_xyz()
         } //loop n2<n1 over nfrags
     }
 
+    coord_num();
+    nxyzic = 0;
+
+    std::cout << "Atoms in xyz coord" << std::endl;
+    for (int i=0;i<natoms;i++)
+        //if ((coordn[i]<2 && isTM(i)) || coordn[i]<1)
+        //if ((coordn[i]<2 && isTM(i)) || coordn[i]<1 || anames[i] == "X")
+        //if (isTM(i) || isSemiconductor(i) || anames[i] == "X")
+//        if (isTM(i) || isSemiconductor(i) || coordn[i] < 1)
+        //if ((coordn[i] < 4 && isTM(i)) || (coordn[i] < 4 && isSemiconductor(i)) || coordn[i] < 1)
+        if ((coordn[i]<2 && isTM(i)) || (coordn[i]<2 && isSemiconductor(i)))
+        //if (coordn[i] < 1)
+        {
+            //printf(" low coordn (%i), setting xyz: %i \n",coordn[i],i+1);
+            //printf(" low coordn (%i), setting xyz: %i ",coordn[i],i+1);
+            //std::cout << anames[i] << std::endl;
+            xyzic[i] = 1;
+            nxyzic += 3;
+        }
+    std::cout << std::endl;
     return;
 }
 
@@ -877,10 +958,11 @@ void ICoord::get_xyzic()
                 if (frozen[a1] && frozen[a2])
                     frzpair = 1;
 
-            // delete a bond if both atoms transition metals and abundant
-            if ( ((isTM(a1) && isTM(a2)) && (oxel[a1] && oxel[a2])) || frzpair)
+            // delete a bond if both atoms transition metals
+            //if ( ((isTM(a1) && isTM(a2)) && (oxel[a1] && oxel[a2])) || frzpair)
+            if ((isTM(a1) && isTM(a2)) || frzpair)
             {
-                std::cout << "Deleting bonds " << a1+1 << "   " << a2+1 << std::endl;
+                std::cout << "Deleting bonds 1 " << a1+1 << "   " << a2+1 << std::endl;
                 //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
                 //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
                 for (int j=i;j<nbonds-1;j++)
@@ -896,11 +978,7 @@ void ICoord::get_xyzic()
     }
     if (use_xyz==2) return;
 
-
-    //int* oxel = new int[natoms]; Mina
-    //int nox = get_ox(oxel); Mina
-
-    nxyzic = 0;
+    //nxyzic = 0;
     for (int i=0;i<natoms;i++)
         xyzic[i] = 0;
 
@@ -914,11 +992,15 @@ void ICoord::get_xyzic()
                 frzpair = 1;
 
         //if ((isTM(a1) && isTM(a2)) || frzpair || oxel[a1] || oxel[a2])
-        if (frzpair || oxel[a1] || oxel[a2])
+        // bonds are deleted if both transition metals and abundant
+        //if ((isTM(a1) && isTM(a2) && oxel[a1] && oxel[a2]) || frzpair)
+        bool bool1 = (isTM(a1) && isTM(a2));
+        bool bool2 = (isSemiconductor(a1) && isSemiconductor(a2));
+        if ( ((bool1 || bool2) && oxel[a1] && oxel[a2]) || frzpair)
+        //if (frzpair || oxel[a1] || oxel[a2])
         {
             //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
             //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
-            // bonds are deleted if transition metal
             for (int j=i;j<nbonds-1;j++)
             {
                 bonds[j][0] = bonds[j+1][0];
@@ -932,14 +1014,15 @@ void ICoord::get_xyzic()
 
     coord_num();
 
-    for (int i=0;i<natoms;i++)
+/*    for (int i=0;i<natoms;i++)
         if ((coordn[i]<2 && isTM(i)) || coordn[i]<1)
             //  if (coordn[i]<1)
         {
             //printf(" low coordn (%i), setting xyz: %i \n",coordn[i],i);
+            printf(" low coordn (%i), setting xyz: %i \n",coordn[i],i+1);
             xyzic[i] = 1;
             nxyzic += 3;
-        }
+        } MMMMMMMM */
 
 #if 0
     if (nxyzic && isOpt)
@@ -1020,14 +1103,14 @@ void ICoord::make_bonds()
     //printf(" in make_bonds, natoms: %i\n",natoms);
     double MAX_BOND_DIST; 
     nbonds = 0;
-    nxyzic = 0;
+    //nxyzic = 0;
     for (int i=0;i<natoms;i++)
         for (int j=0;j<i;j++)
         {
             MAX_BOND_DIST = (getR(i) + getR(j))/2.0;
             if (farBond>1.0) MAX_BOND_DIST *= farBond;
             double d = distance(i,j);
-            if (d<MAX_BOND_DIST)
+            if (d < MAX_BOND_DIST)
             {
                 //printf(" found bond: %2i %2i dist: %f \n",i+1,j+1,d);
                 bonds[nbonds][0]=i;
@@ -1036,7 +1119,6 @@ void ICoord::make_bonds()
                 nbonds++;
             }
         }
-
 }
 
 void ICoord::coord_num()
@@ -1369,9 +1451,9 @@ double ICoord::torsion_val(int i, int j, int k, int l)
     }
     else
     {
-        if ((u - 0.0) < 0.00000001)
+        if ((u - 0.0) < 0.0)
         {
-            std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+            std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
                 << " of file " << __FILE__ << std::endl;
             exit(-1);
         }
@@ -1489,10 +1571,32 @@ int ICoord::isTM(int a) {
         else if (71 < anum && anum < 81)
             TM = 1;
     }
+    //else if (anum == 14) //Si
+    //    TM = 1;
 
     return TM;
 }
 
+int ICoord::isSemiconductor(int a) {
+    int anum;
+    if (a>-1)
+        anum = anumbers[a];
+    else
+        return 0;
+
+    int semi = 0;
+    if (anum > 1000)
+    {
+        std::cout << "ERROR: Wrong atomic number" << std::endl;
+        exit(-1);
+    }
+    else if (anum == 14 || anum == 32 || anum == 33)
+    {
+        semi = 1;
+    }
+
+    return semi;
+}
 
 double ICoord::getR(int i){
 
@@ -1556,11 +1660,11 @@ double ICoord::distance(int i, int j)
     temp = (coords[3*i+0]-coords[3*j+0])*(coords[3*i+0]-coords[3*j+0])+
             (coords[3*i+1]-coords[3*j+1])*(coords[3*i+1]-coords[3*j+1])+
             (coords[3*i+2]-coords[3*j+2])*(coords[3*i+2]-coords[3*j+2]);
-    if ((temp - 0.0) < 0.00000001)
+    if ((temp - 0.0) < 0.000000001)
     {
-        std::cout << "ERROR: Negative value in sqrt detected on " << __LINE__
+        std::cout << "Warning: Close to zero value in sqrt detected on " << __LINE__
             << " of file " << __FILE__ << std::endl;
-        exit(-1);
+        temp = 0.000000001;
     }
     return sqrt(temp);
 }
