@@ -172,7 +172,11 @@ int ICoord::ic_create()
 {
   make_bonds();
 
-  if (isOpt)
+  int abundant = 0;
+  int* oxel = new int[natoms];
+  int nox = get_ox(oxel, abundant);
+
+  if (isOpt && isSemiconductor(abundant))
   {
     printf(" isOpt: %i \n",isOpt);
     make_frags();
@@ -183,9 +187,24 @@ int ICoord::ic_create()
     }
     else
       bond_frags();
+    coord_num(); // counts # surrounding species
+  }
+  else if (isOpt && isTM(abundant))
+  {
+    printf(" isOpt: %i \n",isOpt);
+    make_frags();
+    if (use_xyz)
+    {
+      bond_frags_xyz();
+    }
+    else
+      bond_frags();
+    coord_num(); // counts # surrounding species
+    if (use_xyz)
+        get_xyzic();
   }
 
-  coord_num(); // counts # surrounding species
+  //coord_num(); // counts # surrounding species
   //if (use_xyz) get_xyzic(); Mina
 
   make_angles();
@@ -199,6 +218,7 @@ int ICoord::ic_create()
 
   update_ic();
 
+  delete [] oxel;
   return 0;
 }
 
@@ -793,7 +813,7 @@ void ICoord::connect_1_coord_mg()
   return;
 }
 
-int ICoord::get_ox(int* oxel)
+int ICoord::get_ox(int* oxel, int &abundant)
 {
   printf("   testing get_ox \n");
 
@@ -818,6 +838,7 @@ int ICoord::get_ox(int* oxel)
       nmax1 = elem[i];
     }
   }
+  abundant = emax1;
   int emax2 = -1;
   int nmax2 = 0;
   for (int i=2;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
@@ -886,8 +907,9 @@ void ICoord::get_xyzic()
   if (use_xyz==2) return;
 
 
+  int abundant = 0;
   int* oxel = new int[natoms];
-  int nox = get_ox(oxel);
+  int nox = get_ox(oxel, abundant);
 
   nxyzic = 0;
   for (int i=0;i<natoms;i++)
@@ -1461,6 +1483,26 @@ int ICoord::isTM(int a) {
   return TM;
 }
 
+int ICoord::isSemiconductor(int a) {
+    int anum;
+    if (a>-1)
+        anum = anumbers[a];
+    else
+        return 0;
+
+    int semi = 0;
+    if (anum > 1000)
+    {
+        std::cout << "ERROR: Wrong atomic number" << std::endl;
+        exit(-1);
+    }
+    else if (anum == 14 || anum == 32 || anum == 33)
+    {
+        semi = 1;
+    }
+
+    return semi;
+}
 
 double ICoord::getR(int i){
 

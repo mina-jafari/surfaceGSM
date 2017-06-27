@@ -45,7 +45,7 @@ class ICoord {
   void make_bonds_1(int i);
   void coord_num();
   void get_xyzic();
-  int get_ox(int* oxel);
+  int get_ox(int* oxel, int &abundant);
   void connect_1_coord_mg();
   void make_angles();
   void make_torsions();
@@ -91,6 +91,7 @@ class ICoord {
   // function to make arrays?
 
   int isTM(int anum);
+  int isSemiconductor(int anum);
 
   // Gradient terms
   double* bmat;
