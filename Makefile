@@ -43,7 +43,7 @@ OFLAGS =  # optimization
 .cpp.o:
 	$(FC) -c -g $(DFLAGS) $<
 
-OBJECTS = gstring.o main.o pTable.o stringtools.o qchem.o utils.o eckart.o mem.o bmat.o print.o icoord.o mm_grad.o optic.o mopac.o grad.o knnr.o ase.o BindingSiteClass.o SurfaceClass.o
+OBJECTS = gstring.o main.o pTable.o stringtools.o qchem.o utils.o eckart.o mem.o bmat.o print.o icoord.o mm_grad.o optic.o mopac.o grad.o knnr.o ase.o BindingSite.o Surface.o Atom.o Molecule.o Coordinates.o
 
 $(CMD) : $(OBJECTS)
 	$(FC) $(DEBUG_FLAGS) $(OFLAGS) $(OBJECTS) $(LINKERFLAGS)   -o ./$(CMD)
@@ -78,5 +78,9 @@ utils.o: utils.cpp utils.h constants.h
 grad.o: mopac.h qchem.h knnr.h grad.h grad.cpp ase.h
 knnr.o: icoord.h utils.h knnr.h knnr.cpp qchem.h
 ase.o: ase.h ase.cpp utils.h
-BindingSiteClass.o: BindingSiteClass.cpp BindingSiteClass.h
+Coordinates.o: Coordinates.cpp Coordinates.h
 SurfaceClass.o: SurfaceClass.cpp SurfaceClass.h BindingSiteClass.h
+BindingSite.o: BindingSite.cpp BindingSite.h Molecule.h Coordinates.h
+Surface.o: Surface.cpp Surface.h BindingSite.h
+Atom.o: Atom.cpp Atom.h Coordinates.h
+Molecule.o: Molecule.cpp Molecule.h Atom.h
