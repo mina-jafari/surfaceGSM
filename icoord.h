@@ -91,6 +91,7 @@ class ICoord {
   // function to make arrays?
 
   int isTM(int anum);
+  int isTM_2(int atomic_number);
   int isSemiconductor(int anum);
 
   // Gradient terms

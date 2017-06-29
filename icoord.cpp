@@ -188,7 +188,7 @@ int ICoord::ic_create()
     else
       bond_frags();
   }
-  else if (isOpt && isTM(abundant))
+  else if (isOpt && isTM_2(abundant))
   {
     printf("Coordinate system for transition metals. isOpt: %i \n",isOpt);
     make_frags();
@@ -600,7 +600,7 @@ void ICoord::bond_frags_xyz()
           {
               //if (frags[i]==n1 && i!=a1 && i!=a2)
               if (frags[i]!=n1 && i!=a1 && i!=a2)
-                  //if (isTM(i)==0) Mina
+                  if (isTM(i)==0)
                   {
                       close = distance(i,a1);
                       if (close<mclose2)
@@ -1473,7 +1473,7 @@ int ICoord::isTM(int a) {
     anum = anumbers[a];
   else
   {
-      std::cout << "ERROR 2: Atomic number less than 0" << std::endl;
+      std::cout << "ERROR 1: Atomic number less than 0" << std::endl;
       exit(1);
   }
 
@@ -1504,6 +1504,26 @@ int ICoord::isSemiconductor(int atomic_number) {
     }
 
     return semi;
+}
+
+int ICoord::isTM_2(int atomic_number) {
+    int TM = 0;
+    if (atomic_number > PTable::MAX_NUMBER_OF_ATOMS)
+    {
+        std::cout << "ERROR 3: Atomic number less than 0" << std::endl;
+        TM = 2;
+    }
+    else if (atomic_number > 20)
+    {
+        if (atomic_number < 31)
+            TM = 1;
+        else if (38 < atomic_number && atomic_number < 49)
+            TM = 1;
+        else if (71 < atomic_number && atomic_number < 81)
+            TM = 1;
+    }
+
+    return TM;
 }
 
 double ICoord::getR(int i){
