@@ -178,7 +178,7 @@ int ICoord::ic_create()
 
   if (isOpt && isSemiconductor(abundant))
   {
-    printf(" isOpt: %i \n",isOpt);
+    printf("Coordinate system for semiconductors. isOpt: %i \n",isOpt);
     make_frags();
     if (use_xyz)
     {
@@ -187,11 +187,10 @@ int ICoord::ic_create()
     }
     else
       bond_frags();
-    coord_num(); // counts # surrounding species
   }
   else if (isOpt && isTM(abundant))
   {
-    printf(" isOpt: %i \n",isOpt);
+    printf("Coordinate system for transition metals. isOpt: %i \n",isOpt);
     make_frags();
     if (use_xyz)
     {
@@ -204,6 +203,10 @@ int ICoord::ic_create()
         get_xyzic();
   }
 
+  if (isSemiconductor(abundant))
+  {
+      coord_num(); // counts # surrounding species
+  }
   //coord_num(); // counts # surrounding species
   //if (use_xyz) get_xyzic(); Mina
 
@@ -1461,15 +1464,25 @@ int ICoord::make_nonbond(){
 int ICoord::isTM(int a) {
 
 //may later be extended to all 5+ coord types
-  int anum;
+    if (a > natoms)
+    {
+        std::cout << "ERROR: Something's wrong with the input index or the number of atoms" << std::endl;
+    }
+  int anum = 0;
   if (a>-1)
     anum = anumbers[a];
   else
-    return 0;
+  {
+      std::cout << "ERROR 2: Atomic number less than 0" << std::endl;
+      exit(1);
+  }
 
   int TM = 0;
-  if (anum > 1000)
-    TM = 2;
+  if (anum > PTable::MAX_NUMBER_OF_ATOMS)
+  {
+      std::cout << "ERROR 2: Atomic number less than 0" << std::endl;
+      TM = 2;
+  }
   else if (anum > 20)
   {
     if (anum < 31)
@@ -1483,20 +1496,9 @@ int ICoord::isTM(int a) {
   return TM;
 }
 
-int ICoord::isSemiconductor(int a) {
-    int anum;
-    if (a>-1)
-        anum = anumbers[a];
-    else
-        return 0;
-
+int ICoord::isSemiconductor(int atomic_number) {
     int semi = 0;
-    if (anum > 1000)
-    {
-        std::cout << "ERROR: Wrong atomic number" << std::endl;
-        exit(-1);
-    }
-    else if (anum == 14 || anum == 32 || anum == 33)
+    if (atomic_number == 14 || atomic_number == 32 || atomic_number == 33)
     {
         semi = 1;
     }
