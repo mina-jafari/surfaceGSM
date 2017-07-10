@@ -203,6 +203,13 @@ int ICoord::ic_create()
         get_xyzic();
   }
 
+  /*if (isTM_2(abundant))
+  {
+    coord_num(); // counts # surrounding species
+    if (use_xyz)
+        get_xyzic();
+  }*/
+
   if (isSemiconductor(abundant))
   {
       coord_num(); // counts # surrounding species
