@@ -115,6 +115,7 @@ namespace Utils
   void generate_Project_RT_tan(double** Proj, double* structure, double* tangent);
   void generate_Project_RT(double** Proj, double* structure);
 
+  bool isLessThanZero(double &inNumber);
 
 };
 

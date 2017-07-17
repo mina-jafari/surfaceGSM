@@ -949,7 +949,12 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
     double* vn = new double[3];
     vn[0]=0.; vn[1]=0.; vn[2]=1.;
     cross(w,u,vn);
-    mag = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
+    //mag = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
+    double temp = w[0]*w[0]+w[1]*w[1]+w[2]*w[2];
+    if (Utils::isLessThanZero(temp))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
+    mag = sqrt(temp);
     if (mag<THRESH)
     {
 //      printf(" Linear angle(b) detected, w: %1.6f %1.6f %1.6f \n",w[0],w[1],w[2]);
@@ -961,7 +966,12 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
 //  if (angle>3.0)
 //    printf(" w: %1.3f %1.3f %1.3f \n",w[0],w[1],w[2]);
 
-  double n3 = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
+  //double n3 = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
+  double temp = w[0]*w[0]+w[1]*w[1]+w[2]*w[2];
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  double n3 = sqrt(temp);
   //printf(" n3: %1.3f \n",n3);
   w[0] = w[0]/n3;
   w[1] = w[1]/n3;
@@ -1747,6 +1757,9 @@ void ICoord::opt_constraint(double* C)
   double norm = 0.;
   for (int i=0;i<len;i++)
     norm += C[i]*C[i];
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   for (int j=0;j<len;j++)
     C[j] = C[j]/norm;
@@ -1770,6 +1783,9 @@ void ICoord::opt_constraint(double* C)
   norm = 0.;
   for (int i=0;i<len;i++)
     norm += Cn[i]*Cn[i];
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   //printf(" Cn norm: %1.2f \n",norm);
   for (int j=0;j<len;j++)
@@ -1823,6 +1839,9 @@ void ICoord::opt_constraint(double* C)
     double norm = 0.;
     for (int j=0;j<len;j++)
       norm += Ut[i*len+j] * Ut[i*len+j];
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
     norm = sqrt(norm);
     if (abs(norm)<0.00001) printf(" WARNING: small norm: %1.7f \n",norm);
     if (abs(norm)<0.00001) norm = 1;
@@ -2290,6 +2309,9 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
   double norm = 0.;
   for (int i=0;i<len0;i++)
     norm += Cn[i]*Cn[i];
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   for (int j=0;j<len0;j++)
     Cn[j] = Cn[j]/norm;
@@ -2595,6 +2617,9 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
   double norm = 0.;
   for (int i=0;i<len0;i++)
     norm += Cn[i]*Cn[i];
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   for (int j=0;j<len0;j++)
     Cn[j] = Cn[j]/norm;
@@ -2611,6 +2636,9 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
   norm = 0.;
   for (int i=0;i<len0;i++)
     norm += Dn[i]*Dn[i];
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   for (int j=0;j<len0;j++)
     Dn[j] = Dn[j]/norm;
@@ -2925,6 +2953,9 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
   double norm = 0.;
   for (int i=0;i<len0;i++)
     norm += Cn[i]*Cn[i];
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   for (int j=0;j<len0;j++)
     Cn[j] = Cn[j]/norm;
@@ -3142,7 +3173,12 @@ void ICoord::force_notbonds()
   double gradrms1 = 0.;
   for (int i=0;i<N3;i++)
     gradrms1+=grad[i]*grad[i];
-  gradrms1 = sqrt(gradrms1/N3);
+  //gradrms1 = sqrt(gradrms1/N3);
+  double temp = gradrms1/N3;
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  gradrms1 = sqrt(temp);
   //printf(" gradrms1: %4.3f \n",gradrms1);
 
   if (gradrms1>0.01) gradrms1 = 0.01;
@@ -3259,7 +3295,12 @@ int ICoord::grad_to_q() {
   gradrms = 0.;
   for (int i=0;i<nicd;i++)
     gradrms+=gradq[i]*gradq[i];
-  gradrms = sqrt(gradrms/nicd);
+  //gradrms = sqrt(gradrms/nicd);
+  double temp = gradrms/nicd;
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  gradrms = sqrt(temp);
   //print_gradq();
 
 #if 1
@@ -3466,6 +3507,9 @@ void ICoord::update_ic_eigen()
   smag = 0.;
   for (int i=0;i<len;i++)
     smag += dq0[i]*dq0[i];
+  if (Utils::isLessThanZero(smag))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   smag = sqrt(smag);
   sprintf(sbuff," ss: %1.3f (DMAX: %1.3f)",smag,DMAX); printout += sbuff;
   if (smag > DMAX)
@@ -3855,6 +3899,9 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
   smag = 0.;
   for (int i=0;i<len;i++)
     smag += dq0[i]*dq0[i];
+  if (Utils::isLessThanZero(smag))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   smag = sqrt(smag);
   sprintf(sbuff," ss: %1.3f (%1.3f)",smag,DMAX); printout += sbuff;
 //  printf(" ss: %1.3f",smag);
@@ -3888,12 +3935,22 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
 #if !RIBBONS
   //adjust gradrms to account for eigenvector constraint
   gradrms = gradrms*gradrms*nicd0-gqe[maxoln]*gqe[maxoln];
-  gradrms = sqrt(gradrms/nicd0);
+  //gradrms = sqrt(gradrms/nicd0);
+  double temp = gradrms/nicd0;
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  gradrms = sqrt(temp);
 #endif
 #if RIBBONS
   //recalc gradrms to account for perpendicular constraint
   gradrms = gradrms*gradrms*nicd0-gqe[maxolnd]*gqe[maxolnd];
-  gradrms = sqrt(gradrms/nicd0);
+  //gradrms = sqrt(gradrms/nicd0);
+  double temp = gradrms/nicd0;
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  gradrms = sqrt(temp);
 
 //  gradrms = 0.;
 //  for (int i=0;i<len;i++)
@@ -4137,6 +4194,9 @@ void ICoord::update_ic_eigen_ts(double* Cn)
   smag = 0.;
   for (int i=0;i<len;i++)
     smag += dq0[i]*dq0[i];
+  if (Utils::isLessThanZero(smag))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   smag = sqrt(smag);
   sprintf(sbuff," ss: %1.3f (DMAX: %1.3f)",smag,DMAX); printout += sbuff;
 //  printf(" ss: %1.3f",smag);
@@ -4386,6 +4446,9 @@ int ICoord::ic_to_xyz() {
     printf("\n");
 #endif
 
+  if (Utils::isLessThanZero(mag))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
     if (sqrt(mag)<0.0005) break; // was not sqrt, 0.00005
   }
 
@@ -4397,6 +4460,9 @@ int ICoord::ic_to_xyz() {
 
   //printf(" diff in xyz mag (end %2i) is: %1.4f \n",n+1,sqrt(mag)); 
   double MAXMAG = 0.025*natoms;
+  if (Utils::isLessThanZero(mag))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   if (sqrt(mag)>MAXMAG)
   {
     //printf(" WARNING: diff in xyz mag (end) is: %1.4f, using first step, mag: %1.4f \n",sqrt(mag),sqrt(mag0));
@@ -4585,6 +4651,9 @@ int ICoord::ic_to_xyz_opt() {
     dqmag = 0.;
     for (int i=0;i<len;i++)
       dqmag += dq[i]*dq[i];
+    if (Utils::isLessThanZero(dqmag))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     dqmag = sqrt(dqmag);
     //printf(" dqmag: %1.3f",dqmag);
     if (dqmag<0.0001) break;
@@ -4614,6 +4683,9 @@ int ICoord::ic_to_xyz_opt() {
     printf("\n");
 #endif
 
+  if (Utils::isLessThanZero(mag))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
     if (sqrt(mag)<0.0005) break; // was not sqrt, 0.00005
     
   } //loop over back convert
@@ -5073,6 +5145,9 @@ int ICoord::create_prima(int nnodes0, int nbonds1, int nangles1, int ntor1, doub
   double norm = 0.;
   for (int j=0;j<len;j++)
     norm += Cp[j]*Cp[j];
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   for (int j=0;j<len;j++)
     Cp[j] = Cp[j]/norm;
@@ -5417,6 +5492,9 @@ int ICoord::davidson_H(int nval)
       double mag = 0.;
       for (int j=0;j<len;j++)
         mag += vecs[wv][j]*vecs[wv][j];
+      if (Utils::isLessThanZero(mag))
+          std::cout << "WARNING: The number is less than zero on line " <<
+              __LINE__ << " of file " << __FILE__ << std::endl;
       double norm = sqrt(mag);
       for (int j=0;j<len;j++)
         vecs[wv][j] = vecs[wv][j] / norm;

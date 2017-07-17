@@ -1386,6 +1386,9 @@ double ICoord::torsion_val(int i, int j, int k, int l)
 
   if (u!=0.0)
   {
+      if (Utils::isLessThanZero(u))
+          std::cout << "WARNING: The number is less than zero on line " <<
+              __LINE__ << " of file " << __FILE__ << std::endl;
      double a = (ux1*ux2+uy1*uy2+uz1*uz2)/sqrt(u);
      if (a>1) a=1; else if (a<-1) a=-1;
      tval = acos(a);
@@ -1591,9 +1594,16 @@ double ICoord::getR(int i){
 double ICoord::distance(int i, int j)
 {
   //printf("in distance: %i %i\n",i+1,j+1);
-  return sqrt((coords[3*i+0]-coords[3*j+0])*(coords[3*i+0]-coords[3*j+0])+
-              (coords[3*i+1]-coords[3*j+1])*(coords[3*i+1]-coords[3*j+1])+
-              (coords[3*i+2]-coords[3*j+2])*(coords[3*i+2]-coords[3*j+2])); 
+  //return sqrt((coords[3*i+0]-coords[3*j+0])*(coords[3*i+0]-coords[3*j+0])+
+  //            (coords[3*i+1]-coords[3*j+1])*(coords[3*i+1]-coords[3*j+1])+
+  //            (coords[3*i+2]-coords[3*j+2])*(coords[3*i+2]-coords[3*j+2])); 
+    double temp = (coords[3*i+0]-coords[3*j+0])*(coords[3*i+0]-coords[3*j+0])+
+        (coords[3*i+1]-coords[3*j+1])*(coords[3*i+1]-coords[3*j+1])+
+        (coords[3*i+2]-coords[3*j+2])*(coords[3*i+2]-coords[3*j+2]);
+    if (Utils::isLessThanZero(temp))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
+    return sqrt(temp);
 }
 
 int ICoord::bond_exists(int b1, int b2) {

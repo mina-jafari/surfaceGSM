@@ -1891,6 +1891,9 @@ double GString::tangent_1b(double* ictan)
   double norm0 = 0.;
   for (int i=0;i<size_ic;i++)
     norm0 += ictan[i]*ictan[i];
+  if (Utils::isLessThanZero(norm0))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   double norm = sqrt(norm0);
   for (int i=0;i<size_ic;i++)
     ictan[i] = ictan[i] / norm;
@@ -2685,6 +2688,9 @@ void GString::starting_string_dm(double* dq)
     double dqmag = 0.;
     for (int j=0;j<len_d;j++)
       dqmag += dq[j]*dq[j];
+  if (Utils::isLessThanZero(dqmag))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
     dqmag = sqrt(dqmag);
     printf(" dqmag: %1.2f",dqmag);
 
@@ -3240,6 +3246,9 @@ void GString::opt_steps(double** dqa, double** ictan, int osteps, int oesteps)
       double norm = 0.;
       for (int i=0;i<size_ic;i++)
         norm += ictan[n][i]*ictan[n][i];
+      if (Utils::isLessThanZero(norm))
+          std::cout << "WARNING: The number is less than zero on line " <<
+              __LINE__ << " of file " << __FILE__ << std::endl;
       norm = sqrt(norm);
       for (int i=0;i<size_ic;i++)
         C[i] = ictan[n][i]/norm;
@@ -3346,7 +3355,12 @@ int GString::knnr_vs_opt(int n)
   double grms = 0.;
   for (int i=0;i<nicd;i++)
     grms += grads[n][i]*grads[n][i];
-  grms = sqrt(grms/nicd);
+  //grms = sqrt(grms/nicd);
+  double temp = grms/nicd;
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  grms = sqrt(temp);
   if (V_profile[n] < -1000.)
   {
     V_profile[n] = 0.;
@@ -3443,7 +3457,12 @@ int GString::check_close_dist(int n, double* dist, int* newbonds)
     double y0 = allcoords[n][3*i+1]-allcoords[n][3*j+1];
     double z0 = allcoords[n][3*i+2]-allcoords[n][3*j+2];
     //printf(" xyz: %2.1f %2.1f %2.1f \n",x0,y0,z0);
-    dist[i*natoms+j] = dist[j*natoms+i] = sqrt(x0*x0+y0*y0+z0*z0);
+    //dist[i*natoms+j] = dist[j*natoms+i] = sqrt(x0*x0+y0*y0+z0*z0);
+    double temp = x0*x0+y0*y0+z0*z0;
+    if (Utils::isLessThanZero(temp))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
+    dist[i*natoms+j] = dist[j*natoms+i] = sqrt(temp);
   }
 
   for (int i=0;i<natoms;i++)
@@ -3654,6 +3673,9 @@ void GString::ic_reparam_g(double** dqa, double* dqmaga)
     disprms = 0.;
     for (int n=n0+1;n<nnmax-1;n++)
       disprms += rpmove[n]*rpmove[n];
+    if (Utils::isLessThanZero(disprms))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     disprms = sqrt(disprms);
     lastdispr = disprms;
     //printf(" disprms: %1.3f \n",disprms);
@@ -3935,6 +3957,9 @@ void GString::ic_reparam(double** dqa, double* dqmaga, int rtype)
     disprms = 0.;
     for (int n=n0+1;n<nnmax-1;n++)
       disprms += rpmove[n]*rpmove[n];
+    if (Utils::isLessThanZero(disprms))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     disprms = sqrt(disprms);
     lastdispr = disprms;
     //printf(" disprms: %1.3f \n",disprms);
@@ -4208,6 +4233,9 @@ void GString::ic_reparam_new(double** dqa, double* dqmaga, int rtype)
     disprms = 0.;
     for (int n=n0+1;n<nnmax-1;n++)
       disprms += rpmove[n]*rpmove[n];
+    if (Utils::isLessThanZero(disprms))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     disprms = sqrt(disprms);
     lastdispr = disprms;
     //printf(" disprms: %1.3f \n",disprms);
@@ -4426,6 +4454,9 @@ void GString::ic_reparam_h(double** dqa, double* dqmaga, int rtype)
     disprms = 0.;
     for (int n=1;n<nnmax-1;n++)
       disprms += rpmove[n]*rpmove[n];
+    if (Utils::isLessThanZero(disprms))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     disprms = sqrt(disprms);
     //printf(" disprms: %1.3f \n",disprms);
  
@@ -4625,6 +4656,9 @@ void GString::ic_reparam_cut(int min, double** dqa, double* dqmaga, int rtype)
     disprms = 0.;
     for (int n=1;n<nnmax-1;n++)
       disprms += rpmove[n]*rpmove[n];
+    if (Utils::isLessThanZero(disprms))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     disprms = sqrt(disprms);
     //printf(" disprms: %1.3f \n",disprms);
  
@@ -5319,6 +5353,9 @@ void GString::get_tangents_1(double** dqa, double* dqmaga, double** ictan)
     for (int j=size_icp;j<size_ic;j++)
       dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
 #endif
+    if (Utils::isLessThanZero(dqmaga[n]))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     dqmaga[n] = sqrt(dqmaga[n]);
     //printf(" dqmaga: %1.2f",dqmaga[n]);
 
@@ -5425,6 +5462,9 @@ void GString::get_tangents_1g(double** dqa, double* dqmaga, double** ictan)
     for (int j=size_icp;j<size_ic;j++)
       dqmaga[nlist[2*n]] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
 #endif
+    if (Utils::isLessThanZero(dqmaga[nlist[2*n]]))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     dqmaga[nlist[2*n]] = sqrt(dqmaga[nlist[2*n]]);
     //printf(" dqmaga: %1.2f",dqmaga[nlist[2*n]]);
   }
@@ -5713,6 +5753,9 @@ void GString::get_tangents(double** dqa, double* dqmaga, double** ictan)
     dqmaga[n] = 0.;
     for (int j=0;j<size_ic;j++)
       dqmaga[n] += ictan[n][j]*ictan[n][j];
+    if (Utils::isLessThanZero(dqmaga[n]))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     dqmaga[n] = sqrt(dqmaga[n]);
     //printf(" dqmaga: %1.2f",dqmaga[n]);
   }
@@ -5799,6 +5842,9 @@ void GString::get_tangents_dm(double** dqa, double* dqmaga, double** ictan)
     dqmaga[n] = 0.;
     for (int j=0;j<size_ic_dm;j++)
       dqmaga[n] += ictan[n][j]*ictan[n][j];
+    if (Utils::isLessThanZero(dqmaga[n]))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     dqmaga[n] = sqrt(dqmaga[n]);
     //printf(" dqmaga: %1.2f",dqmaga[n]);
 #endif
@@ -5869,6 +5915,9 @@ void GString::get_distances(double* dqmaga, double** ictan)
     dqmaga[n] = 0.;
     for (int j=0;j<size_ic;j++) //CPMZ: - ntor?
       dqmaga[n] += ictan[n][j]*ictan[n][j];
+    if (Utils::isLessThanZero(dqmaga[n]))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     dqmaga[n] = sqrt(dqmaga[n]);
 #endif
   } //loop n over nnmax
@@ -5921,6 +5970,9 @@ void GString::get_distances_dm(double* dqmaga, double** ictan)
     dqmaga[n] = 0.;
     for (int j=0;j<len_d;j++)
       dqmaga[n] += dqa[n][j]*dqa[n][j];
+    if (Utils::isLessThanZero(dqmaga[n]))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     dqmaga[n] = sqrt(dqmaga[n]);
    // printf(" dqmaga[%i]: %1.2f \n",n,dqmaga[n]);
 
@@ -5931,6 +5983,9 @@ void GString::get_distances_dm(double* dqmaga, double** ictan)
     dqmaga[n] = 0.;
     for (int j=0;j<size_ic_dm;j++)
       dqmaga[n] += ictan[n][j]*ictan[n][j];
+    if (Utils::isLessThanZero(dqmaga[n]))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
     dqmaga[n] = sqrt(dqmaga[n]);
    // printf(" dqmaga[%i]: %1.2f \n",n,dqmaga[n]);
   }
@@ -6143,7 +6198,12 @@ void GString::rotate_structure(double* xyz0, int* a)
   u1[0] = xyz1[3*a[1]+0];
   u1[1] = xyz1[3*a[1]+1];
   u1[2] = xyz1[3*a[1]+2];
-  double norm = sqrt(u1[0]*u1[0]+u1[1]*u1[1]);
+  //double norm = sqrt(u1[0]*u1[0]+u1[1]*u1[1]);
+  double temp = u1[0]*u1[0]+u1[1]*u1[1];
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  double norm = sqrt(temp);
   u1[0] = u1[0]/norm; u1[1] = u1[1]/norm; u1[2] = u1[2]/norm;
   //printf(" u1: %4.3f %4.3f %4.3f \n",u1[0],u1[1],u1[2]);
 
@@ -6165,7 +6225,12 @@ void GString::rotate_structure(double* xyz0, int* a)
   u1[0] = xyz1[3*a[1]+0];
   u1[1] = xyz1[3*a[1]+1];
   u1[2] = xyz1[3*a[1]+2];
-  norm = sqrt(u1[0]*u1[0]+u1[2]*u1[2]);
+  //norm = sqrt(u1[0]*u1[0]+u1[2]*u1[2]);
+  temp = u1[0]*u1[0]+u1[2]*u1[2];
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  norm = sqrt(temp);
   u1[0] = u1[0]/norm; u1[1] = u1[1]/norm; u1[2] = u1[2]/norm;
 
   angles[0] = angles[1] = angles[2] = 0.;
@@ -6188,7 +6253,12 @@ void GString::rotate_structure(double* xyz0, int* a)
   u1[0] = xyz1[3*a[2]+0] - xyz1[3*a[1]+0];
   u1[1] = xyz1[3*a[2]+1] - xyz1[3*a[1]+1];
   u1[2] = xyz1[3*a[2]+2] - xyz1[3*a[1]+2];
-  norm = sqrt(u1[1]*u1[1]+u1[2]*u1[2]);
+  //norm = sqrt(u1[1]*u1[1]+u1[2]*u1[2]);
+  temp = u1[1]*u1[1]+u1[2]*u1[2];
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  norm = sqrt(temp);
   u1[0] = u1[0]/norm; u1[1] = u1[1]/norm; u1[2] = u1[2]/norm;
 
   angles[0] = angles[1] = angles[2] = 0.;
@@ -6927,9 +6997,23 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
       }
     }
     if (isSSM)
-      gradrms = sqrt(gradrms/(nnR-1));
+    {
+      //gradrms = sqrt(gradrms/(nnR-1));
+        double temp = gradrms/(nnR-1);
+        if (Utils::isLessThanZero(temp))
+            std::cout << "WARNING: The number is less than zero on line " <<
+                __LINE__ << " of file " << __FILE__ << std::endl;
+        gradrms = sqrt(temp);
+    }
     else
-      gradrms = sqrt(gradrms/(nn-2));
+    {
+      //gradrms = sqrt(gradrms/(nn-2));
+        double temp = gradrms/(nn-2);
+        if (Utils::isLessThanZero(temp))
+            std::cout << "WARNING: The number is less than zero on line " <<
+                __LINE__ << " of file " << __FILE__ << std::endl;
+        gradrms = sqrt(temp);
+    }
     emaxp = emax;
     emax = -10000;
     nmax = 1;
@@ -7064,7 +7148,12 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
       totalgrad += icoords[i].gradrms*r3n;
       gradrms += icoords[i].gradrms*icoords[i].gradrms;
     }
-    gradrms = sqrt(gradrms/(nnmax-2-n0));
+    //gradrms = sqrt(gradrms/(nnmax-2-n0));
+    double temp = gradrms/(nnmax-2-n0);
+    if (Utils::isLessThanZero(temp))
+        std::cout << "WARNING: The number is less than zero on line " <<
+            __LINE__ << " of file " << __FILE__ << std::endl;
+    gradrms = sqrt(temp);
     emaxp = emax;
     emax = -10000;
     nmax = 1;

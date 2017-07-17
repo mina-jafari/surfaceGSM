@@ -858,6 +858,9 @@ double Utils::randomf(double a, double b){
 /// normalize vector
 void Utils::normalize(double* u, int LEN){
   double dp=Utils::dotProd(u,u,LEN); // dot product
+  if (Utils::isLessThanZero(dp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   double vm=sqrt(dp); // magnitude
   for (int i=0; i<LEN; i++){
     u[i]=u[i]/vm;
@@ -1192,7 +1195,24 @@ double Utils::dotProd(double* v, double* u, int LEN){
 
 double Utils::vecMag(double* u, int LEN){
   double dp=Utils::dotProd(u,u,LEN);
+  if (Utils::isLessThanZero(dp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   double vm=sqrt(dp);
   return vm;
+}
+
+bool Utils::isLessThanZero(double &inNumber){
+    std::cout.precision(10);
+    double zero = 1.0e-300;
+    bool isLessThanZero = false;
+    if (inNumber < zero)
+    {
+        isLessThanZero = true;
+        std::cout << "The number is " << std::scientific << inNumber << std::endl;
+        inNumber = 1.0e-300;
+    }
+
+    return isLessThanZero;
 }
 

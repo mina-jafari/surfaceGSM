@@ -121,6 +121,9 @@ int ICoord::mm_grad(){
   gradrms = 0;
   for (int i=0;i<3*natoms;i++)
     gradrms += grad[i]*grad[i];
+  if (Utils::isLessThanZero(gradrms))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   gradrms = sqrt(gradrms);
 
   return 0;
@@ -152,6 +155,9 @@ int ICoord::mm_grad(ICoord shadow){
   gradrms = 0;
   for (int i=0;i<3*natoms;i++)
     gradrms += grad[i]*grad[i];
+  if (Utils::isLessThanZero(gradrms))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   gradrms = sqrt(gradrms);
 
   return 0;
@@ -201,7 +207,12 @@ void ICoord::imptor_grad_all(){
 void ICoord::vdw_grad_1(int i, int j, double scale){
 
   double R = ffR[i] + ffR[j];
-  double eps = sqrt( ffeps[i] * ffeps[j] );
+  //double eps = sqrt( ffeps[i] * ffeps[j] );
+  double temp = ffeps[i] * ffeps[j];
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  double eps = sqrt(temp);
 
   double* dx = new double[3];
   dx[0] = coords[3*i+0]-coords[3*j+0];
@@ -268,6 +279,9 @@ void ICoord::lin_grad_1(int i, int j, double scale){
   dx[2] = coords[3*i+2]-coords[3*j+2];
 
   double norm = ( dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2] );
+  if (Utils::isLessThanZero(norm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   dx[0] = dx[0] / norm;
   dx[1] = dx[1] / norm;
@@ -402,6 +416,9 @@ void ICoord::torsion_grad_1(int i, int j, int k, int l){
   rjk[1] = -rkj[1];
   rjk[2] = -rkj[2];
   double R2 = rkj[0]*rkj[0]+rkj[1]*rkj[1]+rkj[2]*rkj[2];
+  if (Utils::isLessThanZero(R2))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   double R = sqrt(R2);
  
   double* m = new double[3];
@@ -491,6 +508,9 @@ void ICoord::imptor_grad_1(int i, int j, int k, int l){
   rjk[1] = -rkj[1];
   rjk[2] = -rkj[2];
   double R2 = rkj[0]*rkj[0]+rkj[1]*rkj[1]+rkj[2]*rkj[2];
+  if (Utils::isLessThanZero(R2))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   double R = sqrt(R2);
  
   double* m = new double[3];

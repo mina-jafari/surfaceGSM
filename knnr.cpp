@@ -675,10 +675,18 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
     gnorm += gradq0[j] * gradq0[j];
   }
   //printf(" gnorm: %5.4f norm: %5.4f \n",gnorm,sqrt(gnorm));
+  if (Utils::isLessThanZero(gnorm))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   gnorm = sqrt(gnorm);
   for (int i=0;i<k;i++)
   {
-    gerr[i] = sqrt(gerr[i]/N3);
+    //gerr[i] = sqrt(gerr[i]/N3);
+      double temp = gerr[i]/N3;
+      if (Utils::isLessThanZero(temp))
+          std::cout << "WARNING: The number is less than zero on line " <<
+              __LINE__ << " of file " << __FILE__ << std::endl;
+      gerr[i] = sqrt(temp);
     govl[i] = govl[i] / gnorm;
   }
   double gerra = 0.;
@@ -724,8 +732,19 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
     double ge1 = gradqf[i] - gradq0[i];
     graderr1 += ge1 * ge1;
   }
-  gradrms = sqrt(gradrms/N3);
-  graderr1 = sqrt(graderr1/N3);
+  //gradrms = sqrt(gradrms/N3);
+  //graderr1 = sqrt(graderr1/N3);
+  double temp = gradrms/N3;
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  gradrms = sqrt(temp);
+
+  temp = graderr1/N3;
+  if (Utils::isLessThanZero(temp))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
+  graderr1 = sqrt(temp);
 
   printf(" dist/graderrs(1): %4.3f %6.5f \n",totdist,graderr1);
   printf(" dist/grel(1): %4.3f %5.4f \n",totdist,graderr1/gradrms);
@@ -1514,6 +1533,9 @@ double KNNR::get_distance(double* xyz1, double* xyz2, ICoord& ic1, ICoord& ic2)
 
   for (int i=0;i<nic;i++)
     d += dq[i]*dq[i];
+  if (Utils::isLessThanZero(d))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   d = sqrt(d);
 
 #if 0
@@ -1606,6 +1628,9 @@ double KNNR::get_distance_u(double* xyz1, double* xyz2, ICoord& ic1, ICoord& ic2
 
   for (int i=0;i<nicd;i++)
     d += dq[i]*dq[i];
+  if (Utils::isLessThanZero(d))
+      std::cout << "WARNING: The number is less than zero on line " <<
+          __LINE__ << " of file " << __FILE__ << std::endl;
   d = sqrt(d);
 
 #if 0
