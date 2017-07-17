@@ -987,6 +987,7 @@ SLAB_TYPE stringToSlabType(std::string in)
     else
     {
         std::cout << "ERROR: Slab type should be set on the second line of slab input file." << std::endl;
+        std::cout << "You can add 'ANY' on the second line of initial****.xyz file." << std::endl;
         exit(-1);
     }
 
