@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <cstdlib>
-
+#include "utils.h"
 
 #define WS_CHARS " \n\r\t"
 

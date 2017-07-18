@@ -39,6 +39,8 @@ void LST::getTangents_withLST_from_nodes_only(double** angs, double** dangstroms
 
   for(int i=1;i<=nstring;i++){
     temp1 = Utils::vecMag(dangstromsds[i],natoms*3);
+    if (Utils::isZero(temp1))
+        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     for(int j=1;j<=natoms*3;j++){
       dangstromsds[i][j] = dangstromsds[i][j]/temp1;
     }
@@ -84,6 +86,8 @@ void LST::get_single_tangent_from_fstring(double** interp_string, double* dangst
   }
   
   double temp1 = Utils::vecMag(dangstromds ,natoms*3);
+  if (Utils::isZero(temp1))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for(int j=1;j<=natoms*3;j++){
     dangstromds[j] *= 1/temp1;
   }
@@ -119,6 +123,8 @@ void LST::getTangents_from_fstring(double** interp_string, double** dangstromsds
 
   for(int i=1;i<=nstring;i++){
     temp1 = Utils::vecMag(dangstromsds[i],natoms*3);
+    if (Utils::isZero(temp1))
+        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     for(int j=1;j<=natoms*3;j++){
       dangstromsds[i][j] = dangstromsds[i][j]/temp1;
     }
@@ -152,6 +158,8 @@ void LST::LST_stringbuild(double** interp_string, double** ang_coords, int nstri
   double* norm_s = new double[1+nstring];
   
   for (int i=1;i<=nstring;i++){
+    if (Utils::isZero(SS[nstring]))
+        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     norm_s[i] = SS[i]/SS[nstring];
   }
 
@@ -233,6 +241,8 @@ void LST::LST_stringbuild(double** interp_string, double** ang_coords, int nstri
   int j=1;
   for (int i=1;i<=nstring-1;i++){
     for (int j=1;j<=f_distribute[i];j++){
+        if (Utils::isZero(f_distribute[i]+1))
+            std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       f[accum+j]=j/(f_distribute[i]+1);
     }
     accum+=(int)f_distribute[i]+1;
@@ -331,6 +341,8 @@ void LST::LST_pickout(double** fstring, double* s_new, int nnOld, int nnNew, int
 
   //normalize fstr_S
   for (int i=1;i<=num_interp;i++){
+      if (Utils::isZero(fstr_S[num_interp]))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     fstr_S[i]*=(1/fstr_S[num_interp]);
   }
 
@@ -340,6 +352,8 @@ void LST::LST_pickout(double** fstring, double* s_new, int nnOld, int nnNew, int
     for (int j=1;j<=num_interp-1;j++){      
       if (s_new[i]>=fstr_S[j] && s_new[i]<=fstr_S[j+1]) {
 	//cout <<"success! at interpolation number: ";
+    if (Utils::isZero(fstr_S[j+1]-fstr_S[j]))
+        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
 	if ((s_new[i]-fstr_S[j])/(fstr_S[j+1]-fstr_S[j])<0.50000){
 	  // cout << j << endl;;
 	  nodes_picked[i]=j;
@@ -434,6 +448,12 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
       for (int j=1;j<=3;j++){
 	for (int k=1;k<=natoms;k++){
           if (i!=k){
+              if (Utils::isZero(pow(r_i[k][i],4)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(r_c[k][i]))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
 	    dS[3*(i-1)+j]+=2*((r_c[k][i]-r_i[k][i])/(pow(r_i[k][i],4)))*(1/r_c[k][i])*(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j]);
           }
         }
@@ -447,6 +467,15 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
       for (int j=1;j<=3;j++){
         for (int k=1;k<=natoms;k++){
           if (i!=k){
+              if (Utils::isZero(pow(r_i[i][k], 4)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(r_c[i][k]))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(pow(r_i[i][k]*r_c[i][k], 3)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
             d2S[3*(i-1)+j][3*(i-1)+j]+=2*((1/pow(r_i[i][k], 4)) + (1/pow(r_i[i][k], 3))*(1/r_c[i][k]) + (1/pow(r_i[i][k]*r_c[i][k], 3))*pow(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j], 2));
           }
         }
@@ -458,6 +487,15 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
       for (int j=1;j<=natoms;j++){
         for (int k=1;k<=3;k++){
           if (i!=j){
+              if (Utils::isZero(pow(r_i[i][j], 4)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(r_c[i][j]))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(pow(r_i[i][j]*r_c[i][j], 3)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
             d2S[3*(i-1)+k][3*(j-1)+k]=-2*((1/pow(r_i[i][j], 4))-(1/pow(r_i[i][j], 3))*(1/r_c[i][j])+(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k]));
           }
         }
@@ -470,6 +508,9 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
         for (int k=1;k<=3;k++){
           for (int m=1;m<=natoms;m++){
             if (i!=m && k!=j){
+              if (Utils::isZero(pow(r_i[i][m]*r_c[i][m], 3)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
               d2S[3*(i-1)+j][3*(i-1)+k]+=2*(1/pow(r_i[i][m]*r_c[i][m],3))*(xyzf[3*(i-1)+j]-xyzf[3*(m-1)+j])*(xyzf[3*(i-1)+k]-xyzf[3*(m-1)+k]);
             }
           }
@@ -483,6 +524,9 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
         for (int k=1;k<=3;k++){
           for (int m=1;m<=3;m++){
             if (i!=j && k!=m){
+              if (Utils::isZero(pow(r_i[i][j]*r_c[i][j], 3)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
               d2S[3*(i-1)+k][3*(j-1)+m]=-2*(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k])*(xyzf[3*(i-1)+m]-xyzf[3*(j-1)+m]);
             }
           }
@@ -618,6 +662,12 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
       for (int j=1;j<=3;j++){
         for (int k=1;k<=natoms;k++){
           if (i!=k){
+              if (Utils::isZero(pow(r_i[k][i], 4)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(r_c[k][i]))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
             dS[3*(i-1)+j]+=2*((r_c[k][i]-r_i[k][i])/(pow(r_i[k][i],4)))*(1/r_c[k][i])*(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j]);
           }
         }
@@ -631,6 +681,15 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
       for (int j=1;j<=3;j++){
         for (int k=1;k<=natoms;k++){
           if (i!=k){
+              if (Utils::isZero(pow(r_i[i][k], 4)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(r_c[i][k]))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(pow(r_i[i][k]*r_c[i][k], 3)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
             d2S[3*(i-1)+j][3*(i-1)+j]+=2*((1/pow(r_i[i][k], 4)) + (1/pow(r_i[i][k], 3))*(1/r_c[i][k]) + (1/pow(r_i[i][k]*r_c[i][k], 3))*pow(xyzf[3*(i-1)+j]-xyzf[3*(k-1)+j], 2));
           }
         }
@@ -642,6 +701,15 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
       for (int j=1;j<=natoms;j++){
         for (int k=1;k<=3;k++){
           if (i!=j){
+              if (Utils::isZero(pow(r_i[i][j], 4)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(r_c[i][j]))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
+              if (Utils::isZero(pow(r_i[i][j]*r_c[i][j], 3)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
             d2S[3*(i-1)+k][3*(j-1)+k]=-2*((1/pow(r_i[i][j], 4))-(1/pow(r_i[i][j], 3))*(1/r_c[i][j])+(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k]));
           }
         }
@@ -654,6 +722,9 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
         for (int k=1;k<=3;k++){
           for (int m=1;m<=natoms;m++){
             if (i!=m && k!=j){
+              if (Utils::isZero(pow(r_i[i][m]*r_c[i][m], 3)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
               d2S[3*(i-1)+j][3*(i-1)+k]+=2*(1/pow(r_i[i][m]*r_c[i][m],3))*(xyzf[3*(i-1)+j]-xyzf[3*(m-1)+j])*(xyzf[3*(i-1)+k]-xyzf[3*(m-1)+k]);
             }
           }
@@ -667,6 +738,9 @@ void LST::LSTinterpolate(double* xyz1, double* xyz2, double* xyzf, double f, int
         for (int k=1;k<=3;k++){
           for (int m=1;m<=3;m++){
             if (i!=j && k!=m){
+              if (Utils::isZero(pow(r_i[i][j]*r_c[i][j], 3)))
+                  std::cout << "ERROR: The number is zero on line " << __LINE__ 
+                      << " of file " << __FILE__ << std::endl;
               d2S[3*(i-1)+k][3*(j-1)+m]=-2*(1/pow(r_i[i][j]*r_c[i][j], 3))*(xyzf[3*(i-1)+k]-xyzf[3*(j-1)+k])*(xyzf[3*(i-1)+m]-xyzf[3*(j-1)+m]);
             }
           }

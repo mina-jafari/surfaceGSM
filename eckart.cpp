@@ -253,7 +253,9 @@ void Eckart::Eckart_align(double* xyzreact, double* xyzprod, double tol, double*
 
     for (int j=0;j<3;j++){
       if (hess_evals[j]>0.01 || hess_evals[j]<-0.01){
-	hess_evals[j] = 1/hess_evals[j];
+          if (Utils::isZero(hess_evals[j]))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+          hess_evals[j] = 1/hess_evals[j];
       }
     }
 
@@ -465,8 +467,10 @@ void Eckart::Eckart_align(double* xyzreact, double* xyzprod, double tol, double*
     Utils::diagonalize3x3(hess, hess_evecs, hess_evals, 250);
 
     for (int j=0;j<3;j++){
-      if (hess_evals[j]>0.01 || hess_evals[j]<-0.01){
-	hess_evals[j] = 1/hess_evals[j];
+        if (hess_evals[j]>0.01 || hess_evals[j]<-0.01){
+            if (Utils::isZero(hess_evals[j]))
+                std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            hess_evals[j] = 1/hess_evals[j];
       }
     }
 

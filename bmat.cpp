@@ -697,6 +697,8 @@ int ICoord::bmatp_finite() {
       b2 = distance(a1,a2);
       coords[3*a2+j]-=fstep;
 
+      if (Utils::isZero(fstep))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       dqbdx[3*0+j] = (b1-b0)/fstep;
       dqbdx[3*1+j] = (b2-b0)/fstep;
     }
@@ -736,6 +738,8 @@ int ICoord::bmatp_finite() {
       b3 = angle_val(a1,a2,a3)*3.14159/180;
       coords[3*a3+j]-=fstep;
 
+      if (Utils::isZero(fstep))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       dqadx[3*0+j] = (b1-b0)/fstep;
       dqadx[3*1+j] = (b2-b0)/fstep;
       dqadx[3*2+j] = (b3-b0)/fstep;
@@ -786,6 +790,8 @@ int ICoord::bmatp_finite() {
 
       //printf(" b0,b1,b2,b3,b4: %1.6f %1.6f %1.6f %1.6f %1.6f \n",b0,b1,b2,b3,b4);
 
+      if (Utils::isZero(fstep))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       dqtdx[3*0+j] = (b1-b0)/fstep;
       dqtdx[3*1+j] = (b2-b0)/fstep;
       dqtdx[3*2+j] = (b3-b0)/fstep;
@@ -865,6 +871,8 @@ void ICoord::bmatp_dqbdx(int i, int j, double* dqbdx) {
   double norm = distance(i,j);
   //double norm = sqrt(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);
 
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   u[0] = u[0]/norm;
   u[1] = u[1]/norm;
   u[2] = u[2]/norm;
@@ -931,6 +939,10 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
   double n1 = distance(i,j);
   double n2 = distance(j,k);
 
+  if (Utils::isZero(n1))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+  if (Utils::isZero(n2))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   u[0] = u[0]/n1;  
   u[1] = u[1]/n1;  
   u[2] = u[2]/n1;  
@@ -973,6 +985,8 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
           __LINE__ << " of file " << __FILE__ << std::endl;
   double n3 = sqrt(temp);
   //printf(" n3: %1.3f \n",n3);
+  if (Utils::isZero(n3))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   w[0] = w[0]/n3;
   w[1] = w[1]/n3;
   w[2] = w[2]/n3;
@@ -982,6 +996,10 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
   cross(uw,u,w);
   cross(wv,w,v);
 
+  if (Utils::isZero(n1))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+  if (Utils::isZero(n2))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   dqadx[0] = uw[0]/n1;
   dqadx[1] = uw[1]/n1;
   dqadx[2] = uw[2]/n1;
@@ -1047,6 +1065,12 @@ void ICoord::bmatp_dqtdx(int i, int j, int k, int l, double* dqtdx) {
  
   //printf(" n1,n2,n3: %1.3f %1.3f %1.3f \n",n1,n2,n3);
 
+  if (Utils::isZero(n1))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+  if (Utils::isZero(n2))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+  if (Utils::isZero(n3))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   u[0] = u[0]/n1;  
   u[1] = u[1]/n1;  
   u[2] = u[2]/n1;  
@@ -1087,6 +1111,8 @@ void ICoord::bmatp_dqtdx(int i, int j, int k, int l, double* dqtdx) {
 
 
 //CPMZ possible error in uw calc
+  if (Utils::isZero(n1*sin2phiu))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   dqtdx[0]  = uw[0]/(n1*sin2phiu);
   dqtdx[1]  = uw[1]/(n1*sin2phiu);
   dqtdx[2]  = uw[2]/(n1*sin2phiu);
@@ -1100,6 +1126,12 @@ void ICoord::bmatp_dqtdx(int i, int j, int k, int l, double* dqtdx) {
   dqtdx[8]   =  vw[2]/(n3*sin2phiv) - ( uw[2]*cosphiu/(n2*sin2phiu) - vw[2]*cosphiv/(n2*sin2phiv) );
 #endif
 #if 1
+  if (Utils::isZero(n1*sin2phiu))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+  if (Utils::isZero(n2*sin2phiu))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+  if (Utils::isZero(n2*sin2phiv))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   dqtdx[3]   = -uw[0]/(n1*sin2phiu) + ( uw[0]*cosphiu/(n2*sin2phiu) + vw[0]*cosphiv/(n2*sin2phiv) );
   dqtdx[4]   = -uw[1]/(n1*sin2phiu) + ( uw[1]*cosphiu/(n2*sin2phiu) + vw[1]*cosphiv/(n2*sin2phiv) );
   dqtdx[5]   = -uw[2]/(n1*sin2phiu) + ( uw[2]*cosphiu/(n2*sin2phiu) + vw[2]*cosphiv/(n2*sin2phiv) );
@@ -1107,6 +1139,8 @@ void ICoord::bmatp_dqtdx(int i, int j, int k, int l, double* dqtdx) {
   dqtdx[7]   =  vw[1]/(n3*sin2phiv) - ( uw[1]*cosphiu/(n2*sin2phiu) + vw[1]*cosphiv/(n2*sin2phiv) );
   dqtdx[8]   =  vw[2]/(n3*sin2phiv) - ( uw[2]*cosphiu/(n2*sin2phiu) + vw[2]*cosphiv/(n2*sin2phiv) );
 #endif
+  if (Utils::isZero(n3*sin2phiv))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   dqtdx[9]   = -vw[0]/(n3*sin2phiv);
   dqtdx[10]  = -vw[1]/(n3*sin2phiv);
   dqtdx[11]  = -vw[2]/(n3*sin2phiv);
@@ -1210,11 +1244,19 @@ void ICoord::update_bfgs()
 
   for (int i=0;i<len0;i++)
   for (int j=0;j<len0;j++)
+  {
+      if (Utils::isZero(dxtdg))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     Hinv[i*len0+j] += (1+dgGdg/dxtdg) * dxdx[i*len0+j]/dxtdg;
+  }
 
   for (int i=0;i<len0;i++)
   for (int j=0;j<len0;j++)
+  {
+      if (Utils::isZero(dxtdg))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     Hinv[i*len0+j] -= dxdgG[i*len0+j]/dxtdg + dxdgG[j*len0+i]/dxtdg;
+  }
 //    Hinv[i*len0+j] -= dxdgG[i*len0+j]/dxtdg + Gdgdx[i*len0+j]/dxtdg;
 
 #if 0
@@ -1335,14 +1377,22 @@ void ICoord::update_bfgsp(int makeHint)
     if (dgtdx<0.001) dgtdx = 0.001;
     for (int i=0;i<len0;i++)
     for (int j=0;j<len0;j++)
+    {
+        if (Utils::isZero(dgtdx))
+            std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       Hintp[i*len0+j] += dgdg[i*len0+j]/dgtdx;
+    }
   }
   if (dxHdx>0.)
   {
     if (dxHdx<0.001) dxHdx = 0.001;
     for (int i=0;i<len0;i++)
     for (int j=0;j<len0;j++)
+    {
+        if (Utils::isZero(dxHdx))
+            std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       Hintp[i*len0+j] += - Hdx[i]*Hdx[j]/dxHdx;
+    }
   }
 
 #if 0
@@ -1509,7 +1559,11 @@ void ICoord::update_bofill()
   for (int i=0;i<len0*len0;i++) Gms[i] = 0.;
   for (int i=0;i<len0;i++)
   for (int j=0;j<len0;j++)
+  {
+      if (Utils::isZero(dgmGdxtdx))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     Gms[i*len0+j] += dgmGdx[i]*dgmGdx[j]/dgmGdxtdx;
+  }
 
 //PSB
   for (int i=0;i<len0;i++)
@@ -1528,13 +1582,21 @@ void ICoord::update_bofill()
   for (int i=0;i<len0*len0;i++) Gpsb[i] = 0.;
   for (int i=0;i<len0;i++)
   for (int j=0;j<len0;j++)
+  {
+      if (Utils::isZero(dxtdx))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     Gpsb[i*len0+j] += dgmGdx[i]*dx[j]/dxtdx+dx[i]*dgmGdx[j]/dxtdx;
+  }
 
   double dxtdx2 = dxtdx*dxtdx;
   double xtdgmxtGdx = dxtdg - dxtGdx;
   for (int i=0;i<len0;i++)
   for (int j=0;j<len0;j++)
+  {
+      if (Utils::isZero(dxtdx2))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     Gpsb[i*len0+j] -= (xtdgmxtGdx)*dxdx[i*len0+j]/dxtdx2;
+  }
 
 // for Bofill mixing
   double EtE = 0.;
@@ -1544,6 +1606,8 @@ void ICoord::update_bofill()
   for (int i=0;i<len0;i++)
     EtE += dgmGdx[i]*dgmGdx[i];
 
+  if (Utils::isZero(dxtdx*EtE))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   double phi = 1 - dxtE*dxtE/(dxtdx*EtE);
 
   //printf(" phi: %1.3f",phi);
@@ -1761,6 +1825,8 @@ void ICoord::opt_constraint(double* C)
       std::cout << "WARNING: The number is less than zero on line " <<
           __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int j=0;j<len;j++)
     C[j] = C[j]/norm;
 
@@ -1788,6 +1854,8 @@ void ICoord::opt_constraint(double* C)
           __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
   //printf(" Cn norm: %1.2f \n",norm);
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int j=0;j<len;j++)
     Cn[j] = Cn[j]/norm;
 
@@ -1998,6 +2066,8 @@ double ICoord::opt_a(int nnewb, int* newb, int nnewt, int* newt, string xyzfile_
       double dE = energy - energyp;
       energyp = energy;
       if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
+      if (Utils::isZero(dEpre))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       double ratio = dE/dEpre;
       printf(" ratio: %2.3f ",ratio);
       if (ratio < 0.25)
@@ -2184,6 +2254,8 @@ double ICoord::opt_b(string xyzfile_string, int nsteps){
       double dE = energy - energyp;
       energyp = energy;
       if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
+      if (Utils::isZero(dEpre))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       double ratio = dE/dEpre;
       sprintf(sbuff," ratio: %2.3f ",ratio); printout += sbuff;
       if (dE > 0. && !isTSnode)
@@ -2313,6 +2385,8 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
       std::cout << "WARNING: The number is less than zero on line " <<
           __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int j=0;j<len0;j++)
     Cn[j] = Cn[j]/norm;
 #if 0
@@ -2484,6 +2558,8 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
       double dE = energy - energyp;
       energyp = energy;
       //if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
+      if (Utils::isZero(dEpre))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       double ratio = dE/dEpre;
       sprintf(sbuff," ratio: %2.3f ",ratio); printout += sbuff;
 #if STEPCONTROLG
@@ -2621,6 +2697,8 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
       std::cout << "WARNING: The number is less than zero on line " <<
           __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int j=0;j<len0;j++)
     Cn[j] = Cn[j]/norm;
 
@@ -2640,6 +2718,8 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
       std::cout << "WARNING: The number is less than zero on line " <<
           __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int j=0;j<len0;j++)
     Dn[j] = Dn[j]/norm;
 
@@ -2811,6 +2891,8 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
       double dE = energy - energyp;
       energyp = energy;
       //if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
+      if (Utils::isZero(dEpre))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       double ratio = dE/dEpre;
       sprintf(sbuff," r: %2.2f ",ratio); printout += sbuff;
 #if STEPCONTROLG
@@ -2957,6 +3039,8 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
       std::cout << "WARNING: The number is less than zero on line " <<
           __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int j=0;j<len0;j++)
     Cn[j] = Cn[j]/norm;
 #if 0
@@ -3089,6 +3173,8 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
       double dE = energy - energyp;
       energyp = energy;
       //if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
+      if (Utils::isZero(dEpre))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       double ratio = dE/dEpre;
       sprintf(sbuff," ratio: %2.3f ",ratio); printout += sbuff;
       if (ratio < 0. && abs(dEpre)>0.05)
@@ -3296,6 +3382,8 @@ int ICoord::grad_to_q() {
   for (int i=0;i<nicd;i++)
     gradrms+=gradq[i]*gradq[i];
   //gradrms = sqrt(gradrms/nicd);
+  if (Utils::isZero(nicd))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   double temp = gradrms/nicd;
   if (Utils::isLessThanZero(temp))
       std::cout << "WARNING: The number is less than zero on line " <<
@@ -3335,6 +3423,8 @@ void ICoord::walk_up()
 
   double SCALEW = 1.0;
   double SCALE = SCALEQN*1.0;
+  if (Utils::isZero(SCALE))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   dq0[nicd0-1] = gradq[nicd0-1]/SCALE;
   if (fabs(dq0[nicd0-1])>MAXAD/SCALEW) dq0[nicd0-1] = sign(dq0[nicd0-1])*MAXAD/SCALEW;
 //  if (fabs(dq0[nicd0-1])>DMAX/SCALEW) dq0[nicd0-1] = sign(dq0[nicd0-1])*DMAX/SCALEW;
@@ -3410,6 +3500,8 @@ void ICoord::update_ic_qn()
   //printf(" GRADRMS: %1.3f PGRADRMS: %1.3f SCALE: %1.3f \n",gradrms,pgradrms,SCALE);
 
   for (int i=0;i<len0;i++) dq0[i] = 0.;
+  if (Utils::isZero(SCALE))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int i=0;i<len;i++)
   for (int j=0;j<len;j++)
     dq0[i] += -Hinv[i*len0+j] * gradq[j] / SCALE;
@@ -3480,7 +3572,11 @@ void ICoord::update_ic_eigen()
     gqe[i] += tmph[i*len+j]*gradq[j];
 
   for (int i=0;i<len;i++)
+  {
+      if (Utils::isZero(eigen[i]+lambda1))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     dqe0[i] = -gqe[i] / (eigen[i]+lambda1) / SCALE;
+  }
 
 #if 1
   for (int i=0;i<len;i++)
@@ -3514,6 +3610,8 @@ void ICoord::update_ic_eigen()
   sprintf(sbuff," ss: %1.3f (DMAX: %1.3f)",smag,DMAX); printout += sbuff;
   if (smag > DMAX)
   {
+      if (Utils::isZero(smag))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     for (int i=0;i<len;i++)
       dq0[i] = dq0[i]*DMAX/smag;
   }
@@ -3797,6 +3895,8 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
     dqe0[maxoln] = 0.;
   else
   {
+      if (Utils::isZero(abs(eigen[maxoln]) + lambda1))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     dqe0[maxoln] = gqe[maxoln] / (abs(eigen[maxoln]) + lambda1) / SCALE;
 //    dqe0[maxoln] = gqe[maxoln] / SCALE;
     path_overlap_e_g = gqe[maxoln];
@@ -3804,7 +3904,11 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
   }
   for (int i=0;i<len;i++)
   if (i!=maxoln)
+  {
+      if (Utils::isZero(abs(eigen[i])+lambda1))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     dqe0[i] = -gqe[i] / (abs(eigen[i])+lambda1) / SCALE;
+  }
 
 
   //default move is "forward"
@@ -3907,6 +4011,8 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
 //  printf(" ss: %1.3f",smag);
   if (smag > DMAX)
   {
+      if (Utils::isZero(smag))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     for (int i=0;i<len;i++)
       dq0[i] = dq0[i]*DMAX/smag;
   //  printf(" scaled to %1.3f",DMAX);
@@ -3936,6 +4042,8 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
   //adjust gradrms to account for eigenvector constraint
   gradrms = gradrms*gradrms*nicd0-gqe[maxoln]*gqe[maxoln];
   //gradrms = sqrt(gradrms/nicd0);
+  if (Utils::isZero(nicd0))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   double temp = gradrms/nicd0;
   if (Utils::isLessThanZero(temp))
       std::cout << "WARNING: The number is less than zero on line " <<
@@ -3946,6 +4054,8 @@ void ICoord::update_ic_eigen_h(double* Cn, double* Dn)
   //recalc gradrms to account for perpendicular constraint
   gradrms = gradrms*gradrms*nicd0-gqe[maxolnd]*gqe[maxolnd];
   //gradrms = sqrt(gradrms/nicd0);
+  if (Utils::isZero(nicd0))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   double temp = gradrms/nicd0;
   if (Utils::isLessThanZero(temp))
       std::cout << "WARNING: The number is less than zero on line " <<
@@ -4165,10 +4275,16 @@ void ICoord::update_ic_eigen_ts(double* Cn)
   for (int j=0;j<len;j++)
     gqe[i] += tmph[i*len+j]*gradq[j];
 
+  if (Utils::isZero(abs(eigen[maxoln]) + lambda0))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   dqe0[maxoln] = gqe[maxoln] / (abs(eigen[maxoln]) + lambda0) / SCALE;
   for (int i=0;i<len;i++)
   if (i!=maxoln)
+  {
+      if (Utils::isZero(abs(eigen[i])+lambda1))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     dqe0[i] = -gqe[i] / (abs(eigen[i])+lambda1) / SCALE;
+  }
 
 #if 0
   for (int i=0;i<len;i++)
@@ -4202,6 +4318,8 @@ void ICoord::update_ic_eigen_ts(double* Cn)
 //  printf(" ss: %1.3f",smag);
   if (smag > DMAX)
   {
+      if (Utils::isZero(smag))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     for (int i=0;i<len;i++)
       dq0[i] = dq0[i]*DMAX/smag;
   //  printf(" scaled to %1.3f",DMAX);
@@ -5149,6 +5267,8 @@ int ICoord::create_prima(int nnodes0, int nbonds1, int nangles1, int ntor1, doub
       std::cout << "WARNING: The number is less than zero on line " <<
           __LINE__ << " of file " << __FILE__ << std::endl;
   norm = sqrt(norm);
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int j=0;j<len;j++)
     Cp[j] = Cp[j]/norm;
 
@@ -5237,6 +5357,8 @@ double ICoord::prima_force()
     double sigma = 1.5; //was 1.25
     double f0 = 1.25;  //TS node extra force
     if (i!=1) f0 = 1.0; 
+    if (Utils::isZero(sigma))
+        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     f1 = FMAG * f0 * exp(-dist[i]/sigma);
     sprintf(sbuff," %3.2f (%3.2f)",dist[i],f1); printout += sbuff;
 
@@ -5245,12 +5367,16 @@ double ICoord::prima_force()
       for (int j=0;j<nbonds;j++)
       if (aprima[j])
       {
+          if (Utils::isZero(sigma))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         f2 = exp(-(diff[j]*diff[j])/sigma);
         lin_grad_1(bonds[j][0],bonds[j][1],sign(diff[j])*f1*f2);
       }
       for (int j=0;j<nangles;j++)
       if (aprima[nbonds+j])
       {
+          if (Utils::isZero(sigma))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         f2 = exp(-(diff[nbonds+j]*diff[nbonds+j])/sigma);
        //using lin_grad in place of angle grad
         lin_grad_1(angles[j][0],angles[j][2],sign(diff[nbonds+j])*f1*f2);
@@ -5345,6 +5471,8 @@ int ICoord::davidson_H(int nval)
   int dcontinue = 1;
   double DIST = 0.025; //was 0.05
   int MAX_ITER = 10;
+  if (Utils::isZero(nval))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   if (len/nval>MAX_ITER)
     MAX_ITER = len/nval;
   printf(" maximum number of iterations: %i \n",MAX_ITER);
@@ -5388,6 +5516,8 @@ int ICoord::davidson_H(int nval)
         g2[j] = gradq[j];
 
 
+      if (Utils::isZero(2*DIST))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       for (int j=0;j<len;j++)
         y[wv][j] = (g1[j] - g2[j]) / (2*DIST);
 
@@ -5477,7 +5607,11 @@ int ICoord::davidson_H(int nval)
         q1[j] = yn[i][j] - lamb[i]*b[i][j];
 
       for (int j=0;j<len;j++)
+      {
+          if (Utils::isZero(lamb[i] - eigen[j]))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         vecs[wv][j] = q1[j] / (lamb[i] - eigen[j]);
+      }
 
       for (int j=0;j<wv;j++)
       {
@@ -5496,6 +5630,8 @@ int ICoord::davidson_H(int nval)
           std::cout << "WARNING: The number is less than zero on line " <<
               __LINE__ << " of file " << __FILE__ << std::endl;
       double norm = sqrt(mag);
+      if (Utils::isZero(norm))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       for (int j=0;j<len;j++)
         vecs[wv][j] = vecs[wv][j] / norm;
       //printf(" %i mag: %4.3f \n",i,mag);

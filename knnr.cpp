@@ -486,6 +486,8 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
   double norm = 0.;
   for (int i=0;i<k;i++)
     norm += knnw[i];
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int i=0;i<k;i++)
     knnw[i] = knnw[i] / norm;
 
@@ -687,11 +689,15 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
           std::cout << "WARNING: The number is less than zero on line " <<
               __LINE__ << " of file " << __FILE__ << std::endl;
       gerr[i] = sqrt(temp);
+    if (Utils::isZero(gnorm))
+        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     govl[i] = govl[i] / gnorm;
   }
   double gerra = 0.;
   for (int i=0;i<k;i++)
     gerra += gerr[i];
+  if (Utils::isZero(k))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   gerra = gerra / k / sqrt(N3);
 
   printf(" gerr:");
@@ -801,6 +807,8 @@ double KNNR::predict_point(int pt, int k, ICoord& ic1, ICoord& ic2)
   delete [] knnd;
   delete [] knnw;
 
+  if (Utils::isZero(gradrms))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   return graderr1/gradrms;
 //  return error1;
 }
@@ -893,6 +901,8 @@ double KNNR::grad_knnr(double* coords, double &Ep, double* g1, double* Ut, int k
   double norm = 0.;
   for (int i=0;i<k;i++)
     norm += knnw[i];
+  if (Utils::isZero(norm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int i=0;i<k;i++)
     knnw[i] = knnw[i] / norm;
 

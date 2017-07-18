@@ -153,6 +153,8 @@ string StringTools::double2str(double val, int precision)
   } else if( expn>5) {
      decadd=expn-5;
      for (int i=1; i<=decadd; i++) {fac=fac*10;}
+     if (Utils::isZero(fac))
+         std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
      val=val/fac;
   }
   for (int i=0; i<25; i++){temp[i]=' ';} 

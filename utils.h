@@ -116,6 +116,7 @@ namespace Utils
   void generate_Project_RT(double** Proj, double* structure);
 
   bool isLessThanZero(double &inNumber);
+  bool isZero(double inNumber);
 
 };
 

@@ -1389,6 +1389,8 @@ double ICoord::torsion_val(int i, int j, int k, int l)
       if (Utils::isLessThanZero(u))
           std::cout << "WARNING: The number is less than zero on line " <<
               __LINE__ << " of file " << __FILE__ << std::endl;
+      if (Utils::isZero(sqrt(u)))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
      double a = (ux1*ux2+uy1*uy2+uz1*uz2)/sqrt(u);
      if (a>1) a=1; else if (a<-1) a=-1;
      tval = acos(a);
@@ -1410,6 +1412,8 @@ double ICoord::angle_val(int i, int j, int k)
    double D2 = distance(j,k);
    double D3 = distance(i,k);
    
+   if (Utils::isZero(2*D1*D2))
+       std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
    double cos = ( D1*D1 + D2*D2 - D3*D3 ) / ( 2*D1*D2);
  
    if (cos > 1) cos = 1;

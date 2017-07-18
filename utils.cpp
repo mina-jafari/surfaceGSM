@@ -681,6 +681,8 @@ void Utils::mwc_to_ang(double** angs, double** mwc, int nstring, int natoms, dou
   for (int i=0;i<nstring;i++){
     for (int j=1;j<=natoms;j++){
       for (int k=1;k<=3;k++){
+          if (Utils::isZero(sqrt(amasses[j])))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
 	angs[i][3*(j-1)+k]=mwc[i][3*(j-1)+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
       }
     }
@@ -691,6 +693,8 @@ void Utils::mwc_to_ang(double* angs, double* mwc, int natoms, double* amasses){
 
   for (int j=0;j<natoms;j++){
     for (int k=0;k<3;k++){
+          if (Utils::isZero(sqrt(amasses[j])))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       angs[3*j+k]=mwc[3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
     }
   }
@@ -747,6 +751,8 @@ void Utils::anggrad_to_mwcgrad(double** mwc_grad, double** ang_grad, int nstring
   for (int i=0;i<nstring;i++){
     for (int j=0;j<natoms;j++){
       for (int k=0;k<3;k++){
+          if (Utils::isZero(sqrt(amasses[j])))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         mwc_grad[i][3*j+k]=ang_grad[i][3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
       }
     }
@@ -757,6 +763,8 @@ void Utils::anggrad_to_mwcgrad(double* mwc_grad, double* ang_grad, int natoms, d
 
   for (int j=0;j<natoms;j++){
     for (int k=0;k<3;k++){
+          if (Utils::isZero(sqrt(amasses[j])))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       mwc_grad[3*j+k]=ang_grad[3*j+k]*(1/ANGtoBOHR)*(1/sqrt(amasses[j]));
     }
   }
@@ -862,6 +870,8 @@ void Utils::normalize(double* u, int LEN){
       std::cout << "WARNING: The number is less than zero on line " <<
           __LINE__ << " of file " << __FILE__ << std::endl;
   double vm=sqrt(dp); // magnitude
+  if (Utils::isZero(vm))
+      std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
   for (int i=0; i<LEN; i++){
     u[i]=u[i]/vm;
   }   
@@ -981,6 +991,8 @@ void Utils::ludcmp(double **a, int n, int *indx, double *d){
     for (j=0;j<n;j++)
       if ((temp=fabs(a[i][j]))>big) big=temp;
     if (big ==0) cout << "Singular matrix!\n";
+    if (Utils::isZero(big))
+        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     vv[i]=1.0/big;
   }
 
@@ -1014,6 +1026,8 @@ void Utils::ludcmp(double **a, int n, int *indx, double *d){
     indx[j]=imax;
     if (a[j][j] == 0.0) a[j][j]=1e-20;
     if (j!=n) {
+        if (Utils::isZero(a[j][j]))
+            std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
       dum=1.0/a[j][j];
       for (i=j+1;i<=n;i++) a[i][j] *= dum;
     }
@@ -1037,6 +1051,8 @@ void Utils::lubksb(double **a, int n, int *indx, double b[]){
   for (i=n;i>=0;i--){
     sum=b[i];
     for (j=i+1;j<=n;j++) sum -= a[i][j]*b[j];
+    if (Utils::isZero(a[i][i]))
+        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     b[i]=sum/a[i][i];
   }
 }
@@ -1109,6 +1125,8 @@ void Utils::gramschmidt(int LEN, double* v_out, double* u_in, double* v_in){
   double udotv = Utils::dotProd(v_in, u_in, LEN);
   double udotu = Utils::dotProd(u_in, u_in, LEN);
   for(int i=0;i<LEN;i++){
+      if (Utils::isZero(udotu))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     v_out[i] = v_in[i]-udotv*u_in[i]/udotu;
   }
 }
@@ -1118,6 +1136,8 @@ void Utils::gramschmidt(int LEN, double* v_out, double* u_in, double* v_in){
 void Utils::splineTangents(int LEN, double* x, double* y, double* y2, double* y1){
   double sig, dx;
   for(int i=0;i<LEN-1;i++){
+      if (Utils::isZero(x[i+1]-x[i]))
+          std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     sig = (y[i+1]-y[i])/(x[i+1]-x[i]);
     dx = x[i+1]-x[i];
     y1[i] = sig - dx*y2[i]/3.0 - dx*y2[i+1]/6.0;
@@ -1176,6 +1196,8 @@ void Utils::anggrads_to_mwcgrads(double** temparray, int nn, int natoms, double*
   for (int i=0;i<nn;i++){
     for (int j=0;j<natoms;j++){
       for (int k=0;k<3;k++){
+          if (Utils::isZero(sqrt((double)amasses[j])))
+              std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         temparray[i][3*j+k]/=ANGtoBOHR*sqrt((double)amasses[j]);
       }
     }
@@ -1216,3 +1238,15 @@ bool Utils::isLessThanZero(double &inNumber){
     return isLessThanZero;
 }
 
+bool Utils::isZero(double inNumber){
+    std::cout.precision(10);
+    double zero = 1.0e-50;
+    bool isZero = false;
+    if (inNumber < zero)
+    {
+        isZero = true;
+        std::cout << "The number is " << std::scientific << inNumber << std::endl;
+    }
+
+    return isZero;
+}

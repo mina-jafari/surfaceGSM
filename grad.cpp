@@ -1,7 +1,7 @@
 // Please see license.txt for licensing and copyright information //
 // // Author: Paul Zimmerman, University of Michigan //
 #include "grad.h"
-#include "mopac.h"
+//#include "mopac.h"
 
 using namespace std;
 
