@@ -1241,8 +1241,9 @@ bool Utils::isLessThanZero(double &inNumber){
 bool Utils::isZero(double inNumber){
     std::cout.precision(10);
     double zero = 1.0e-50;
+    double negZero = 1.0e-50;
     bool isZero = false;
-    if (inNumber < zero)
+    if (inNumber < zero && inNumber > negZero)
     {
         isZero = true;
         std::cout << "The number is " << std::scientific << inNumber << std::endl;
