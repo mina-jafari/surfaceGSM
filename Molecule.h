@@ -1,3 +1,6 @@
+// Mina Jafari
+// Fen 2017
+
 #ifndef MOLECULE_H
 #define MOLECULE_H
 

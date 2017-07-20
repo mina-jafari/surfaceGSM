@@ -1,3 +1,6 @@
+// Mina Jafari
+// Feb 2017
+
 #ifndef COORDINAETS_H
 #define COORDINAETS_H
 class Coordinates

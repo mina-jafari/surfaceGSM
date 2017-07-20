@@ -1,5 +1,5 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 #ifndef QCHEM_H
 #define QCHEM_H
 
@@ -25,49 +25,49 @@
 #include "utils.h"
 
 class QChem {
-  
-  private:
-  
-  int nscffail;
-  int firstrun;
 
-   int runNum;
-   int runend;
-  string templatefile;
-  string templatefile_hess;
-  string qcinfile;   
-  string inpfile;  
-  string qcoutfile;
-  string scrdir;  
-  string scrBaseDir;
-  string runName;
-  string runName0;
-  string fileloc;
+    private:
 
-   int natoms;
-   int* anumbers;
-   string* anames;
+        int nscffail;
+        int firstrun;
 
-   double read_output(string filename);
-   double read_grad(string filename);
-   void xyz_read(string filename);
-   void xyz_save(string filename);
-   double get_energy(string filename);
-   int scangradient(string file, double* grad, int natoms);
+        int runNum;
+        int runend;
+        string templatefile;
+        string templatefile_hess;
+        string qcinfile;   
+        string inpfile;  
+        string qcoutfile;
+        string scrdir;  
+        string scrBaseDir;
+        string runName;
+        string runName0;
+        string fileloc;
 
-  public:
+        int natoms;
+        int* anumbers;
+        string* anames;
 
-   double grads(double* coords, double* grads);
-   void alloc(int natoms);
-   void init(string infilename, int natoms, int* anumbers, string* anames, int run, int rune);
-   void freemem();
-   void write_xyz_grad(double* coords, double* grad, string filename);
+        double read_output(string filename);
+        double read_grad(string filename);
+        void xyz_read(string filename);
+        void xyz_save(string filename);
+        double get_energy(string filename);
+        int scangradient(string file, double* grad, int natoms);
 
-   int ncpu;
-   int gradcalls;
+    public:
 
-   double energy0;
-   double energy;
+        double grads(double* coords, double* grads);
+        void alloc(int natoms);
+        void init(string infilename, int natoms, int* anumbers, string* anames, int run, int rune);
+        void freemem();
+        void write_xyz_grad(double* coords, double* grad, string filename);
+
+        int ncpu;
+        int gradcalls;
+
+        double energy0;
+        double energy;
 
 };
 

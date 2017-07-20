@@ -1,3 +1,6 @@
+// Mina Jafari
+// Feb 2017
+
 #ifndef ATOM_H
 #define ATOM_H
 

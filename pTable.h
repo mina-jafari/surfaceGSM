@@ -1,10 +1,10 @@
 // Please see license.txt for licensing and copyright information //
-// // Author: Paul Zimmerman, University of Michigan //
+// Author: Paul Zimmerman, University of Michigan //
 /***************************************************************************
-                          pTable.h  -  description
-                             -------------------
-    copyright            : (C) 2004 by Shaji Chempath
-    University of California Berkeley
+  pTable.h  -  description
+  -------------------
+copyright            : (C) 2004 by Shaji Chempath
+University of California Berkeley
  ***************************************************************************/
 
 /***************************************************************************
@@ -29,14 +29,13 @@
 using namespace std;
 
 namespace PTable
-  {
-      const int MAX_NUMBER_OF_ATOMS = 103;
+{
+    const int MAX_NUMBER_OF_ATOMS = 103;
 
-     int  atom_number(string &aName);
+    int  atom_number(string &aName);
 
-     string  atom_name(int aNumber);
+    string  atom_name(int aNumber);
 
-     double  atom_mass(int aNumber);
-  }
+    double  atom_mass(int aNumber);
+}
 #endif
-

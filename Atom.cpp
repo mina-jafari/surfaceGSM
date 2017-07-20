@@ -1,3 +1,6 @@
+// Mina Jafari
+// Feb 2017
+
 #include "Atom.h"
 
 Atom::Atom(

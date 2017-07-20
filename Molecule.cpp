@@ -1,3 +1,6 @@
+// Mina Jafari
+// Feb 2017
+
 #include "Molecule.h"
 
 Molecule::Molecule(

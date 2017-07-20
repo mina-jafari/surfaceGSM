@@ -1,3 +1,6 @@
+// Mina Jafari
+// Fen 2017
+
 #include "Coordinates.h"
 
 
