@@ -98,10 +98,11 @@ namespace PTable {
     int PTable::atom_number(string &aname){
         // The way it written it is a large loop, So be careful , 
         // dont use this a lot
+        int atomicNumber = -2;
         bool found= false;
         for (int a=0; a<MAX_NUMBER_OF_ATOMS; a++){ 
             // given the atom name find atom number
-            if (aname==atom_symbol[a]){ found=true; return a;} 
+            if (aname==atom_symbol[a]){ found=true; atomicNumber = a;}
         }
         if (!found) {
             cout << endl <<"Now in file: :" <<__FILE__
@@ -109,6 +110,7 @@ namespace PTable {
             cout << "Failed to find atom named : " << aname << endl;
             exit(-1);
         }
+        return atomicNumber;
     }
 
 
