@@ -577,7 +577,7 @@ void GString::String_Method_Optimization()
     {
         printf("\n opting first node \n");
         string nstr0 = StringTools::int2str(runNum,4,"0");
-        icoords[0].OPTTHRESH = CONV_TOL*3.;
+        icoords[0].OPTTHRESH = CONV_TOL;
         icoords[0].make_Hint();
         icoords[0].V0 = 0.;
         V_profile[0] = icoords[0].opt_b("scratch/firstnode.xyz"+nstr,initialOpt);
@@ -585,6 +585,20 @@ void GString::String_Method_Optimization()
         gradJobCount += icoords[0].noptdone;
         printf(" %s \n",icoords[0].printout.c_str()); 
         printf(" energy of first node: %9.6f \n",V_profile[0]/627.5);
+    }
+    // optimize last node for DE-GSM
+    if (lastOpt > 0 && !isSSM && !isFSM)
+    {
+        printf("\n opting last node \n");
+        string nstr0 = StringTools::int2str(runNum,4,"0");
+        icoords[nnmax-1].OPTTHRESH = CONV_TOL;
+        icoords[nnmax-1].make_Hint();
+        icoords[nnmax-1].V0 = 0.;
+        V_profile[nnmax-1] = icoords[nnmax-1].opt_b("scratch/lastnode.xyz"+nstr,initialOpt);
+        icoords[nnmax-1].OPTTHRESH = CONV_TOL;
+        gradJobCount += icoords[nnmax-1].noptdone;
+        printf(" %s \n",icoords[nnmax-1].printout.c_str()); 
+        printf(" energy of last node: %9.6f \n",V_profile[nnmax-1]/627.5);
     }
 
     //printf(" exit early! \n");
