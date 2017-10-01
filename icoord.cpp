@@ -840,7 +840,7 @@ int ICoord::get_ox(int* oxel, int &abundant)
 
     int emax1 = -1;
     int nmax1 = 0;
-    for (int i=2;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
+    for (int i=1;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
     {
         if (elem[i]>nmax1)
         {
@@ -851,7 +851,7 @@ int ICoord::get_ox(int* oxel, int &abundant)
     abundant = emax1;
     int emax2 = -1;
     int nmax2 = 0;
-    for (int i=2;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
+    for (int i=1;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
     {
         if (elem[i]>nmax2 && i!=emax1)
         {
@@ -860,7 +860,10 @@ int ICoord::get_ox(int* oxel, int &abundant)
         }
     }
 
-    printf("   most abundant: %2s/%2i %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1,PTable::atom_name(emax2).c_str(),nmax2);
+    if (emax1 > 0 && emax2 > 0)
+        printf("   most abundant: %2s/%2i %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1,PTable::atom_name(emax2).c_str(),nmax2);
+    else if (emax1 > 0)
+        printf("   most abundant: %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1);
 
     //verify second element is actually abundant
     if (nmax2<natoms/5) 
