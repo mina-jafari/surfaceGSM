@@ -5440,7 +5440,7 @@ void GString::get_tangents_1(double** dqa, double* dqmaga, double** ictan)
 
         for (int j=0;j<nbonds;j++) 
             dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j]; 
-        for (int j=nbonds;j<size_ic-ntor;j++) 
+        for (int j=nbonds;j<size_icp-ntor;j++) 
             dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
         for (int j=nbonds+nangles;j<size_icp;j++)
             dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
@@ -5550,7 +5550,7 @@ void GString::get_tangents_1g(double** dqa, double* dqmaga, double** ictan)
         newic.opt_constraint(ictan[nlist[2*n]]); //take ictan into Ut coordinate system, normalize it
         //newic.bmat_create();
 
-        for (int j=0;j<size_ic-ntor;j++) 
+        for (int j=0;j<size_icp-ntor;j++) 
             dqmaga[nlist[2*n]] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
         for (int j=nbonds+nangles;j<size_icp;j++)
             dqmaga[nlist[2*n]] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j]; //CPMZ check
@@ -5754,7 +5754,7 @@ void GString::get_tangents_1e(double** dqa, double* dqmaga, double** ictan)
 
         for (int j=0;j<nbonds;j++) 
             dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
-        for (int j=nbonds;j<size_ic-ntor;j++) 
+        for (int j=nbonds;j<size_icp-ntor;j++) 
             dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j];
         for (int j=nbonds+nangles;j<size_icp;j++)
             dqmaga[n] += ictan0[j]*newic.Ut[newic.nicd*size_ic+j]; //CPMZ check
