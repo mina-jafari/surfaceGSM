@@ -1515,7 +1515,7 @@ int ICoord::isTM(int a) {
 
 int ICoord::isSemiconductor(int atomic_number) {
     int semi = 0;
-    if (atomic_number == 14 || atomic_number == 32 || atomic_number == 33)
+    if (atomic_number == 8 || atomic_number == 14 || atomic_number == 32 || atomic_number == 33)
     {
         semi = 1;
     }
