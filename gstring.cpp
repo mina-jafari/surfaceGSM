@@ -374,6 +374,7 @@ void GString::String_Method_Optimization()
 
     //deletes bonds to high coordinate species
     ic1.use_xyz = 1; ic2.use_xyz = 1;
+    ic1.surf_type = SURF_TYPE; ic2.surf_type = SURF_TYPE;
 
 #if !SSM_BOND_FRAGS
     if (isSSM)
@@ -388,7 +389,7 @@ void GString::String_Method_Optimization()
     ic1.reset(natoms,anames,anumbers,coords[0]);
     ic2.reset(natoms,anames,anumbers,coords[nnmax-1]);
     if (!isSSM)
-        get_diff_bonds(ic1,ic2,ic3);
+      get_diff_bonds(ic1,ic2,ic3);
     ic1.ic_create();
     ic2.ic_create();
 
@@ -535,6 +536,7 @@ void GString::String_Method_Optimization()
     //create template for R/P pair
     //printf(" creating bondsic \n");
     ic1.isOpt = 0; ic2.isOpt = 0;
+    ic1.use_xyz = 2; ic2.use_xyz = 2;
     ic1.ic_create();
     ic2.ic_create();
     bondsic.alloc(natoms);
@@ -1128,6 +1130,7 @@ void GString::init(string infilename, int run, int nprocs){
     ptsn = 0;
     newclimbscale = 2.;
     GROWD = 0;
+    SURF_TYPE = 0;
     endearly = 0;
     surftype = "none";
     nbsites = 0;
@@ -1322,6 +1325,11 @@ void GString::parameter_init(string infilename)
             GROWD = atoi(tok_line[1].c_str());
             stillreading = true;
             cout <<"  -GROWTH_DIRECTION = " << GROWD << endl;
+        }
+        if (tagname=="SURFACE_CLASS"){
+            SURF_TYPE = atoi(tok_line[1].c_str());
+            stillreading = true;
+            cout <<"  -SURFACE_CLASS = " << SURF_TYPE << endl;
         }
         if (tagname=="nnodes" || tagname=="NNODES"){
             nnmax = atoi(tok_line[1].c_str());

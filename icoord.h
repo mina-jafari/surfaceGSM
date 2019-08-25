@@ -42,9 +42,12 @@ class ICoord {
         void structure_read(string xyzfile);
         void alloc_mem();
         void make_bonds();
+        void make_bonds_no_frozen();
         void make_bonds_1(int i);
+        void clean_high_coord(int highcut);
         void coord_num();
         void get_xyzic();
+        void get_xyzic_surf1(int highcut, int* oxel);
         int get_ox(int* oxel, int &abundant);
         void connect_1_coord_mg();
         void make_angles();
@@ -156,6 +159,8 @@ class ICoord {
         double SCALEQN;
 
         double V0;
+
+        int surf_type;
 
         int use_xyz;
         int nxyzic;

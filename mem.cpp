@@ -39,6 +39,7 @@ void ICoord::alloc_mem(){
 
     farBond = 1.0;
     use_xyz = 0;
+    surf_type = 0;
 
     frozen = NULL;
     xyzic = new int[natoms];

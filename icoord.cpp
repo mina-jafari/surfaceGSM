@@ -168,40 +168,157 @@ void ICoord::create_xyz()
 }
 
 
+void ICoord::clean_high_coord(int highcut)
+{
+  printf(" trimming high coordination number atoms \n");
+
+  coord_num();
+
+  int nbonds0 = nbonds;
+  for (int i=0;i<natoms;i++)
+  if (coordn[i]>highcut)
+  {
+    //printf("  coordn[%3i] is high \n",i);
+
+    for (int j=0;j<nbonds;j++)
+    {
+      int a2 = -1;
+      if (bonds[j][0]==i)
+        a2 = bonds[j][1];
+      if (bonds[j][1]==i)
+        a2 = bonds[j][0];
+      if (a2>-1)
+      {
+        if (coordn[a2]>highcut)
+        {
+          //printf("   deleting bond %3i-%3i \n",bonds[j][0],bonds[j][1]);
+          for (int k=j;k<nbonds-1;k++)
+          {
+            bonds[k][0] = bonds[k+1][0];
+            bonds[k][1] = bonds[k+1][1];
+          }
+          nbonds--;
+        }
+      } //bond j contains atom i
+    } //loop j
+  } //loop i
+  printf(" trimmed %2i bonds \n",nbonds0-nbonds);
+
+  return;
+}
+
+void ICoord::get_xyzic_surf1(int highcut, int* oxel)
+{
+  printf(" setting up xyz's for surface_type 1 \n");
+
+  for (int i=0;i<natoms;i++)
+  if (oxel[i] && coordn[i]>highcut)
+  {
+    int keep = 1;
+    for (int j=0;j<nbonds;j++)
+    {
+      int a2 = -1;
+      if (bonds[j][0]==i)
+        a2 = bonds[j][1];
+      if (bonds[j][1]==i)
+        a2 = bonds[j][0];
+      if (a2>-1)
+      {
+        if (oxel[a2]) // && coordn[a2]>1)
+        {
+          keep = 0;
+          for (int k=j;k<nbonds-1;k++)
+          {
+            bonds[k][0] = bonds[k+1][0];
+            bonds[k][1] = bonds[k+1][1];
+          }
+          nbonds--;
+        }
+      } //a2 bonded to j
+    } //loop j
+
+    if (keep==0)
+    {
+      xyzic[i] = 1;
+      nxyzic += 3;
+    }
+  } //loop i over abundant atoms with high coordn
+
+  coord_num();
+  for (int i=0;i<natoms;i++)
+  {
+    int keep = 1;
+    if (coordn[i]<2 && isTM(i))
+      keep = 0;
+    if (coordn[i]<1) 
+      keep = 0;
+    if (keep==0)
+    {
+      //printf(" low coordn (%i), setting xyz: %i \n",coordn[i],i);
+      xyzic[i] = 1;
+      nxyzic += 3;
+    }
+  }
+
+  return;
+}
+
 int ICoord::ic_create()
 {
+  if (surf_type==1) 
+    make_bonds_no_frozen();
+  else
     make_bonds();
 
-    int abundant = 0;
-    int* oxel = new int[natoms];
-    int nox = get_ox(oxel, abundant);
+  int abundant = 0;
+  int* oxel = new int[natoms];
+  int nox = get_ox(oxel, abundant);
 
-    if (isOpt && isSemiconductor(abundant))
+  //if (surf_type==0 && isSemiconductor(abundant))
+  //  surf_type = 1;
+
+  if (use_xyz==2 && surf_type==1)
+    clean_high_coord(3);
+
+  if (isOpt && surf_type==1)
+  {
+    clean_high_coord(4);
+    //make_frags();
+    get_xyzic_surf1(1,oxel);
+  }
+  else if (isOpt && surf_type==2)
+  {
+    printf("Coordinate system for semiconductors. isOpt: %i \n",isOpt);
+    make_frags();
+    if (use_xyz)
     {
-        printf("Coordinate system for semiconductors. isOpt: %i \n",isOpt);
-        make_frags();
-        if (use_xyz)
-        {
-            get_xyzic(); // Mina
-            bond_frags_xyz();
-        }
-        else
-            bond_frags();
+      get_xyzic(); 
+      bond_frags_xyz();
     }
-    else if (isOpt && isTM_2(abundant))
+    else
+      bond_frags();
+  }
+  else if (isOpt && isTM_2(abundant))
+  {
+    printf("Coordinate system for transition metals. isOpt: %i \n",isOpt);
+    make_frags();
+    if (use_xyz)
     {
-        printf("Coordinate system for transition metals. isOpt: %i \n",isOpt);
-        make_frags();
-        if (use_xyz)
-        {
-            bond_frags_xyz();
-        }
-        else
-            bond_frags();
-        coord_num(); // counts # surrounding species
-        if (use_xyz)
-            get_xyzic();
+      bond_frags_xyz();
     }
+    else
+      bond_frags();
+    coord_num(); // counts # surrounding species
+    if (use_xyz)
+      get_xyzic();
+  }
+  else
+  {
+    printf(" nox: %2i \n",nox);
+  }
+
+    //printf("  current set of bonds \n");
+    //print_bonds();
 
     /*if (isTM_2(abundant))
       {
@@ -825,7 +942,7 @@ void ICoord::connect_1_coord_mg()
 
 int ICoord::get_ox(int* oxel, int &abundant)
 {
-    printf("   testing get_ox \n");
+    printf("   getting most abundant elements \n");
 
     for (int i=0;i<natoms;i++) oxel[i] = 0;
 
@@ -891,33 +1008,33 @@ int ICoord::get_ox(int* oxel, int &abundant)
 //CPMZ tune me
 void ICoord::get_xyzic()
 {
-    printf("  in get_xyzic() use_xyz: %i \n",use_xyz);
+  printf("  in get_xyzic() use_xyz: %i \n",use_xyz);
 
-    if (use_xyz==2)
-        for (int i=0;i<nbonds;i++)
-        {
-            int a1 = bonds[i][0];
-            int a2 = bonds[i][1];
-            int frzpair = 0;
-            if (frozen!=NULL)
-                if (frozen[a1] && frozen[a2])
-                    frzpair = 1;
+  if (use_xyz==2)
+  for (int i=0;i<nbonds;i++)
+  {
+    int a1 = bonds[i][0];
+    int a2 = bonds[i][1];
+    int frzpair = 0;
+    if (frozen!=NULL)
+    if (frozen[a1] && frozen[a2])
+      frzpair = 1;
 
-            if ((isTM(a1) && isTM(a2)) || frzpair)
-            {
-                //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
-                //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
-                for (int j=i;j<nbonds-1;j++)
-                {
-                    bonds[j][0] = bonds[j+1][0];
-                    bonds[j][1] = bonds[j+1][1];
-                    bondd[j] = bondd[j+1];
-                }
-                nbonds--;
-                i--;
-            }
-        }
-    if (use_xyz==2) return;
+    if ((isTM(a1) && isTM(a2)) || frzpair)
+    {
+      //printf(" high coordn: %i/%i for atoms %i/%i \n",coordn[a1],coordn[a2],a1+1,a2+1);
+      //printf(" metal-metal bond: %i-%i \n",a1+1,a2+1);
+      for (int j=i;j<nbonds-1;j++)
+      {
+        bonds[j][0] = bonds[j+1][0];
+        bonds[j][1] = bonds[j+1][1];
+        bondd[j] = bondd[j+1];
+      }
+      nbonds--;
+      i--;
+    }
+  }
+  if (use_xyz==2) return;
 
 
     int abundant = 0;
@@ -1036,87 +1153,116 @@ void ICoord::update_nonbond(){
     return;
 }
 
+void ICoord::make_bonds_no_frozen()
+{
+  if (frozen==NULL) return make_bonds();
+
+  //printf(" in make_bonds, natoms: %i\n",natoms);
+  double MAX_BOND_DIST; 
+  nbonds = 0;
+  nxyzic = 0;
+  for (int i=0;i<natoms;i++)
+  for (int j=0;j<i;j++)
+  if (!frozen[i] || !frozen[j])
+  {
+    MAX_BOND_DIST = (getR(i) + getR(j))/2;
+    if (farBond>1.0) MAX_BOND_DIST *= farBond;
+    double d = distance(i,j);
+    if (d<MAX_BOND_DIST)
+    {
+        //printf(" found bond: %2i %2i dist: %f \n",i+1,j+1,d);
+        bonds[nbonds][0]=i;
+        bonds[nbonds][1]=j;
+        bondd[nbonds]=d;
+        nbonds++;
+    }
+  }
+}
+
 void ICoord::make_bonds()
 {
-    //  printf("\n\n DEBUG: no bonds \n");
-    //  return;
-
-    //printf(" in make_bonds, natoms: %i\n",natoms);
-    double MAX_BOND_DIST; 
-    nbonds = 0;
-    nxyzic = 0;
-    for (int i=0;i<natoms;i++)
-        for (int j=0;j<i;j++)
-        {
-            MAX_BOND_DIST = (getR(i) + getR(j))/2;
-            if (farBond>1.0) MAX_BOND_DIST *= farBond;
-            double d = distance(i,j);
-            if (d<MAX_BOND_DIST)
-            {
-                //printf(" found bond: %2i %2i dist: %f \n",i+1,j+1,d);
-                bonds[nbonds][0]=i;
-                bonds[nbonds][1]=j;
-                bondd[nbonds]=d;
-                nbonds++;
-            }
-        }
-
+  //printf(" in make_bonds, natoms: %i\n",natoms);
+  double MAX_BOND_DIST; 
+  nbonds = 0;
+  nxyzic = 0;
+  for (int i=0;i<natoms;i++)
+  for (int j=0;j<i;j++)
+  {
+    MAX_BOND_DIST = (getR(i) + getR(j))/2;
+    if (farBond>1.0) MAX_BOND_DIST *= farBond;
+    double d = distance(i,j);
+    if (d<MAX_BOND_DIST)
+    {
+        //printf(" found bond: %2i %2i dist: %f \n",i+1,j+1,d);
+        bonds[nbonds][0]=i;
+        bonds[nbonds][1]=j;
+        bondd[nbonds]=d;
+        nbonds++;
+    }
+  }
 }
 
 void ICoord::coord_num()
 { 
-    for (int i=0;i<natoms;i++)
-        coordn[i] = 0;
-    for (int i=0;i<nbonds;i++)
-    {
-        coordn[bonds[i][0]]++;
-        coordn[bonds[i][1]]++;
-    }
+  for (int i=0;i<natoms;i++)
+    coordn[i] = 0;
+  for (int i=0;i<nbonds;i++)
+  {
+    coordn[bonds[i][0]]++;
+    coordn[bonds[i][1]]++;
+  }
 }
 
 void ICoord::make_angles()
 {
-    //include all consecutive connections 
-    nangles=0;
-    for (int i=0;i<nbonds;i++)
+  //printf("  debug. make_angles nbonds: %3i \n",nbonds);
+ //include all consecutive connections 
+  nangles=0;
+  for (int i=0;i<nbonds;i++)
+  {
+    for (int j=0;j<i;j++)
     {
-        for (int j=0;j<i;j++)
-        {
-            if (bonds[i][0]==bonds[j][0])
-            {
-                angles[nangles][1]=bonds[i][0];
-                angles[nangles][0]=bonds[i][1];
-                angles[nangles][2]=bonds[j][1];
-                nangles++;
-            }
-            else if (bonds[i][0]==bonds[j][1])
-            {
-                angles[nangles][1]=bonds[i][0];
-                angles[nangles][0]=bonds[i][1];
-                angles[nangles][2]=bonds[j][0];
-                nangles++;
-            }
-            else if (bonds[i][1]==bonds[j][0])
-            {
-                angles[nangles][1]=bonds[i][1];
-                angles[nangles][0]=bonds[i][0];
-                angles[nangles][2]=bonds[j][1];
-                nangles++;
-            }
-            else if (bonds[i][1]==bonds[j][1])
-            {
-                angles[nangles][1]=bonds[i][1];
-                angles[nangles][0]=bonds[i][0];
-                angles[nangles][2]=bonds[j][0];
-                nangles++;
-            }
-            if (nangles>0)
-                anglev[nangles-1]=angle_val(angles[nangles-1][0],angles[nangles-1][1],angles[nangles-1][2]);
-        } //loop j
-    } //loop i
+      if (bonds[i][0]==bonds[j][0])
+      {
+          angles[nangles][1]=bonds[i][0];
+          angles[nangles][0]=bonds[i][1];
+          angles[nangles][2]=bonds[j][1];
+          nangles++;
+      }
+      else if (bonds[i][0]==bonds[j][1])
+      {
+          angles[nangles][1]=bonds[i][0];
+          angles[nangles][0]=bonds[i][1];
+          angles[nangles][2]=bonds[j][0];
+          nangles++;
+      }
+      else if (bonds[i][1]==bonds[j][0])
+      {
+          angles[nangles][1]=bonds[i][1];
+          angles[nangles][0]=bonds[i][0];
+          angles[nangles][2]=bonds[j][1];
+          nangles++;
+      }
+      else if (bonds[i][1]==bonds[j][1])
+      {
+          angles[nangles][1]=bonds[i][1];
+          angles[nangles][0]=bonds[i][0];
+          angles[nangles][2]=bonds[j][0];
+          nangles++;
+      }
+      if (nangles>0)
+        anglev[nangles-1]=angle_val(angles[nangles-1][0],angles[nangles-1][1],angles[nangles-1][2]);
 
+      if (nangles>max_angles-1)
+      {
+        printf(" ERROR: too many angles (%3i vs %3i) \n",nangles,max_angles);
+        printf("  natoms: %3i nbonds: %3i \n",natoms,nbonds);
+        exit(1);
+      }
+    } //loop j
+  } //loop i
 
-    return;
+  return;
 }
 
 void ICoord::make_torsions()
@@ -1553,12 +1699,12 @@ double ICoord::getR(int i){
     else if (an==3) value = 2.65; //PT
     else if (an==4) value = 2.0; //PT
     else if (an==5) value = 1.75;
-    else if (an==6) value = 1.65;
-    else if (an==7) value = 1.65;
-    else if (an==8) value = 1.65;
-    else if (an==9) value = 1.6;
-    else if (an==11) value = 3.3; //PT
-    else if (an==12) value = 3.1;
+    else if (an==6) value = 1.85;
+    else if (an==7) value = 1.85;
+    else if (an==8) value = 1.85;
+    else if (an==9) value = 1.8;
+    else if (an==11) value = 2.9; //updated
+    else if (an==12) value = 3.2; //updated
     else if (an==13) value = 2.6;
     else if (an==14) value = 2.6;
     else if (an==15) value = 2.5;
