@@ -720,6 +720,7 @@ void ICoord::bond_frags_xyz()
 
             //now connect a1 to next nearest
             mclose2 = 1000.;
+            if (found)
             for (int i=0;i<natoms;i++)
             {
                 //if (frags[i]==n1 && i!=a1 && i!=a2)
@@ -737,7 +738,8 @@ void ICoord::bond_frags_xyz()
                     } 
             }
 
-            if (found && !bond_exists(a1,a2))
+            if (found)
+            if (!bond_exists(a1,a2))
             {
                 printf(" bond pair1 added : %i %i ",a1+1,a2+1);
                 bonds[nbonds][0] = a1;
@@ -746,7 +748,8 @@ void ICoord::bond_frags_xyz()
                 nbonds++;
             } // if found
 
-            if (found2 && !bond_exists(b1,b2))
+            if (found2)
+            if (!bond_exists(b1,b2))
             {
                 printf(" bond pair2 added : %i %i ",b1+1,b2+1);
                 bonds[nbonds][0] = b1;
@@ -1763,8 +1766,9 @@ int ICoord::bond_exists(int b1, int b2) {
 
     if (b1 < 0 || b1 > natoms)
     {
-        std::cout << "ERROR: Something is wrong with atomic indices" << std::endl; //Mina
-        exit(-1);
+      printf(" ERROR: atom index out of range in bond_exists() \n");
+      printf("  b1: %2i \n",b1);
+      exit(-1);
     }
     int found = 0;
     if (bond_num(b1,b2)>-1)
