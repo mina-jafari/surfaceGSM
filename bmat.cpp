@@ -963,9 +963,9 @@ void ICoord::bmatp_dqadx(int i, int j, int k, double* dqadx) {
         cross(w,u,vn);
         //mag = sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
         double temp = w[0]*w[0]+w[1]*w[1]+w[2]*w[2];
-        if (Utils::isLessThanZero(temp))
-            std::cout << "WARNING: The number is less than zero on line " <<
-                __LINE__ << " of file " << __FILE__ << std::endl;
+//        if (Utils::isLessThanZero(temp))
+//            std::cout << "WARNING: The number is less than zero on line " <<
+//                __LINE__ << " of file " << __FILE__ << std::endl;
         mag = sqrt(temp);
         if (mag<THRESH)
         {
