@@ -4945,6 +4945,7 @@ int GString::check_for_reaction_g()
     ICoord ic2;
     ic2.alloc(natoms);
     ic2.isOpt = 0;
+    ic2.surf_type = SURF_TYPE;
 
     int isrxn = 0;
 
@@ -5010,6 +5011,8 @@ int GString::check_for_reaction(int& wts, int& wint)
     ic2.isOpt = 0;
     ic1.use_xyz = 1;
     ic2.use_xyz = 1;
+    ic1.surf_type = SURF_TYPE;
+    ic2.surf_type = SURF_TYPE;
     ic1.reset(natoms,anames,anumbers,coords[0]);
     ic1.ic_create();
 
