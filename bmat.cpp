@@ -4564,9 +4564,9 @@ int ICoord::ic_to_xyz() {
         printf("\n");
 #endif
 
-        if (Utils::isLessThanZero(mag))
-            std::cout << "WARNING: The number is less than zero on line " <<
-                __LINE__ << " of file " << __FILE__ << std::endl;
+//        if (Utils::isLessThanZero(mag))
+//            std::cout << "WARNING: The number is less than zero on line " <<
+//                __LINE__ << " of file " << __FILE__ << std::endl;
         if (sqrt(mag)<0.0005) break; // was not sqrt, 0.00005
     }
 
