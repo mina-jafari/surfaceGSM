@@ -4651,6 +4651,7 @@ void GString::ic_reparam_cut(int min, double** dqa, double* dqmaga, int rtype)
     // opt intermediate to end node
     int osteps = 50;
     string nstr = StringTools::int2str(runNum,4,"0");
+    newic.surf_type = SURF_TYPE;
     newic.reset(natoms,anames,anumbers,icoords[min].coords);
     newic.bmatp_create();
     newic.bmatp_to_U();
@@ -4940,6 +4941,8 @@ void GString::ic_reparam_dm(double** dqa, double* dqmaga, int rtype)
 
 int GString::check_for_reaction_g()
 {
+  printf("  in check_for_reaction_g \n");
+
     if (nadd+nbrk<1) return 0;
 
     ICoord ic2;
@@ -4984,6 +4987,8 @@ int GString::check_for_reaction_g()
 
 int GString::check_for_reaction(int& wts, int& wint)
 {
+  printf("  in check_for_reaction \n");
+
     int nmin = 1;
     int nmax = 0;
     int* min = new int[nnmax];
