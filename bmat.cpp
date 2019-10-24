@@ -3173,8 +3173,8 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
             double dE = energy - energyp;
             energyp = energy;
             //if (abs(dEpre)<0.05) dEpre = sign(dEpre)*0.05; 
-            if (Utils::isZero(dEpre))
-                std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+            //if (Utils::isZero(dEpre))
+            //    std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
             double ratio = dE/dEpre;
             sprintf(sbuff," ratio: %2.3f ",ratio); printout += sbuff;
             if (ratio < 0. && abs(dEpre)>0.05)
@@ -4578,9 +4578,9 @@ int ICoord::ic_to_xyz() {
 
     //printf(" diff in xyz mag (end %2i) is: %1.4f \n",n+1,sqrt(mag)); 
     double MAXMAG = 0.025*natoms;
-    if (Utils::isLessThanZero(mag))
-        std::cout << "WARNING: The number is less than zero on line " <<
-            __LINE__ << " of file " << __FILE__ << std::endl;
+//    if (Utils::isLessThanZero(mag))
+//        std::cout << "WARNING: The number is less than zero on line " <<
+//            __LINE__ << " of file " << __FILE__ << std::endl;
     if (sqrt(mag)>MAXMAG)
     {
         //printf(" WARNING: diff in xyz mag (end) is: %1.4f, using first step, mag: %1.4f \n",sqrt(mag),sqrt(mag0));
