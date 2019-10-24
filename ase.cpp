@@ -5,6 +5,9 @@
 using namespace std;
 
 
+#define USE_SBATCH 0
+
+
 void ASE::alloc(int natoms0)
 {
     natoms = natoms0;
@@ -96,8 +99,15 @@ double ASE::grads(double* coords, double* grad)
 
     string ncpustr=StringTools::int2str(ncpu,1,"0");
     //  string cmd = "./goase "+endstr;
+#if USE_SBATCH
+    //string cmd0 = "rm scratch/vasp"+endstr+"/done";
+    //system(cmd0.c_str());
+    string cmd = "./submit "+endstr+" "+ncpustr;
+    system(cmd.c_str());
+#else
     string cmd = "./grad.py "+endstr+" "+ncpustr;
     system(cmd.c_str());
+#endif
 
 
     string gradfile = "scratch/GRAD"+endstr;
