@@ -1,0 +1,15 @@
+#!/bin/bash
+#SBATCH -N 1 --ntasks-per-node=16 --time=2-00:00:00
+#SBATCH -e qsub.qsh.err -o qsub.qsh.out --no-requeue
+#SBATCH -p zimopt --job-name=vrun-mgo.qsh
+
+source /home/paulzim/vasp.5.3/newcluster/paul.set.local1
+export PYTHONPATH=/home/paulzim/ase/
+module load anaconda/2.5.3.0
+
+export OMP_NUM_THREADS=1
+export VASP_SCRIPT=/home/paulzim/ase/run_vasp_mpi.py
+
+export VASP_NCORE=16
+
+### run here

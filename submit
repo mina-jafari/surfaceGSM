@@ -1,0 +1,29 @@
+#!/bin/bash
+
+subfile="scratch/subme${1}.qsh"
+
+#ID=`printf "%0*d\n" 4 ${1}`
+#ID2=`printf "%0*d\n" 2 ${2}`
+dir="scratch/vasp$1"
+
+echo "working directory: $dir"
+mkdir $dir
+rm $dir/done
+
+cp submitr $subfile
+echo "./grad.py $1 $2" >> $subfile
+echo "touch $dir/done" >> $subfile
+
+sbatch $subfile >> sub.log
+
+i=1
+while [ $i -le 40000 ]
+do
+  if [ -f "$dir/done" ]
+  then
+    break
+  fi
+
+  sleep 10
+  let i=i+1
+done
