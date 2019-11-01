@@ -152,6 +152,7 @@ class ICoord {
 
         double FMAG;
         double OPTTHRESH;
+        double OPTMAX;
         double MAXAD;
         double DMAX;
         double DMIN0;
@@ -218,6 +219,7 @@ class ICoord {
         int stage1opt;
         double pgradrms;
         double gradrms;
+        double gradmax;
         void make_Hint();
         void Hintp_to_Hint();
         int davidson_H(int neigen);

@@ -579,7 +579,8 @@ void GString::String_Method_Optimization()
     {
         printf("\n opting first node \n");
         string nstr0 = StringTools::int2str(runNum,4,"0");
-        icoords[0].OPTTHRESH = CONV_TOL;
+        icoords[0].OPTTHRESH = CONV_TOL; 
+        icoords[0].OPTMAX = GRAD_MAX_TOL;
         icoords[0].make_Hint();
         icoords[0].V0 = 0.;
         V_profile[0] = icoords[0].opt_b("scratch/firstnode.xyz"+nstr,initialOpt);
@@ -594,6 +595,7 @@ void GString::String_Method_Optimization()
         printf("\n opting last node \n");
         string nstr0 = StringTools::int2str(runNum,4,"0");
         icoords[nnmax-1].OPTTHRESH = CONV_TOL;
+        icoords[nnmax-1].OPTMAX = GRAD_MAX_TOL;
         icoords[nnmax-1].make_Hint();
         icoords[nnmax-1].V0 = 0.;
         V_profile[nnmax-1] = icoords[nnmax-1].opt_b("scratch/lastnode.xyz"+nstr,initialOpt);
@@ -1195,6 +1197,7 @@ void GString::parameter_init(string infilename)
     QDISTMAX = 5.0;
     PEAK4_EDIFF = 2.0;
     isRestart = 0;
+    GRAD_MAX_TOL = 0.05;
 
     cout << "Initializing Tolerances and Parameters..." << endl;
     cout << "  -Opening inpfile" << endl;
@@ -1310,6 +1313,11 @@ void GString::parameter_init(string infilename)
             CONV_TOL=atof(tok_line[1].c_str());
             stillreading=true;
             cout <<"  -CONV_TOL = " << CONV_TOL << endl;
+        }
+        if (tagname=="GRAD_MAX_TOL") {
+            GRAD_MAX_TOL=atof(tok_line[1].c_str());
+            stillreading=true;
+            cout <<"  -GRAD_MAX_TOL = " << GRAD_MAX_TOL << endl;
         }
         if (tagname=="ADD_NODE_TOL"){
             ADD_NODE_TOL=atof(tok_line[1].c_str());
@@ -2958,6 +2966,7 @@ void GString::opt_tr()
     newic.optCG = 0;
     newic.pgradrms = 10000.;
     newic.OPTTHRESH = CONV_TOL;
+    newic.OPTMAX = GRAD_MAX_TOL;
     newic.noptdone = 3;
 
     //was 5
@@ -7031,6 +7040,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
                 {
                     set_fsm_active(nnR-1,nnR-1); 
                     icoords[nnR-1].OPTTHRESH = CONV_TOL;
+                    icoords[nnR-1].OPTMAX = GRAD_MAX_TOL;
                 }
             }
         } 
@@ -7222,7 +7232,10 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
             for (int n=1;n<nnmax-1;n++)
                 active[n] = 1;
             for (int n=1;n<nnmax-1;n++)
+            {
                 icoords[n].OPTTHRESH = CONV_TOL;
+                icoords[n].OPTMAX = GRAD_MAX_TOL;
+            }
         }
     }
 
@@ -7268,14 +7281,16 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
         {
             totalgrad += icoords[i].gradrms*r3n;
             gradrms += icoords[i].gradrms*icoords[i].gradrms;
+            //if (icoords[i].gradmax>gradmax)
+            //  gradmax = icoords[i].gradmax;
         }
         //gradrms = sqrt(gradrms/(nnmax-2-n0));
-        if (Utils::isZero(nnmax-2-n0))
-            std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+        //if (Utils::isZero(nnmax-2-n0))
+        //    std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
         double temp = gradrms/(nnmax-2-n0);
-        if (Utils::isLessThanZero(temp))
-            std::cout << "WARNING: The number is less than zero on line " <<
-                __LINE__ << " of file " << __FILE__ << std::endl;
+        //if (Utils::isLessThanZero(temp))
+        //    std::cout << "WARNING: The number is less than zero on line " <<
+        //        __LINE__ << " of file " << __FILE__ << std::endl;
         gradrms = sqrt(temp);
         emaxp = emax;
         emax = -10000;
@@ -7288,12 +7303,13 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
                 nmax = i;
             }
         }
+        double gradmax = icoords[TSnode0].gradmax;
         overlapn = icoords[TSnode0].path_overlap_n;
         overlap = icoords[TSnode0].path_overlap;
         printf("\n");
         if (climb && !find) printf("c");
         if (find) printf("x");
-        printf(" opt_iter: %2i totalgrad: %1.3f gradrms: %1.4f tgrads: %i",oi+1,totalgrad,gradrms,gradJobCount);
+        printf(" opt_iter: %3i totalgrad: %4.3f gradrms: %5.4f gradmax: %5.4f tgrads: %3i",oi+1,totalgrad,gradrms,gradmax,gradJobCount);
         printf(" ol(%i): %1.2f max E: %1.1f",overlapn,overlap,emax-emin);
         if (nsplit) printf(" s");
         printf(" \n");
@@ -7320,6 +7336,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
             nnmax = nnR;
             active[nnmax-2] = active[nnmax-1] = 1;
             icoords[nnmax-1].OPTTHRESH = CONV_TOL;
+            icoords[nnmax-1].OPTMAX = GRAD_MAX_TOL;
             added = 1;
             printf("\n");
         }
@@ -7378,6 +7395,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
             }
             for (int n1=1;n1<nnmax-1;n1++) icoords[n1].OPTTHRESH=CONV_TOL*2;
             icoords[TSnode0].OPTTHRESH = CONV_TOL;
+            icoords[TSnode0].OPTMAX = GRAD_MAX_TOL;
         } //if totalg < 0.3
         if (find && icoords[TSnode0].nneg > 3 && icoords[TSnode0].gradrms > CONV_TOL)
         {
@@ -7439,8 +7457,11 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
         //standard GSM convergence criteria
         if (!isSSM)
         {
-            if (find && icoords[TSnode0].gradrms < CONV_TOL && emax<V_profile[TSnode0]+0.01) { tscontinue = 0; break; } //adjustable parameter
-            if (find && totalgrad < 0.1 && icoords[TSnode0].gradrms < 2.5*CONV_TOL && emaxp + 0.01 > emax && emaxp - 0.01 < emax && nclimb<0) { tscontinue = 0; break; } //adjustable parameter
+            if (icoords[TSnode0].gradmax<GRAD_MAX_TOL)
+            {
+              if (find && icoords[TSnode0].gradrms < CONV_TOL && emax<V_profile[TSnode0]+0.01) { tscontinue = 0; break; } //adjustable parameter
+              if (find && totalgrad < 0.1 && icoords[TSnode0].gradrms < 2.5*CONV_TOL && emaxp + 0.01 > emax && emaxp - 0.01 < emax && nclimb<0) { tscontinue = 0; break; } //adjustable parameter
+            }
             if (!climber && !finder && totalgrad<0.05) { tscontinue = 0; break; } //end even if not TS search
         }
         else if (isSSM && !added)
@@ -7491,8 +7512,11 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
                 }
             }
             //CPMZ maybe add nclimb criterion
-            if (find && icoords[TSnode0].gradrms < CONV_TOL && emax<V_profile[TSnode0]+0.01) { tscontinue = 0; break; } //adjustable parameter
-            if (find && totalgrad < 0.1 && icoords[TSnode0].gradrms < 2.5*CONV_TOL && emaxp + 0.02 > emax && emaxp - 0.02 < emax) { tscontinue = 0; break; } //adjustable parameter
+            if (icoords[TSnode0].gradmax<GRAD_MAX_TOL)
+            {
+              if (find && icoords[TSnode0].gradrms < CONV_TOL && emax<V_profile[TSnode0]+0.01) { tscontinue = 0; break; } //adjustable parameter
+              if (find && totalgrad < 0.1 && icoords[TSnode0].gradrms < 2.5*CONV_TOL && emaxp + 0.02 > emax && emaxp - 0.02 < emax) { tscontinue = 0; break; } //adjustable parameter
+            }
         }
 
 
@@ -7731,6 +7755,7 @@ void GString::add_last_node(int type)
     int noptsteps = 15;
     int size_ic = icoords[nnR-1].nbonds + icoords[nnR-1].nangles + icoords[nnR-1].ntor + icoords[nnR-1].nxyzic;
     icoords[nnR].OPTTHRESH = CONV_TOL;
+    icoords[nnR].OPTMAX = GRAD_MAX_TOL;
     if (type==1)
     {
         printf(" copying last node, opting \n");

@@ -52,6 +52,7 @@ int ICoord::bmat_alloc() {
     for (int i=0;i<size_ic+100;i++) pgradqprim[i]=0.;
     for (int i=0;i<size_ic+100;i++) gradqprim[i]=0.;
     OPTTHRESH = 0.0005;
+    OPTMAX = 0.05;
 
     MAXAD = 0.075; //max along one coordinate (was using 0.1)
     DMAX = 0.1; //max of step magnitude (was using 0.125)
@@ -73,6 +74,7 @@ int ICoord::bmat_alloc() {
     noptdone = 0;
     nneg = 0;
     isDavid = 0;
+    gradmax = 0.;
 
     FMAG = 0.015; //was 0.015
 
@@ -2105,19 +2107,19 @@ double ICoord::opt_a(int nnewb, int* newb, int nnewt, int* newt, string xyzfile_
             }
             if (DMAX<DMIN0) DMAX=DMIN0;
 #endif
-            printf(" E(M): %1.1f",energy);
-            printf(" gRMS: %1.4f ",gradrms);
+            printf(" E(M): %3.1f",energy);
+            printf(" gRMS: %5.4f gMAX: %5.4f ",gradrms,gradmax);
             printf(" \n");
         }
         pgradrms = gradrms;
-        if (gradrms<OPTTHRESH) break;
+        if (gradrms<OPTTHRESH && gradmax<OPTMAX) break;
 
     } //loop over opt steps
 
 #if 1
     printf(" E(M): %1.1f",energy);
     printf(" final IC grad RMS: %1.4f ",gradrms);
-    if (gradrms<OPTTHRESH) printf(" *");
+    if (gradrms<OPTTHRESH && gradmax<OPTMAX) printf(" *");
     printf("\n");
 #endif
 
@@ -2211,7 +2213,7 @@ double ICoord::opt_b(string xyzfile_string, int nsteps){
         }
 #endif
 
-        if (gradrms<OPTTHRESH) break;
+        if (gradrms<OPTTHRESH && gradmax<OPTMAX) break;
 
         update_ic_eigen();
 
@@ -2243,7 +2245,7 @@ double ICoord::opt_b(string xyzfile_string, int nsteps){
             ixflag = 0;
         }
 
-        sprintf(sbuff," E(M): %1.1f gRMS: %1.4f",energy,gradrms); printout += sbuff;
+        sprintf(sbuff," E(M): %3.1f gRMS: %5.4f gMAX: %5.4f ",energy,gradrms,gradmax); printout += sbuff;
         if (n<OPTSTEPS-1)
         {
             noptdone++;
@@ -2302,7 +2304,7 @@ double ICoord::opt_b(string xyzfile_string, int nsteps){
 #if 1
     sprintf(sbuff," E(M): %1.1f",energy); printout += sbuff;
     sprintf(sbuff," final IC grad RMS: %1.4f ",gradrms); printout += sbuff;
-    if (gradrms<OPTTHRESH) { sprintf(sbuff," *"); printout += sbuff; }
+    if (gradrms<OPTTHRESH && gradmax<OPTMAX) { sprintf(sbuff," *"); printout += sbuff; }
     sprintf(sbuff,"\n"); printout += sbuff;
 #endif
 
@@ -2543,8 +2545,8 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
         else bcp = 0;
         //printf(" oc3"); fflush(stdout);
 
-        sprintf(sbuff," E(M): %1.2f gRMS: %1.4f",energy,gradrms); printout += sbuff;
-        if (gradrms<OPTTHRESH && !bcp) 
+        sprintf(sbuff," E(M): %3.2f gRMS: %5.4f gMAX: %5.4f ",energy,gradrms,gradmax); printout += sbuff;
+        if (gradrms<OPTTHRESH && gradmax<OPTMAX && !bcp) 
         {
             sprintf(sbuff," * \n"); printout += sbuff;
             break;
@@ -2938,10 +2940,10 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
             }
 #endif
         }
-        sprintf(sbuff," E(M): %1.2f gRMS: %1.4f",energy,gradrms); printout += sbuff;
+        sprintf(sbuff," E(M): %3.2f gRMS: %5.4f gMAX: %5.4f ",energy,gradrms,gradmax); printout += sbuff;
 
         //    if ( (gradrms<OPTTHRESH && nicd==nicd0 && ridge==0) 
-        if ( (gradrms<OPTTHRESH && nicd==nicd0 && abs(path_overlap_e_g)<OPTTHRESH) 
+        if ( (gradrms<OPTTHRESH && gradmax<OPTMAX && nicd==nicd0 && abs(path_overlap_e_g)<OPTTHRESH) 
                 || (nicd!=nicd0 && abs(gradq[nicd0-1])<OPTTHRESH) )
         {
             sprintf(sbuff," * \n"); printout += sbuff;
@@ -3126,7 +3128,7 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
             energyl = energy;
             for (int j=0;j<3*natoms;j++) xyzl[j] = coords[j];
         }
-        if (gradrms<OPTTHRESH) break;
+        if (gradrms<OPTTHRESH && gradmax<OPTMAX) break;
 
         update_ic_eigen_ts(Cn);
         rflag = ic_to_xyz_opt();
@@ -3198,7 +3200,7 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
                     DMAX = 0.15;
             }
 #endif
-            sprintf(sbuff," E(M): %1.2f gRMS: %1.4f \n",energy,gradrms); printout += sbuff;
+            sprintf(sbuff," E(M): %3.2f gRMS: %5.4f gMAX: %5.4f \n",energy,gradrms,gradmax); printout += sbuff;
         } //if not last opt step
         pgradrms = gradrms;
 
@@ -3211,9 +3213,9 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
 #endif
     } // loop over n
 
-    sprintf(sbuff," E(M): %1.2f",energy); printout += sbuff;
-    sprintf(sbuff," gRMS: %1.4f ",gradrms); printout += sbuff;
-    if (gradrms<OPTTHRESH)
+    sprintf(sbuff," E(M): %3.2f",energy); printout += sbuff;
+    sprintf(sbuff," gRMS: %5.4f gMAX: %5.4f ",gradrms,gradmax); printout += sbuff;
+    if (gradrms<OPTTHRESH && gradmax<OPTMAX)
     {
         sprintf(sbuff," *"); printout += sbuff;
     }
@@ -3382,14 +3384,19 @@ int ICoord::grad_to_q() {
     for (int i=0;i<nicd;i++)
         gradrms+=gradq[i]*gradq[i];
     //gradrms = sqrt(gradrms/nicd);
-    if (Utils::isZero(nicd))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
+    //if (Utils::isZero(nicd))
+    //    std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     double temp = gradrms/nicd;
-    if (Utils::isLessThanZero(temp))
-        std::cout << "WARNING: The number is less than zero on line " <<
-            __LINE__ << " of file " << __FILE__ << std::endl;
+    //if (Utils::isLessThanZero(temp))
+    //    std::cout << "WARNING: The number is less than zero on line " <<
+    //        __LINE__ << " of file " << __FILE__ << std::endl;
     gradrms = sqrt(temp);
     //print_gradq();
+
+    gradmax = 0.;
+    for (int i=0;i<nicd;i++)
+    if (fabs(gradq[i])>gradmax)
+      gradmax = fabs(gradq[i]);
 
 #if 1
     // for Hessian update
