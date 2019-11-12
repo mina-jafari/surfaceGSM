@@ -83,6 +83,7 @@ int ICoord::bmat_alloc() {
     sbuff = new char[350];
     g_inited = 0;
     V0 = 0.;
+    newHess = 0;
 
 #if USE_NOTBONDS
     mm_init();
