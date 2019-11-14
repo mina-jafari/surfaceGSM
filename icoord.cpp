@@ -1577,6 +1577,11 @@ double ICoord::angle_val(int i, int j, int k)
 }
 
 int ICoord::make_nonbond(){
+  nonbondd = NULL;
+  nonbond = NULL;
+
+
+  return 0;
 
     int n = 0;
     for (int i=0;i<natoms;i++)

@@ -110,7 +110,8 @@ int ICoord::mm_grad(){
 
     bond_grad_all();
     angle_grad_all();
-    vdw_grad_all();  
+    printf(" WARNING: vdw_grad is disabled \n");
+    //vdw_grad_all();  
 
     //torsion_grad not yet complete
     //torsion_grad_all();
@@ -121,9 +122,6 @@ int ICoord::mm_grad(){
     gradrms = 0;
     for (int i=0;i<3*natoms;i++)
         gradrms += grad[i]*grad[i];
-    if (Utils::isLessThanZero(gradrms))
-        std::cout << "WARNING: The number is less than zero on line " <<
-            __LINE__ << " of file " << __FILE__ << std::endl;
     gradrms = sqrt(gradrms);
 
     return 0;
@@ -155,9 +153,6 @@ int ICoord::mm_grad(ICoord shadow){
     gradrms = 0;
     for (int i=0;i<3*natoms;i++)
         gradrms += grad[i]*grad[i];
-    if (Utils::isLessThanZero(gradrms))
-        std::cout << "WARNING: The number is less than zero on line " <<
-            __LINE__ << " of file " << __FILE__ << std::endl;
     gradrms = sqrt(gradrms);
 
     return 0;
@@ -222,10 +217,6 @@ void ICoord::vdw_grad_1(int i, int j, double scale){
     double r = distance(i,j);
 
     //  printf(" R: %1.4f r: %1.4f \n",R,r);
-    if (Utils::isZero(r))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-    if (Utils::isZero(R))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     double Rr = R / r;
     double Rr2 = Rr*Rr;
     double Rr6 = Rr2*Rr2*Rr2;
@@ -283,12 +274,7 @@ void ICoord::lin_grad_1(int i, int j, double scale){
     dx[2] = coords[3*i+2]-coords[3*j+2];
 
     double norm = ( dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2] );
-    if (Utils::isLessThanZero(norm))
-        std::cout << "WARNING: The number is less than zero on line " <<
-            __LINE__ << " of file " << __FILE__ << std::endl;
     norm = sqrt(norm);
-    if (Utils::isZero(norm))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     dx[0] = dx[0] / norm;
     dx[1] = dx[1] / norm;
     dx[2] = dx[2] / norm;
@@ -359,10 +345,6 @@ void ICoord::angle_grad_1(int i, int j, int k){
     //  printf(" r1: %1.4f r2: %1.4f\n",r1,r2);
     double* g1 = new double[3];
     double* g2 = new double[3];
-    if (Utils::isZero(r1*cos(angle)))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-    if (Utils::isZero(r2*cos(angle)))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     double g1a = -r2/r1*cos(angle);
     double g2a = -r1/r2*cos(angle);
     //  printf(" g1a: %1.4f g2a: %1.4f\n",g1a,g2a);
@@ -376,12 +358,6 @@ void ICoord::angle_grad_1(int i, int j, int k){
     double d = angle - ffangled(i,j)*3.14/180; //in radians
 
     double SCALE=1;
-    if (Utils::isZero(sin(angle)))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-    if (Utils::isZero(r1))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-    if (Utils::isZero(r2))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     double t = 2 * d * ffanglee(i,j) / sin(angle) / r1 / r2 / SCALE;
 
     //  printf(" grad mag on %i %i %i: %1.4f, current stretch: %1.4f angle: %1.4f \n",i,j,k,t,d,angle*180/3.14);
@@ -432,9 +408,6 @@ void ICoord::torsion_grad_1(int i, int j, int k, int l){
     rjk[1] = -rkj[1];
     rjk[2] = -rkj[2];
     double R2 = rkj[0]*rkj[0]+rkj[1]*rkj[1]+rkj[2]*rkj[2];
-    if (Utils::isLessThanZero(R2))
-        std::cout << "WARNING: The number is less than zero on line " <<
-            __LINE__ << " of file " << __FILE__ << std::endl;
     double R = sqrt(R2);
 
     double* m = new double[3];
@@ -465,10 +438,6 @@ void ICoord::torsion_grad_1(int i, int j, int k, int l){
     double* S = new double[3];
     double* Fi = new double[3];
     double* Fl = new double[3];
-    if (Utils::isZero(mm))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-    if (Utils::isZero(nn))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     grad[3*i+0] += Fi[0] = -dEdphi*R*m[0]/mm;
     grad[3*i+1] += Fi[1] = -dEdphi*R*m[1]/mm;
     grad[3*i+2] += Fi[2] = -dEdphi*R*m[2]/mm;
@@ -476,8 +445,6 @@ void ICoord::torsion_grad_1(int i, int j, int k, int l){
     grad[3*l+1] += Fl[1] = dEdphi*R*n[1]/nn;
     grad[3*l+2] += Fl[2] = dEdphi*R*n[2]/nn;
 
-    if (Utils::isZero(R2))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     S[0] = (Fi[0]*d1-Fl[0]*d2)/R2;
     S[1] = (Fi[1]*d1-Fl[1]*d2)/R2;
     S[2] = (Fi[2]*d1-Fl[2]*d2)/R2;
@@ -530,9 +497,6 @@ void ICoord::imptor_grad_1(int i, int j, int k, int l){
     rjk[1] = -rkj[1];
     rjk[2] = -rkj[2];
     double R2 = rkj[0]*rkj[0]+rkj[1]*rkj[1]+rkj[2]*rkj[2];
-    if (Utils::isLessThanZero(R2))
-        std::cout << "WARNING: The number is less than zero on line " <<
-            __LINE__ << " of file " << __FILE__ << std::endl;
     double R = sqrt(R2);
 
     double* m = new double[3];
@@ -559,10 +523,6 @@ void ICoord::imptor_grad_1(int i, int j, int k, int l){
     double* S = new double[3];
     double* Fi = new double[3];
     double* Fl = new double[3];
-    if (Utils::isZero(mm))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-    if (Utils::isZero(nn))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     grad[3*i+0] += Fi[0] = -dEdphi*R*m[0]/mm;
     grad[3*i+1] += Fi[1] = -dEdphi*R*m[1]/mm;
     grad[3*i+2] += Fi[2] = -dEdphi*R*m[2]/mm;

@@ -23,10 +23,12 @@ void ICoord::freemem(){
     delete [] imptor[i];
   delete [] imptorv;
 
+#if 0
   for (int i=0;i<max_nonbond;i++)
     delete [] nonbond[i];
   delete [] nonbond;
   delete [] nonbondd;
+#endif
 
   delete [] ffR;
   delete [] ffeps;
@@ -91,11 +93,13 @@ void ICoord::alloc_mem(){
 
    
   n_nonbond = 0;
+#if 0
   max_nonbond = natoms*natoms;
   nonbond = new int*[max_nonbond];
   for (int i=0;i<max_nonbond;i++)
     nonbond[i]=new int[2];
   nonbondd = new double[max_nonbond];
+#endif
 
   coordn = new int[natoms];
   for (int i=0;i<natoms;i++)

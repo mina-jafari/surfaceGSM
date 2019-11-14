@@ -993,11 +993,13 @@ void GString::String_Method_Optimization()
     }
 
 
-
-    return;
-
+    fflush(stdout);
+    for (int i=0;i<nnmax;i++)
+      icoords[i].freemem();
     delete [] masses;
 
+
+    return;
 }
 
 
