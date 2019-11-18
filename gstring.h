@@ -209,6 +209,7 @@ class GString {
         double prodelim;
         int lastOpt;
         int initialOpt;
+        int last_node_opt;
 
         //*** Places to keep some simulation data ***
         int gradJobCount;		//keeps track of the total number of gradient jobs performed

@@ -1199,6 +1199,7 @@ void GString::parameter_init(string infilename)
     QDISTMAX = 5.0;
     PEAK4_EDIFF = 2.0;
     isRestart = 0;
+    last_node_opt = 0;
     GRAD_MAX_TOL = 0.05;
 
     cout << "Initializing Tolerances and Parameters..." << endl;
@@ -1250,6 +1251,11 @@ void GString::parameter_init(string infilename)
             tstype = atoi(tok_line[1].c_str());
             stillreading = true;
             cout <<"  -TS_FINAL_TYPE: " << tstype << endl;
+        }
+        if (tagname=="LAST_NODE_OPT") {
+            last_node_opt = atof(tok_line[1].c_str());
+            stillreading = true;
+            cout <<"  -LAST_NODE_OPT: " << last_node_opt << endl;
         }
         if (tagname=="PRODUCT_LIMIT") {
             prodelim = atof(tok_line[1].c_str());
@@ -7128,23 +7134,13 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
         if (isSSM)
         {
             //gradrms = sqrt(gradrms/(nnR-1));
-            if (Utils::isZero(nnR-1))
-                std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
             double temp = gradrms/(nnR-1);
-            if (Utils::isLessThanZero(temp))
-                std::cout << "WARNING: The number is less than zero on line " <<
-                    __LINE__ << " of file " << __FILE__ << std::endl;
             gradrms = sqrt(temp);
         }
         else
         {
             //gradrms = sqrt(gradrms/(nn-2));
-            if (Utils::isZero(nn-2))
-                std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
             double temp = gradrms/(nn-2);
-            if (Utils::isLessThanZero(temp))
-                std::cout << "WARNING: The number is less than zero on line " <<
-                    __LINE__ << " of file " << __FILE__ << std::endl;
             gradrms = sqrt(temp);
         }
         emaxp = emax;
@@ -7211,6 +7207,9 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
         {
             add_last_node(1);
         }
+       //CPMZ new
+        if (last_node_opt && icoords[nnR-1].gradrms>CONV_TOL)
+          add_last_node(3);
 
         printf("\n SSM run, growth phase over \n");
         if (V_profile[nnR-1]>prodelim)
@@ -7755,22 +7754,23 @@ void GString::add_last_node(int type)
         return;
     }
     int noptsteps = 15;
+    if (type==3) noptsteps = 100;
     int size_ic = icoords[nnR-1].nbonds + icoords[nnR-1].nangles + icoords[nnR-1].ntor + icoords[nnR-1].nxyzic;
     icoords[nnR].OPTTHRESH = CONV_TOL;
     icoords[nnR].OPTMAX = GRAD_MAX_TOL;
-    if (type==1)
+    if (type==1 || type==3)
     {
-        printf(" copying last node, opting \n");
-        icoords[nnR].reset(natoms,anames,anumbers,icoords[nnR-1].coords);
-        icoords[nnR].bmatp_create();
-        icoords[nnR].bmatp_to_U();
-        icoords[nnR].bmat_create();
-        for (int i=0;i<size_ic*size_ic;i++)
-            icoords[nnR].Hintp[i] = icoords[nnR-1].Hintp[i];
+      printf(" copying last node, opting \n");
+      icoords[nnR].reset(natoms,anames,anumbers,icoords[nnR-1].coords);
+      icoords[nnR].bmatp_create();
+      icoords[nnR].bmatp_to_U();
+      icoords[nnR].bmat_create();
+      for (int i=0;i<size_ic*size_ic;i++)
+        icoords[nnR].Hintp[i] = icoords[nnR-1].Hintp[i];
     }
     else if (type==2)
     {
-        printf(" already created node, opting \n");
+      printf(" already created node, opting \n");
     }
     string nstr = StringTools::int2str(runNum,4,"0");
     icoords[nnR].grad1.update_knnr();
@@ -7781,18 +7781,18 @@ void GString::add_last_node(int type)
 
     int samegeom = 1;
     for (int i=0;i<3*natoms;i++)
-        if (icoords[nnR].coords[i] != icoords[nnR-1].coords[i])
-        {
-            samegeom = 0;
-            break;
-        }
+    if (icoords[nnR].coords[i] != icoords[nnR-1].coords[i])
+    {
+      samegeom = 0;
+      break;
+    }
 
     if (samegeom)
     {
-        printf(" opt did not produce new geometry \n");
+      printf(" opt did not produce new geometry \n");
     }
     else
-        nnR++;
+      nnR++;
 
 
     return;
