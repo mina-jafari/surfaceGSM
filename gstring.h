@@ -183,6 +183,7 @@ class GString {
         int INTERP_MODE;
         int GROWD;
         int SURF_TYPE;
+        int PRINT_DEBUG;
 
         string* anames;		//array of atomic symbols (for creating input QC file)
         int* anumbers;		//array of atomic indices (for looking up period table stuff)
