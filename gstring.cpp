@@ -5560,7 +5560,7 @@ void GString::get_tangents_1e(double** dqa, double* dqmaga, double** ictan)
     {
         int do3 = 0;
         //printf(" n: %i V[n+1],V[n],V[n-1]: %1.1f %1.1f %1.1f \n",n,V_profile[n+1],V_profile[n],V_profile[n-1]);
-        if (!find && !climb)
+        if (!find) // && !climb)
         {
             if (V_profile[n+1] > V_profile[n] && V_profile[n] > V_profile[n-1])
             {
