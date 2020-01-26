@@ -195,6 +195,7 @@ class GString {
         int MAX_OPT_ITERS;
         double CONV_TOL;
         double GRAD_MAX_TOL;
+        int USE_XYZ_CONV;
         double ADD_NODE_TOL;
         double HESS_INIT;
         int CHARGE;                   //charge of the molecular complex

@@ -281,17 +281,6 @@ void GString::String_Method_Optimization()
 
     setup_surface_sites();
 
-#if 0
-    if (!isSSM)
-    {
-        Eckart::Eckart_align(coords[0], coords[nnmax-1], masses, natoms);
-        //  Eckart::Eckart_align(coords[0], coords[nnmax-1], masses, natoms, 1.0);
-        printf(" after Eckart_align \n");
-    }
-#else
-    printf(" skipped Eckart_align \n");
-#endif
-
     cout << fixed;
     cout << " " << natoms << endl << endl;
     for (int i=0;i<natoms;i++)
@@ -581,6 +570,7 @@ void GString::String_Method_Optimization()
         string nstr0 = StringTools::int2str(runNum,4,"0");
         icoords[0].OPTTHRESH = CONV_TOL; 
         icoords[0].OPTMAX = GRAD_MAX_TOL;
+        icoords[0].use_xyz_conv = USE_XYZ_CONV;
         icoords[0].make_Hint();
         icoords[0].V0 = 0.;
         V_profile[0] = icoords[0].opt_b("scratch/firstnode.xyz"+nstr,initialOpt);
@@ -596,6 +586,7 @@ void GString::String_Method_Optimization()
         string nstr0 = StringTools::int2str(runNum,4,"0");
         icoords[nnmax-1].OPTTHRESH = CONV_TOL;
         icoords[nnmax-1].OPTMAX = GRAD_MAX_TOL;
+        icoords[nnmax-1].use_xyz_conv = USE_XYZ_CONV;
         icoords[nnmax-1].make_Hint();
         icoords[nnmax-1].V0 = 0.;
         V_profile[nnmax-1] = icoords[nnmax-1].opt_b("scratch/lastnode.xyz"+nstr,initialOpt);
@@ -1200,7 +1191,9 @@ void GString::parameter_init(string infilename)
     PEAK4_EDIFF = 2.0;
     isRestart = 0;
     last_node_opt = 0;
+    CONV_TOL = 0.001;
     GRAD_MAX_TOL = 0.05;
+    USE_XYZ_CONV = 0;
     PRINT_DEBUG = 0;
 
     cout << "Initializing Tolerances and Parameters..." << endl;
@@ -1327,6 +1320,11 @@ void GString::parameter_init(string infilename)
             GRAD_MAX_TOL=atof(tok_line[1].c_str());
             stillreading=true;
             cout <<"  -GRAD_MAX_TOL = " << GRAD_MAX_TOL << endl;
+        }
+        if (tagname=="USE_XYZ_TOL") {
+            USE_XYZ_CONV=atoi(tok_line[1].c_str());
+            stillreading=true;
+            cout <<"  -USE_XYZ_CONV = " << USE_XYZ_CONV << endl;
         }
         if (tagname=="ADD_NODE_TOL"){
             ADD_NODE_TOL=atof(tok_line[1].c_str());
@@ -2958,6 +2956,7 @@ void GString::opt_tr()
     newic.pgradrms = 10000.;
     newic.OPTTHRESH = CONV_TOL;
     newic.OPTMAX = GRAD_MAX_TOL;
+    newic.use_xyz_conv = USE_XYZ_CONV;
     newic.noptdone = 3;
 
     //was 5
@@ -3813,19 +3812,20 @@ void GString::ic_reparam(double** dqa, double* dqmaga, int rtype)
     double emax = -1000;
     if (climb && !find)
     {
-        for (int n=n0;n<nnmax;n++)
-            if (V_profile[n]>emax)
-            {
-                TSnode = n;
-                emax = V_profile[n];
-            } 
+      for (int n=n0;n<nnmax;n++)
+      if (V_profile[n]>emax)
+      {
+        TSnode = n;
+        emax = V_profile[n];
+      } 
     }
     else if (find)
     {   
-        emax = V_profile[TSnode0];
-        TSnode = TSnode0;
+      emax = V_profile[TSnode0];
+      TSnode = TSnode0;
     }
-    printf(" TSn: %i",TSnode); fflush(stdout);
+    cTSnode = TSnode;
+    printf(" cTSnode: %i",TSnode); fflush(stdout);
 
 
     double MAXRE=0.5; //was 0.5 (older: 1.1)
@@ -5552,33 +5552,70 @@ void GString::get_tangents_1e(double** dqa, double* dqmaga, double** ictan)
         printf(" %1.1f",V_profile[n]);
     printf("\n");
 
+    double E_ts = -100.;
+    for (int n=0;n<nnmax;n++)
+    if (V_profile[n]>E_ts)
+      E_ts = V_profile[n];
+
     int TSnode = TSnode0;
     if (climb && !find) TSnode = cTSnode;
 
     //printf(" gt1el"); fflush(stdout);
     for (int n=n0+1;n<nnmax-1;n++)
     {
-        int do3 = 0;
-        //printf(" n: %i V[n+1],V[n],V[n-1]: %1.1f %1.1f %1.1f \n",n,V_profile[n+1],V_profile[n],V_profile[n-1]);
-        if (!find) // && !climb)
+      int do3 = 0;
+      //printf(" n: %i V[n+1],V[n],V[n-1]: %1.1f %1.1f %1.1f \n",n,V_profile[n+1],V_profile[n],V_profile[n-1]);
+      if (climb && !find)
+      {
+        double E_node = V_profile[n];
+        if (E_node<E_ts-5.)
         {
-            if (V_profile[n+1] > V_profile[n] && V_profile[n] > V_profile[n-1])
-            {
+          if (V_profile[n+1] > E_node && E_node > V_profile[n-1]) //E going up
+          {
+            newic.reset(natoms,anames,anumbers,icoords[n+1].coords);
+            intic.reset(natoms,anames,anumbers,icoords[n].coords);
+          }
+          else if (V_profile[n-1] > E_node && E_node > V_profile[n+1]) //E going down
+          {
+            newic.reset(natoms,anames,anumbers,icoords[n].coords);
+            intic.reset(natoms,anames,anumbers,icoords[n-1].coords);
+          }
+          else
+          {
+            int nx1 = n+1; int nx2 = n; //going up
+            if (TSnode<n) { nx1 = n; nx2 = n-1; } //going down
+            printf("  tangent local max/min, node %2i tangent: %2i to %2i \n",n,nx2,nx1);
+            newic.reset(natoms,anames,anumbers,icoords[nx1].coords);
+            intic.reset(natoms,anames,anumbers,icoords[nx2].coords);
+          }
+        }
+        else
+        {
+          newic.reset(natoms,anames,anumbers,icoords[n].coords);
+          intic.reset(natoms,anames,anumbers,icoords[n+1].coords);
+          int2ic.reset(natoms,anames,anumbers,icoords[n-1].coords);
+          do3 = 1;
+        }
+      }
+      else if (!find) //&& !climb)
+      {
+          if (V_profile[n+1] > V_profile[n] && V_profile[n] > V_profile[n-1])
+          {
                 newic.reset(natoms,anames,anumbers,icoords[n+1].coords);
                 intic.reset(natoms,anames,anumbers,icoords[n].coords);
-            }
-            else if ((V_profile[n-1] > V_profile[n] && V_profile[n] > V_profile[n+1]))
-            {
+          }
+          else if ((V_profile[n-1] > V_profile[n] && V_profile[n] > V_profile[n+1]))
+          {
                 newic.reset(natoms,anames,anumbers,icoords[n].coords);
                 intic.reset(natoms,anames,anumbers,icoords[n-1].coords);
-            }
-            else
-            {
+          }
+          else
+          {
                 newic.reset(natoms,anames,anumbers,icoords[n].coords);
                 intic.reset(natoms,anames,anumbers,icoords[n+1].coords);
                 int2ic.reset(natoms,anames,anumbers,icoords[n-1].coords);
                 do3 = 1;
-            }
+          }
 #if 0
             //final node point back tangent
             if (isSSM && n==nnmax-2)
@@ -5587,27 +5624,27 @@ void GString::get_tangents_1e(double** dqa, double* dqmaga, double** ictan)
                 intic.reset(natoms,anames,anumbers,icoords[n].coords);
             }
 #endif
+      }
+      else //find on
+      {
+        if (n<TSnode)
+        {
+          newic.reset(natoms,anames,anumbers,icoords[n+1].coords);
+          intic.reset(natoms,anames,anumbers,icoords[n].coords);
+        }
+        else if (n>TSnode)
+        {
+          newic.reset(natoms,anames,anumbers,icoords[n].coords);
+          intic.reset(natoms,anames,anumbers,icoords[n-1].coords);
         }
         else
         {
-            if (n<TSnode)
-            {
-                newic.reset(natoms,anames,anumbers,icoords[n+1].coords);
-                intic.reset(natoms,anames,anumbers,icoords[n].coords);
-            }
-            else if (n>TSnode)
-            {
-                newic.reset(natoms,anames,anumbers,icoords[n].coords);
-                intic.reset(natoms,anames,anumbers,icoords[n-1].coords);
-            }
-            else
-            {
-                newic.reset(natoms,anames,anumbers,icoords[n].coords);
-                intic.reset(natoms,anames,anumbers,icoords[n+1].coords);
-                int2ic.reset(natoms,anames,anumbers,icoords[n-1].coords);
-                do3 = 1;
-            }
+          newic.reset(natoms,anames,anumbers,icoords[n].coords);
+          intic.reset(natoms,anames,anumbers,icoords[n+1].coords);
+          int2ic.reset(natoms,anames,anumbers,icoords[n-1].coords);
+          do3 = 1;
         }
+      }
 
         newic.update_ic();
         intic.update_ic();
@@ -6923,6 +6960,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
                     set_fsm_active(nnR-1,nnR-1); 
                     icoords[nnR-1].OPTTHRESH = CONV_TOL;
                     icoords[nnR-1].OPTMAX = GRAD_MAX_TOL;
+                    icoords[nnR-1].use_xyz_conv = USE_XYZ_CONV;
                 }
             }
         } 
@@ -7110,6 +7148,7 @@ void GString::growth_iters(int max_iter, double& totalgrad, double& gradrms, dou
             {
                 icoords[n].OPTTHRESH = CONV_TOL;
                 icoords[n].OPTMAX = GRAD_MAX_TOL;
+                icoords[n].use_xyz_conv = USE_XYZ_CONV;
             }
         }
     }
@@ -7206,6 +7245,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
             active[nnmax-2] = active[nnmax-1] = 1;
             icoords[nnmax-1].OPTTHRESH = CONV_TOL;
             icoords[nnmax-1].OPTMAX = GRAD_MAX_TOL;
+            icoords[nnmax-1].use_xyz_conv = USE_XYZ_CONV;
             added = 1;
             printf("\n");
         }
@@ -7220,6 +7260,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
         //CPMZ opt settings
         if (totalgrad < 0.3 && fp>0 && !added)
         {
+          printf("  conv check. climb: %i find: %i finder: %i emax-emaxp: %5.2f nclimb: %i gradmax: %5.3f \n",climb,find,finder,fabs(emax-emaxp),nclimb,gradmax);
             //previous settings: tg 0.2 and tg 0.1
             //printf(" totalgrad<0.3 climber: %i climb: %i \n",climber,climb);
 #if 0
@@ -7228,7 +7269,7 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
                      || (totalgrad < 0.15 && icoords[nmax].gradrms<CONV_TOL*10. && fabs(icoords[nmax].gradq[icoords[nmax].nicd0-1])<0.02)
                      || (icoords[nmax].gradrms<CONV_TOL*2.)))
 #endif
-                if (climb && !find && finder && fabs(emax-emaxp)<4. && nclimb<1 &&
+                if (climb && !find && finder && fabs(emax-emaxp)<4. && nclimb<1 && gradmax<0.05 &&
                         ((totalgrad < 0.2 && icoords[nmax].gradrms<CONV_TOL*10. && fabs(icoords[nmax].gradq[icoords[nmax].nicd0-1])<0.01)
                          || (totalgrad < 0.1 && icoords[nmax].gradrms<CONV_TOL*10. && fabs(icoords[nmax].gradq[icoords[nmax].nicd0-1])<0.02) //was 0.03
                          || (icoords[nmax].gradrms<CONV_TOL*5.)))
@@ -7265,8 +7306,9 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
             for (int n1=1;n1<nnmax-1;n1++) icoords[n1].OPTTHRESH=CONV_TOL*2;
             icoords[TSnode0].OPTTHRESH = CONV_TOL;
             icoords[TSnode0].OPTMAX = GRAD_MAX_TOL;
+            icoords[TSnode0].use_xyz_conv = USE_XYZ_CONV;
         } //if totalg < 0.3
-        if (find && icoords[TSnode0].nneg > 3 && icoords[TSnode0].gradrms > CONV_TOL)
+        if (find && icoords[TSnode0].nneg > 3 && (icoords[TSnode0].gradrms > CONV_TOL || icoords[TSnode0].gradrms > GRAD_MAX_TOL))
         {
             if (hessrcount < 1)
             {
@@ -7633,6 +7675,7 @@ void GString::add_last_node(int type)
     int size_ic = icoords[nnR-1].nbonds + icoords[nnR-1].nangles + icoords[nnR-1].ntor + icoords[nnR-1].nxyzic;
     icoords[nnR].OPTTHRESH = CONV_TOL;
     icoords[nnR].OPTMAX = GRAD_MAX_TOL;
+    icoords[nnR].use_xyz_conv = USE_XYZ_CONV;
     if (type==1 || type==3)
     {
       printf(" copying last node, opting \n");

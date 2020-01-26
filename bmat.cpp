@@ -84,6 +84,7 @@ int ICoord::bmat_alloc() {
     g_inited = 0;
     V0 = 0.;
     newHess = 0;
+    use_xyz_conv = 0;
 
 #if USE_NOTBONDS
     mm_init();
@@ -2004,7 +2005,6 @@ double ICoord::opt_a(int nnewb, int* newb, int nnewt, int* newt, string xyzfile_
         bmat_create();
 
         grad_to_q();
-        //print_gradq();
         if (n==0) gradrmsl = gradrms;
         if ( (gradrms<gradrmsl && energy<energyl) ||
                 energy<energyl-5.)
@@ -2188,7 +2188,6 @@ double ICoord::opt_b(string xyzfile_string, int nsteps){
         bmat_create();
 
         grad_to_q();
-        //print_gradq();
         if (n==0) gradrmsl = gradrms;
         if ( (gradrms<gradrmsl && energy<energyl) ||
                 energy<energyl-5.)
@@ -2384,12 +2383,7 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
     double norm = 0.;
     for (int i=0;i<len0;i++)
         norm += Cn[i]*Cn[i];
-    if (Utils::isLessThanZero(norm))
-        std::cout << "WARNING: The number is less than zero on line " <<
-            __LINE__ << " of file " << __FILE__ << std::endl;
     norm = sqrt(norm);
-    if (Utils::isZero(norm))
-        std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
     for (int j=0;j<len0;j++)
         Cn[j] = Cn[j]/norm;
 #if 0
@@ -2458,7 +2452,6 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
         bmat_create();
 
         grad_to_q();
-        //print_gradq();
         if (use_constraint)
         {
             sprintf(sbuff," gqc: %4.3f",gradq[nicd0-1]); printout += sbuff;
@@ -2480,8 +2473,6 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
         xyzfile.close();
 #endif
 
-        //  print_grad();
-        //  print_gradq();
 #if HESS_TANG
         update_ic_eigen_h(Cn,Cn); 
 #else
@@ -2556,7 +2547,8 @@ double ICoord::opt_c(string xyzfile_string, int nsteps, double* C, double* C0)
         {
             noptdone++;
             energy = grad1.grads(coords, grad, Ut, 1) - V0;
-            if (energy > 1000.) { gradrms = 1.; break; }
+            if (energy > 1000.) { sprintf(sbuff,"SCF failed \n"); printout += sbuff; gradrms = 1.; break; }
+            //if (energy > 1000.) { gradrms = 1.; break; }
 
             double dE = energy - energyp;
             energyp = energy;
@@ -2799,7 +2791,6 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
         bmat_create();
 
         grad_to_q();
-        //print_gradq();
 
         if (do_bfgs)
         {
@@ -2822,8 +2813,6 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
         }
 #endif
 
-        //print_grad();
-        //print_gradq();
         if (use_constraint && !isTSnode)
             update_ic_eigen();
         else
@@ -2889,7 +2878,8 @@ double ICoord::opt_r(string xyzfile_string, int nsteps, double* C, double* C0, d
         {
             noptdone++;
             energy = grad1.grads(coords, grad, Ut, 1) - V0;
-            if (energy > 1000.) { gradrms = 1.; break; }
+            if (energy > 1000.) { sprintf(sbuff,"SCF failed \n"); printout += sbuff; gradrms = 1.; break; }
+            //if (energy > 1000.) { gradrms = 1.; break; }
 
             double dE = energy - energyp;
             energyp = energy;
@@ -3063,6 +3053,7 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
     double energyl;
     double gradrmsl = 0.;
     double gradrms1 = 0.;
+    double gradmax1 = 0.;
     double* xyzl = new double[3*natoms];
     for (int j=0;j<3*natoms;j++) xyzl[j] = coords[j];
 
@@ -3105,7 +3096,6 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
 #endif
 
         grad_to_q();
-        //print_gradq();
 
         if (update_hess) update_bofill();
         save_hess();
@@ -3163,14 +3153,15 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
             update_hess = 0;
             nneg = 4;
         }
-        if (nneg>3) break;
+        if (nneg>3 && n>2) break;
 
-        if (n==0) gradrms1 = gradrms;
+        if (n==0) { gradrms1 = gradrms; gradmax1 = gradmax; }
         if (n<OPTSTEPS-1)
         {
             noptdone++;
             energy = grad1.grads(coords, grad, Ut, 3) - V0;
-            if (energy > 1000.) { gradrms = 1.; break; }
+            //if (energy > 1000.) { sprintf(sbuff," ERROR: large E \n"); printout += sbuff; gradrms = 1.; break; }
+            if (energy > 1000.) { sprintf(sbuff,"SCF failed \n"); printout += sbuff; gradrms = 1.; break; }
 
 #if STEPCONTROL
             double dE = energy - energyp;
@@ -3218,12 +3209,12 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
     sprintf(sbuff," gRMS: %5.4f gMAX: %5.4f ",gradrms,gradmax); printout += sbuff;
     if (gradrms<OPTTHRESH && gradmax<OPTMAX)
     {
-        sprintf(sbuff," *"); printout += sbuff;
+      sprintf(sbuff," *"); printout += sbuff;
     }
     sprintf(sbuff,"\n"); printout += sbuff;
 
 #if 1
-    if (gradrms>gradrms1*1.75) //was 1.5
+    if ((gradmax>gradmax1 && gradrms>gradrms1*1.75) || gradrms>gradrms1*5.)
     {
         //printf(" grms: %1.4f grms1: %1.4f ",gradrms,gradrms1);
         sprintf(sbuff,"S"); printout += sbuff;
@@ -3233,15 +3224,20 @@ double ICoord::opt_eigen_ts(string xyzfile_string, int nsteps, double* C, double
         else
             DMAX = DMAX/1.5;
     }
-    if (nneg>3 || gradrms>=1.0)
-    {
-        sprintf(sbuff,"tsr"); printout += sbuff;
-        for (int j=0;j<3*natoms;j++)
-            coords[j] = xyzl[j];
-        energy = energyl;
-        gradrms = gradrmsl;
-    }
 #endif
+#if 0
+   //this can more or less stop optimization
+    if (nneg>3 || gradrms>=1.0)
+#else
+    if (gradrms>=1.0)
+#endif
+    {
+      sprintf(sbuff,"tsr"); printout += sbuff;
+      for (int j=0;j<3*natoms;j++)
+        coords[j] = xyzl[j];
+      energy = energyl;
+      gradrms = gradrmsl;
+    }
 
 
     delete [] dots;
@@ -3349,73 +3345,86 @@ void ICoord::save_hess()
 int ICoord::grad_to_q() {
 
 #if USE_NOTBONDS
-    force_notbonds();
+  force_notbonds();
 #endif
 
-    //printf(" in grad_to_q \n"); print_grad();
+  //printf(" in grad_to_q \n"); print_grad();
 
-    int N3 = 3*natoms;
-    int len_d = nicd0;
-    int len_icp =	nbonds+nangles+ntor;
-    int len0 = len_icp + nxyzic;
-    //  for (int i=0;i<N3;i++)
-    //    pgrad[i] = grad[i];
-    for (int i=0;i<len_d;i++)
-        pgradq[i] = gradq[i];
-    for (int i=0;i<len_d;i++)
-        gradq[i] = 0.0;
+  int N3 = 3*natoms;
+  int len_d = nicd0;
+  int len_icp =	nbonds+nangles+ntor;
+  int len0 = len_icp + nxyzic;
+  //  for (int i=0;i<N3;i++)
+  //  pgrad[i] = grad[i];
+  for (int i=0;i<len_d;i++)
+    pgradq[i] = gradq[i];
+  for (int i=0;i<len_d;i++)
+    gradq[i] = 0.0;
 
-    //printf(" gtype: %i %i \n",grad1.xyz_grad,g_inited);
+  //printf(" gtype: %i %i \n",grad1.xyz_grad,g_inited);
 
-    if (frozen!=NULL)
-        for (int i=0;i<natoms;i++)
-            if (frozen[i])
-                grad[3*i+0] = grad[3*i+1] = grad[3*i+2] = 0.;
+ //turn this on to see full gradient
+#define DEBUG_GRAD 0
 
-    if (grad1.xyz_grad==1 || !g_inited)
-        for (int i=0;i<len_d;i++)
-            for (int j=0;j<N3;j++)
-                gradq[i] += bmatti[i*N3+j] * grad[j];
+#if DEBUG_GRAD
+  printf("  current gradient (XYZ): \n");
+  for (int i=0;i<natoms;i++)
+    printf("   %8.5f %8.5f %8.5f \n",grad[3*i+0],grad[3*i+1],grad[3*i+2]);
+  printf("\n");
+#endif
 
-    if (grad1.xyz_grad==0 && g_inited)
-        for (int i=0;i<len_d;i++)
-            gradq[i] = grad[i];
+  if (frozen!=NULL)
+  for (int i=0;i<natoms;i++)
+  if (frozen[i])
+    grad[3*i+0] = grad[3*i+1] = grad[3*i+2] = 0.;
 
-    gradrms = 0.;
+  if (grad1.xyz_grad==1 || !g_inited)
+  for (int i=0;i<len_d;i++)
+  for (int j=0;j<N3;j++)
+    gradq[i] += bmatti[i*N3+j] * grad[j];
+
+  if (grad1.xyz_grad==0 && g_inited)
+  for (int i=0;i<len_d;i++)
+    gradq[i] = grad[i];
+
+  gradrms = 0.;
+  gradmax = 0.;
+  if (use_xyz_conv)
+  {
+    for (int i=0;i<N3;i++)
+      gradrms += grad[i]*grad[i];
+    for (int i=0;i<N3;i++)
+    if (fabs(grad[i])>gradmax)
+      gradmax = fabs(grad[i]);
+  }
+  else
+  {
     for (int i=0;i<nicd;i++)
-        gradrms+=gradq[i]*gradq[i];
-    //gradrms = sqrt(gradrms/nicd);
-    //if (Utils::isZero(nicd))
-    //    std::cout << "ERROR: The number is zero on line " << __LINE__ << " of file " << __FILE__ << std::endl;
-    double temp = gradrms/nicd;
-    //if (Utils::isLessThanZero(temp))
-    //    std::cout << "WARNING: The number is less than zero on line " <<
-    //        __LINE__ << " of file " << __FILE__ << std::endl;
-    gradrms = sqrt(temp);
-    //print_gradq();
-
-    gradmax = 0.;
+      gradrms += gradq[i]*gradq[i];
     for (int i=0;i<nicd;i++)
     if (fabs(gradq[i])>gradmax)
       gradmax = fabs(gradq[i]);
+  }
+  double temp = gradrms/nicd;
+  gradrms = sqrt(temp);
 
 #if 1
-    // for Hessian update
-    for (int i=0;i<len0;i++) pgradqprim[i] = gradqprim[i];
-    for (int i=0;i<len0;i++) gradqprim[i] = 0.;
-    for (int i=0;i<len0;i++)
-        for (int j=0;j<len_d;j++)
-            gradqprim[i] += Ut[j*len0+i]*gradq[j];
+  // for Hessian update
+  for (int i=0;i<len0;i++) pgradqprim[i] = gradqprim[i];
+  for (int i=0;i<len0;i++) gradqprim[i] = 0.;
+  for (int i=0;i<len0;i++)
+  for (int j=0;j<len_d;j++)
+    gradqprim[i] += Ut[j*len0+i]*gradq[j];
 #endif
 
 #if 0
-    if (g_inited) print_gradq();
-#elif 0
-    print_gradq();
+  if (g_inited) print_gradq();
+#elif DEBUG_GRAD
+  print_gradq();
 #endif
 
 
-    return 0;
+  return 0;
 }
 
 
@@ -4410,26 +4419,26 @@ void ICoord::update_ic_eigen_ts(double* Cn)
 
 void ICoord::print_gradq(){
 
-    //printf(" Gradient in delocalized IC:\n");
-    printf(" gradq(curr):");
-    int len = nicd0;
-    for (int i=0;i<len;i++)
-        printf(" %12.10f",gradq[i]);
-    printf("\n");
+  //printf(" Gradient in delocalized IC:\n");
+  printf(" gradq(curr):");
+  int len = nicd0;
+  for (int i=0;i<len;i++)
+    printf(" %9.6f",gradq[i]);
+  printf("\n");
 
-    return;
+  return;
 }
 
 void ICoord::print_q(){
 
-    printf(" q in delocalized IC:\n");
-    int len_d = nicd;
-    printf(" printing q: \n");
-    for (int i=0;i<len_d;i++)
-        printf(" %1.2f",q[i]);
-    printf(" \n");
+  printf(" q in delocalized IC:\n");
+  int len_d = nicd;
+  printf(" printing q: \n");
+  for (int i=0;i<len_d;i++)
+    printf(" %1.2f",q[i]);
+  printf(" \n");
 
-    return;
+  return;
 }
 
 

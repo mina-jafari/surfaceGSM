@@ -164,6 +164,7 @@ class ICoord {
         int surf_type;
 
         int use_xyz;
+        int use_xyz_conv;
         int nxyzic;
         int* xyzic;
         int* frozen;
