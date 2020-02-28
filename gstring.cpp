@@ -218,6 +218,64 @@ void GString::setup_surface_sites()
     return;
 }
 
+void GString::optimize_ts(int wn, int max_iters, double& gradrms, int& ngrad, int& overlapn, double& overlap, double& ETSf, double** dqa, double* dqmaga, double** ictan)
+{
+  printf("  in optimize_ts for node %i \n",wn);
+
+  //need ictan for TS node
+  int nbonds = newic.nbonds;
+  int nangles = newic.nangles;
+  int ntor = newic.ntor;
+  int size_ic = newic.nbonds+newic.nangles+newic.ntor+newic.nxyzic;
+  int len_d = newic.nicd0;
+
+  get_tangents_1e(dqa,dqmaga,ictan);
+
+  double* C = new double[size_ic]();
+  double* C0 = new double[size_ic]();
+        
+  icoords[wn].OPTTHRESH = TS_CONV_TOL;
+  icoords[wn].update_ic();
+  
+  double norm = 0.;
+  for (int i=0;i<size_ic;i++)
+    norm += ictan[wn][i]*ictan[wn][i];
+  norm = sqrt(norm);
+  for (int i=0;i<size_ic;i++)
+    C[i] = ictan[wn][i]/norm;
+
+  for (int i=0;i<nbonds;i++)
+    C0[i] = icoords[wn].bondd[i]*C[i];
+  for (int i=0;i<nangles;i++)
+    C0[nbonds+i] = icoords[wn].anglev[i]*3.14159/180*C[nbonds+i];
+  for (int i=0;i<ntor;i++)
+    C0[nbonds+nangles+i] = icoords[wn].torv[i]*3.14159/180*C[nbonds+nangles+i];
+
+  int tssteps = 10;
+  for (int m=0;m<max_iters;m++)
+  {
+    V_profile[wn] = ETSf = icoords[wn].opt_eigen_ts("scratch/xyzfile.xyzts",tssteps,C,C0);
+    printf(" %s",icoords[wn].printout.c_str());
+
+    gradrms = icoords[wn].gradrms;
+    overlap = overlap = icoords[wn].path_overlap;
+    ngrad += icoords[wn].noptdone;
+    printf("\n opt_iter(TS): %2i current ETS: %7.3f gradrms: %8.6f overlap: %5.3f \n",m+1,ETSf,gradrms,overlap);
+ 
+    if (overlap<0.25) { printf("    error: overlap too low to proceed,\n       refine string further before final ts optimization \n"); break; }
+    else if (overlap<0.5) printf("    warning: overlap is low \n");
+
+    if (gradrms<TS_CONV_TOL) break;
+  }
+
+  delete [] ictan;
+  delete [] C;
+  delete [] C0;
+
+  return;
+}
+
+
 void GString::String_Method_Optimization()
 {
 
@@ -818,6 +876,19 @@ void GString::String_Method_Optimization()
 
     printf("\n oi: %i nmax: %i TSnode0: %i overlapn: %i \n",oi,nmax,TSnode0,overlapn);
 
+    if (converged && do_post_ts)
+    {
+      printf("\n will reoptimize TS to higher tolerance %8.5f \n",TS_CONV_TOL);
+      int gradTSCount = 0;
+      double ETSf = 0.;
+      int ts_iters = ts_opt_steps / 10; if (ts_iters<1) ts_iters = 1;
+
+      optimize_ts(TSnode0,ts_iters,gradrms,gradTSCount,overlapn,overlap,ETSf,dqa,dqmaga,ictan);
+      //emax = ETSf; 
+     //fix this print line
+      printf("\n opt_iters over (TS): gradrms: %6.4f tgrads: %4i  ol(%i): %3.2f max E: %5.1f Erxn: %4.1f \n",gradrms,gradTSCount,overlapn,overlap,ETSf,ETSf);
+    }
+
 #if USE_KNNR
     printf(" recomputing energies for kNNR nodes \n");
     printf(" WARNING: doesn't skip already computed nodes \n");
@@ -1129,6 +1200,8 @@ void GString::init(string infilename, int run, int nprocs){
     endearly = 0;
     surftype = "none";
     nbsites = 0;
+    do_post_ts = 0;
+    ts_opt_steps = 0;
 
     printf("  -structure filename from input: %s \n",xyzfile.c_str());
     //general_init(infilename);
@@ -1192,6 +1265,7 @@ void GString::parameter_init(string infilename)
     isRestart = 0;
     last_node_opt = 0;
     CONV_TOL = 0.001;
+    TS_CONV_TOL = 0;
     GRAD_MAX_TOL = 0.05;
     USE_XYZ_CONV = 0;
     PRINT_DEBUG = 0;
@@ -1315,6 +1389,20 @@ void GString::parameter_init(string infilename)
             CONV_TOL=atof(tok_line[1].c_str());
             stillreading=true;
             cout <<"  -CONV_TOL = " << CONV_TOL << endl;
+        }
+        if (tagname=="TS_CONV_TOL") {
+            TS_CONV_TOL=atof(tok_line[1].c_str());
+            stillreading=true;
+            cout <<"  -TS_CONV_TOL = " << TS_CONV_TOL << endl;
+            do_post_ts = 1;
+            if (ts_opt_steps==0) ts_opt_steps = 50;
+        }
+        if (tagname=="TS_FINAL_OPT") {
+            ts_opt_steps=atoi(tok_line[1].c_str());
+            stillreading=true;
+            cout <<"  -TS_FINAL_OPT = " << ts_opt_steps << endl;
+            do_post_ts = 1;
+            if (TS_CONV_TOL==0) TS_CONV_TOL = CONV_TOL;
         }
         if (tagname=="GRAD_MAX_TOL") {
             GRAD_MAX_TOL=atof(tok_line[1].c_str());

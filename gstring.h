@@ -167,6 +167,7 @@ class GString {
         void ic_reparam_cut(int min, double** dqa, double* dqmaga, int type);
         int check_for_reaction_g();
         int check_for_reaction(int& wts, int& wint);
+        void optimize_ts(int wn, int max_iters, double& gradrms, int& ngrad, int& overlapn, double& overlap, double& ETSf, double** dqa, double* dqmaga, double** ictan);
 
         double* V_profile;
         double V0; // zero reference E
@@ -195,6 +196,8 @@ class GString {
         int MAX_OPT_ITERS;
         double CONV_TOL;
         double GRAD_MAX_TOL;
+        double TS_CONV_TOL;
+        int do_post_ts;
         int USE_XYZ_CONV;
         double ADD_NODE_TOL;
         double HESS_INIT;
@@ -212,6 +215,7 @@ class GString {
         int lastOpt;
         int initialOpt;
         int last_node_opt;
+        int ts_opt_steps;
 
         //*** Places to keep some simulation data ***
         int gradJobCount;		//keeps track of the total number of gradient jobs performed
