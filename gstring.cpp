@@ -268,7 +268,6 @@ void GString::optimize_ts(int wn, int max_iters, double& gradrms, int& ngrad, in
     if (gradrms<TS_CONV_TOL) break;
   }
 
-  delete [] ictan;
   delete [] C;
   delete [] C0;
 
