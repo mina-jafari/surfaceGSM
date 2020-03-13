@@ -167,7 +167,7 @@ class GString {
         void ic_reparam_cut(int min, double** dqa, double* dqmaga, int type);
         int check_for_reaction_g();
         int check_for_reaction(int& wts, int& wint);
-        void optimize_ts(int wn, int max_iters, double& gradrms, int& ngrad, int& overlapn, double& overlap, double& ETSf, double** dqa, double* dqmaga, double** ictan);
+        void optimize_ts(int wn, int max_iters, double& gradrms, double& gradmax, int& ngrad, int& overlapn, double& overlap, double& ETSf, double** dqa, double* dqmaga, double** ictan);
 
         double* V_profile;
         double V0; // zero reference E
@@ -197,8 +197,10 @@ class GString {
         double CONV_TOL;
         double GRAD_MAX_TOL;
         double TS_CONV_TOL;
+        double TS_GRAD_MAX_TOL;
         int do_post_ts;
         int USE_XYZ_CONV;
+        int TS_USE_XYZ_CONV;
         double ADD_NODE_TOL;
         double HESS_INIT;
         int CHARGE;                   //charge of the molecular complex

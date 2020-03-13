@@ -218,7 +218,7 @@ void GString::setup_surface_sites()
     return;
 }
 
-void GString::optimize_ts(int wn, int max_iters, double& gradrms, int& ngrad, int& overlapn, double& overlap, double& ETSf, double** dqa, double* dqmaga, double** ictan)
+void GString::optimize_ts(int wn, int max_iters, double& gradrms, double& gradmax, int& ngrad, int& overlapn, double& overlap, double& ETSf, double** dqa, double* dqmaga, double** ictan)
 {
   printf("  in optimize_ts for node %i \n",wn);
 
@@ -235,6 +235,8 @@ void GString::optimize_ts(int wn, int max_iters, double& gradrms, int& ngrad, in
   double* C0 = new double[size_ic]();
         
   icoords[wn].OPTTHRESH = TS_CONV_TOL;
+  icoords[wn].OPTMAX = TS_GRAD_MAX_TOL;
+  icoords[wn].use_xyz_conv = TS_USE_XYZ_CONV;
   icoords[wn].update_ic();
   
   double norm = 0.;
@@ -252,21 +254,24 @@ void GString::optimize_ts(int wn, int max_iters, double& gradrms, int& ngrad, in
     C0[nbonds+nangles+i] = icoords[wn].torv[i]*3.14159/180*C[nbonds+nangles+i];
 
   int tssteps = 10;
-  for (int m=0;m<max_iters;m++)
+  int m;
+  for (m=0;m<max_iters;m++)
   {
     V_profile[wn] = ETSf = icoords[wn].opt_eigen_ts("scratch/xyzfile.xyzts",tssteps,C,C0);
     printf(" %s",icoords[wn].printout.c_str());
 
     gradrms = icoords[wn].gradrms;
+    gradmax = icoords[wn].gradmax;
     overlap = overlap = icoords[wn].path_overlap;
     ngrad += icoords[wn].noptdone;
-    printf("\n opt_iter(TS): %2i current ETS: %7.3f gradrms: %8.6f overlap: %5.3f \n",m+1,ETSf,gradrms,overlap);
+    printf("\n opt_iter(TS): %2i current ETS: %7.3f gradrms: %8.6f gradmax: %8.6f overlap: %5.3f \n",m+1,ETSf,gradrms,gradmax,overlap);
  
     if (overlap<0.25) { printf("    error: overlap too low to proceed,\n       refine string further before final ts optimization \n"); break; }
     else if (overlap<0.5) printf("    warning: overlap is low \n");
 
-    if (gradrms<TS_CONV_TOL) break;
+    if (gradrms<TS_CONV_TOL && gradmax<TS_GRAD_MAX_TOL) break;
   }
+  if (m==max_iters) printf("\n warning: maximum iterations reached \n");
 
   delete [] C;
   delete [] C0;
@@ -877,15 +882,15 @@ void GString::String_Method_Optimization()
 
     if (converged && do_post_ts)
     {
-      printf("\n will reoptimize TS to higher tolerance %8.5f \n",TS_CONV_TOL);
+      printf("\n will reoptimize TS to higher tolerance %8.5f / %8.5f \n",TS_CONV_TOL,TS_GRAD_MAX_TOL);
       int gradTSCount = 0;
       double ETSf = 0.;
       int ts_iters = ts_opt_steps / 10; if (ts_iters<1) ts_iters = 1;
 
-      optimize_ts(TSnode0,ts_iters,gradrms,gradTSCount,overlapn,overlap,ETSf,dqa,dqmaga,ictan);
-      //emax = ETSf; 
-     //fix this print line
-      printf("\n opt_iters over (TS): gradrms: %6.4f tgrads: %4i  ol(%i): %3.2f max E: %5.1f Erxn: %4.1f \n",gradrms,gradTSCount,overlapn,overlap,ETSf,ETSf);
+      double gradmax = 0.;
+      optimize_ts(TSnode0,ts_iters,gradrms,gradmax,gradTSCount,overlapn,overlap,ETSf,dqa,dqmaga,ictan);
+
+      printf("\n opt_iters over (TS): gradrms: %6.4f gradmax: %8.6f tgrads: %4i  ol(%i): %3.2f max E: %5.1f \n",gradrms,gradmax,gradTSCount,overlapn,overlap,ETSf);
     }
 
 #if USE_KNNR
@@ -1266,7 +1271,9 @@ void GString::parameter_init(string infilename)
     CONV_TOL = 0.001;
     TS_CONV_TOL = 0;
     GRAD_MAX_TOL = 0.05;
+    TS_GRAD_MAX_TOL = 0.02;
     USE_XYZ_CONV = 0;
+    TS_USE_XYZ_CONV = 1;
     PRINT_DEBUG = 0;
 
     cout << "Initializing Tolerances and Parameters..." << endl;
@@ -1396,6 +1403,12 @@ void GString::parameter_init(string infilename)
             do_post_ts = 1;
             if (ts_opt_steps==0) ts_opt_steps = 50;
         }
+        if (tagname=="TS_GRAD_MAX_TOL") {
+            TS_GRAD_MAX_TOL=atof(tok_line[1].c_str());
+            stillreading=true;
+            cout <<"  -TS_GRAD_MAX_TOL = " << TS_GRAD_MAX_TOL << endl;
+            do_post_ts = 1;
+        }
         if (tagname=="TS_FINAL_OPT") {
             ts_opt_steps=atoi(tok_line[1].c_str());
             stillreading=true;
@@ -1412,6 +1425,11 @@ void GString::parameter_init(string infilename)
             USE_XYZ_CONV=atoi(tok_line[1].c_str());
             stillreading=true;
             cout <<"  -USE_XYZ_CONV = " << USE_XYZ_CONV << endl;
+        }
+        if (tagname=="TS_USE_XYZ_TOL") {
+            TS_USE_XYZ_CONV=atoi(tok_line[1].c_str());
+            stillreading=true;
+            cout <<"  -TS_USE_XYZ_CONV = " << TS_USE_XYZ_CONV << endl;
         }
         if (tagname=="ADD_NODE_TOL"){
             ADD_NODE_TOL=atof(tok_line[1].c_str());
