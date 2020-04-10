@@ -296,6 +296,10 @@ void GString::String_Method_Optimization()
 
     int climber = 1;
     int finder = 1;
+    if (use_exact_climb==0)
+      climber = finder = 0;
+    else if (use_exact_climb==1)
+      finder = 0;
     int tscontinue = 1;
     int do_tp = 0;
     int tp = 0;
@@ -1275,6 +1279,7 @@ void GString::parameter_init(string infilename)
     USE_XYZ_CONV = 0;
     TS_USE_XYZ_CONV = 1;
     PRINT_DEBUG = 0;
+    use_exact_climb = 2;
 
     cout << "Initializing Tolerances and Parameters..." << endl;
     cout << "  -Opening inpfile" << endl;
@@ -1352,6 +1357,11 @@ void GString::parameter_init(string infilename)
             stillreading = true;
             cout <<"  -SSM_DQMAX: " << DQMAG_SSM_MAX << endl;
             cout <<"  -SSM_DQMIN: " << DQMAG_SSM_MIN << endl;
+        }
+        if (tagname=="CLIMB_TS"){
+            use_exact_climb = atoi(tok_line[1].c_str());
+            stillreading = true;
+            cout <<"  -CLIMB_TS = " << use_exact_climb << endl;
         }
         if (tagname=="MIN_SPACING") {
             QDISTMAX = atof(tok_line[1].c_str());
@@ -1470,6 +1480,14 @@ void GString::parameter_init(string infilename)
 
     } //while stillreading
     infile.close();
+
+    if (ts_opt_steps<=0) do_post_ts = 0;
+    if (use_exact_climb<0 || use_exact_climb>2) { printf(" ERROR: CLIMB_TS must be 0, 1, or 2 \n"); exit(1); }
+    if (tstype==2)
+    {
+      printf("  TS_FINAL_TYPE == 2, turning off climbing image and TS search \n");
+      use_exact_climb = 0;
+    }
 
     nnmax0 = nnmax;
 

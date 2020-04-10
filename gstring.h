@@ -43,6 +43,7 @@ class GString {
 
         int ptsn;
         double newclimbscale;
+        int use_exact_climb; //whether to climb or do exact TS search
 
         void growth_iters(int max_iter, double& totalgrad, double& gradrms, double endenergy, string strfileg, int& tscontinue, double gaddmax, int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan);
         void opt_iters(int max_iter, double& totalgrad, double& gradrms, double endenergy, string strfileg, int& tscontinue, double gaddmax, int osteps, int oesteps, double** dqa, double* dqmaga, double** ictan, int finder, int climber, int do_tp, int& tp);
