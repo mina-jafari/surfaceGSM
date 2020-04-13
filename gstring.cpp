@@ -7498,11 +7498,14 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
         //standard GSM convergence criteria
         if (!isSSM)
         {
-            if (icoords[TSnode0].gradmax<GRAD_MAX_TOL)
+            //printf("  checking DE-GSM convergence. gradrms: %8.5f gradmax: %8.5f TOL: %8.5f %8.5f  \n",icoords[nmax].gradrms,icoords[nmax].grad[icoords[nmax].nicd0-1],CONV_TOL,GRAD_MAX_TOL);
+            if (finder && icoords[TSnode0].gradmax<GRAD_MAX_TOL)
             {
               if (find && icoords[TSnode0].gradrms < CONV_TOL && emax<V_profile[TSnode0]+0.01) { tscontinue = 0; break; } //adjustable parameter
               if (find && totalgrad < 0.1 && icoords[TSnode0].gradrms < 2.5*CONV_TOL && emaxp + 0.01 > emax && emaxp - 0.01 < emax && nclimb<0) { tscontinue = 0; break; } //adjustable parameter
             }
+            if (climber && icoords[nmax].gradmax<GRAD_MAX_TOL)
+            if (climb && !finder && icoords[nmax].gradrms < CONV_TOL && fabs(icoords[nmax].grad[icoords[nmax].nicd0-1])<GRAD_MAX_TOL) { tscontinue = 0; break; }
             if (!climber && !finder && totalgrad<0.05) { tscontinue = 0; break; } //end even if not TS search
         }
         else if (isSSM && !added)
@@ -7531,12 +7534,12 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
                 nnmax = nnmax0;
                 break;
             }
+            int wts,wint;
             if (climb && fp>0)
             {
                 fp = find_peaks(4);
                 if (fp>1) peakc++;
                 else peakc = 0;
-                int wts,wint;
                 int rxnocc = 0;
                 if (peakc>1)
                     rxnocc = check_for_reaction(wts,wint);
@@ -7553,11 +7556,14 @@ void GString::opt_iters(int max_iter, double& totalgrad, double& gradrms, double
                 }
             }
             //CPMZ maybe add nclimb criterion
-            if (icoords[TSnode0].gradmax<GRAD_MAX_TOL)
+            //printf("  checking SE-GSM convergence. gradrms: %8.5f gradmax: %8.5f TOL: %8.5f %8.5f  \n",icoords[nmax].gradrms,icoords[nmax].grad[icoords[nmax].nicd0-1],CONV_TOL,GRAD_MAX_TOL);
+            if (finder && icoords[TSnode0].gradmax<GRAD_MAX_TOL)
             {
               if (find && icoords[TSnode0].gradrms < CONV_TOL && emax<V_profile[TSnode0]+0.01) { tscontinue = 0; break; } //adjustable parameter
               if (find && totalgrad < 0.1 && icoords[TSnode0].gradrms < 2.5*CONV_TOL && emaxp + 0.02 > emax && emaxp - 0.02 < emax) { tscontinue = 0; break; } //adjustable parameter
             }
+            if (climber && icoords[nmax].gradmax<GRAD_MAX_TOL)
+            if (climb && !finder && icoords[nmax].gradrms < CONV_TOL && fabs(icoords[nmax].grad[icoords[nmax].nicd0-1])<GRAD_MAX_TOL) { tscontinue = 0; break; }
         }
 
 
