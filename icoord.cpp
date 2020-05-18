@@ -198,6 +198,7 @@ void ICoord::clean_high_coord(int highcut)
             bonds[k][1] = bonds[k+1][1];
           }
           nbonds--;
+          //coord_num();
         }
       } //bond j contains atom i
     } //loop j
@@ -210,6 +211,8 @@ void ICoord::clean_high_coord(int highcut)
 void ICoord::get_xyzic_surf1(int highcut, int* oxel)
 {
   printf(" setting up xyz's for surface_type 1 \n");
+
+  coord_num();
 
   for (int i=0;i<natoms;i++)
   if (oxel[i] && coordn[i]>highcut)
@@ -232,7 +235,8 @@ void ICoord::get_xyzic_surf1(int highcut, int* oxel)
             bonds[k][0] = bonds[k+1][0];
             bonds[k][1] = bonds[k+1][1];
           }
-          nbonds--;
+          nbonds--; j--;
+          //printf("  deleted bond %2i-%2i \n",bonds[j][0]+1,bonds[j][1]+1);
         }
       } //a2 bonded to j
     } //loop j
@@ -271,7 +275,7 @@ int ICoord::ic_create()
     make_bonds();
 
   int abundant = 0;
-  int* oxel = new int[natoms];
+  int* oxel = new int[natoms]();
   int nox = get_ox(oxel, abundant);
 
   //if (surf_type==0 && isSemiconductor(abundant))
@@ -945,67 +949,98 @@ void ICoord::connect_1_coord_mg()
 
 int ICoord::get_ox(int* oxel, int &abundant)
 {
-    printf("   getting most abundant elements \n");
+  printf("   getting most abundant elements \n");
 
-    for (int i=0;i<natoms;i++) oxel[i] = 0;
+  for (int i=0;i<natoms;i++) oxel[i] = 0;
 
-    int* elem = new int[PTable::MAX_NUMBER_OF_ATOMS]; // number of elements in pTable.cpp
-    for (int i=0;i<PTable::MAX_NUMBER_OF_ATOMS;i++) elem[i] = 0;
-    for (int i=0;i<natoms;i++)
+  int* elem = new int[PTable::MAX_NUMBER_OF_ATOMS]; // number of elements in pTable.cpp
+  for (int i=0;i<PTable::MAX_NUMBER_OF_ATOMS;i++) elem[i] = 0;
+  for (int i=0;i<natoms;i++)
+  {
+    int atNum = anumbers[i];
+    if (atNum > 0)
+      elem[atNum]++;
+  }
+
+  int emax1 = -1;
+  int nmax1 = 0;
+  for (int i=1;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
+  {
+    if (elem[i]>nmax1)
     {
-        int atNum = anumbers[i];
-        if (atNum > 0)
-            elem[atNum]++;
+      emax1 = i;
+      nmax1 = elem[i];
     }
+  }
+  abundant = emax1;
 
-    int emax1 = -1;
-    int nmax1 = 0;
-    for (int i=1;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
+ //second most abundant count criterion below
+  int emax2 = -1;
+  int nmax2 = 0;
+  for (int i=1;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
+  {
+    if (elem[i]>nmax2 && i!=emax1)
     {
-        if (elem[i]>nmax1)
-        {
-            emax1 = i;
-            nmax1 = elem[i];
-        }
+      emax2 = i;
+      nmax2 = elem[i];
     }
-    abundant = emax1;
-    int emax2 = -1;
-    int nmax2 = 0;
-    for (int i=1;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
+  }
+
+ //third most abundant must be Z>10 and have at least 5 atoms
+  int emax3 = -1;
+  int nmax3 = 0;
+  for (int i=11;i<PTable::MAX_NUMBER_OF_ATOMS;i++)
+  {
+    if (elem[i]>4)
+    if (elem[i]>nmax3 && i!=emax1 && i!=emax2)
     {
-        if (elem[i]>nmax2 && i!=emax1)
-        {
-            emax2 = i;
-            nmax2 = elem[i];
-        }
+      emax3 = i;
+      nmax3 = elem[i];
     }
+  }
 
-    if (emax1 > 0 && emax2 > 0)
-        printf("   most abundant: %2s/%2i %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1,PTable::atom_name(emax2).c_str(),nmax2);
-    else if (emax1 > 0)
-        printf("   most abundant: %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1);
+  if (emax1 > 0 && emax2 > 0 && emax3 > 0)
+    printf("   most abundant: %2s/%2i %2s/%2i %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1,PTable::atom_name(emax2).c_str(),nmax2,PTable::atom_name(emax3).c_str(),nmax3);
+  else if (emax1 > 0 && emax2 > 0)
+    printf("   most abundant: %2s/%2i %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1,PTable::atom_name(emax2).c_str(),nmax2);
+  else if (emax1 > 0)
+    printf("   most abundant: %2s/%2i \n",PTable::atom_name(emax1).c_str(),nmax1);
 
-    //verify second element is actually abundant
+  //verify second element is actually abundant
+  if (nmax3==0)
+  {
     if (nmax2<natoms/5) 
-        emax2 = -1;
+      emax2 = -1;
+  }
+  //verify when abundant third element is present
+  else
+  {
+    int min_atoms = natoms/8;
+    if (nmax2<min_atoms)
+      emax2 = -1;
+    if (nmax3<min_atoms)
+      emax3 = -1;
+  }
+  if (emax1>0 && emax2>0 && emax3>0)
+    printf("   using all 3 abundant elements as bulk \n");
 
-    int nox = 0;
-    for (int i=0;i<natoms;i++)
-        if (anumbers[i]==emax1 || anumbers[i]==emax2)
-        {
-            oxel[i]++;
-            nox++;
-        }
+  int nox = 0;
+  for (int i=0;i<natoms;i++)
+  if (anumbers[i]==emax1 || anumbers[i]==emax2 || anumbers[i]==emax3)
+  {
+    oxel[i]++;
+    nox++;
+  }
 
 #if 0
-    for (int i=0;i<natoms;i++)
-        printf(" %2i: %i ",i+1,oxel[i]);
-    printf("\n");
+  for (int i=0;i<natoms;i++)
+    printf(" %2i: %i ",i+1,oxel[i]);
+  printf("\n");
 #endif
 
-    delete [] elem;
+  delete [] elem;
 
-    return nox;
+  return nox;
 }
 
 //CPMZ tune me
@@ -1041,7 +1076,7 @@ void ICoord::get_xyzic()
 
 
     int abundant = 0;
-    int* oxel = new int[natoms];
+    int* oxel = new int[natoms]();
     int nox = get_ox(oxel, abundant);
 
     nxyzic = 0;
