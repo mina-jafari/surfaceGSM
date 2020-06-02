@@ -43,6 +43,8 @@ void ICoord::freemem(){
   delete [] coords;
 
   delete [] xyzic;
+  delete [] oxel;
+  nox = 0;
 
   return;
 
@@ -107,6 +109,9 @@ void ICoord::alloc_mem(){
 
   ffR = new double[natoms];
   ffeps = new double[natoms];
+
+  oxel = new int[natoms]();
+  nox = 0;
 
   return;
 }

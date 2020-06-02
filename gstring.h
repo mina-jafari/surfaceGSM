@@ -96,6 +96,8 @@ class GString {
         double** grads;
         double** perp_grads;
         int* frozen;
+        int nsurf_elem;
+        int* surface_elements;
 
         int climb;
         int find; //eigenvector following TS search

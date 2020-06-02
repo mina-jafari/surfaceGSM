@@ -28,6 +28,9 @@ class ICoord {
 
         int nfrags;
         int* frags;
+        int nox; 
+        int* oxel;
+        int abundant; //most prevalent element
 
         int max_bonds;
         int max_angles;
@@ -48,7 +51,7 @@ class ICoord {
         void coord_num();
         void get_xyzic();
         void get_xyzic_surf1(int highcut, int* oxel);
-        int get_ox(int* oxel, int &abundant);
+        int get_ox();
         void connect_1_coord_mg();
         void make_angles();
         void make_torsions();
@@ -247,6 +250,7 @@ class ICoord {
         int ic_to_xyz_opt();
         //  int qchem_init(string infilename, int ncpu, int run, int rune);
         int grad_init(string infilename, int ncpu, int run, int rune, int use_knnr);
+        void set_ox(int nelem1, int* elem1);
         string runends;
         string runend2;
 

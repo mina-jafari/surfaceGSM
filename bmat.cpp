@@ -21,9 +21,9 @@ using namespace std;
 #define STEPCONTROLG 0
 #define THRESH 1E-3
 
-int ICoord::bmat_alloc() {
-
-    printf(" in bmat_alloc: nxyzic: %i \n",nxyzic);
+int ICoord::bmat_alloc() 
+{
+    //printf(" in bmat_alloc: nxyzic: %i \n",nxyzic);
     int size_ic = nbonds+nangles+ntor+nxyzic+150; //buffer of 150 for new primitives
     int size_xyz = 3*natoms;
     //printf(" in bmat_alloc, size_ic: %i size_xyz: %i \n",size_ic-150,size_xyz);

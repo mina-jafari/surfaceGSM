@@ -404,7 +404,7 @@ void GString::String_Method_Optimization()
 
 
     //printf(" nnmax: %i nn: %i \n",nnmax,nn);
-    printf("  allocating icoords for natoms = %2i \n",natoms);
+    //printf("  allocating icoords for natoms = %2i \n",natoms);
     int N3 = natoms*3;
     icoords = new ICoord[nnmax+1];
     for (int i=0;i<nnmax;i++)
@@ -443,6 +443,8 @@ void GString::String_Method_Optimization()
     ic2.frozen = frozen;
     ic1.reset(natoms,anames,anumbers,coords[0]);
     ic2.reset(natoms,anames,anumbers,coords[nnmax-1]);
+    ic1.set_ox(nsurf_elem,surface_elements);
+    ic2.set_ox(nsurf_elem,surface_elements);
     if (!isSSM)
       get_diff_bonds(ic1,ic2,ic3);
     ic1.ic_create();
@@ -1280,6 +1282,7 @@ void GString::parameter_init(string infilename)
     TS_USE_XYZ_CONV = 1;
     PRINT_DEBUG = 0;
     use_exact_climb = 2;
+    nsurf_elem = 0; //user-specified
 
     cout << "Initializing Tolerances and Parameters..." << endl;
     cout << "  -Opening inpfile" << endl;
@@ -1460,6 +1463,23 @@ void GString::parameter_init(string infilename)
             SURF_TYPE = atoi(tok_line[1].c_str());
             stillreading = true;
             cout <<"  -SURFACE_CLASS = " << SURF_TYPE << endl;
+        }
+        if (tagname=="SURFACE_ELEMENTS"){
+            int nf = 0;
+            surface_elements = new int[20]();
+            for (int m=1;m<tok_line.size();m++)
+            {
+              int elem = PTable::atom_number(tok_line[m]);
+              //printf("  possible element: %s -> %i \n",tok_line[m].c_str(),elem);
+              if (elem>0)
+                surface_elements[nf++] = elem;
+            }
+            nsurf_elem = nf;
+            stillreading = true;
+            printf("  -SURFACE_ELEMENTS: ");
+            for (int m=0;m<nf;m++)
+              printf(" %2s",PTable::atom_name(surface_elements[m]).c_str());
+            printf("\n");
         }
         if (tagname=="PRINT_DEBUG"){
             PRINT_DEBUG = atoi(tok_line[1].c_str());
@@ -4713,6 +4733,7 @@ void GString::ic_reparam_cut(int min, double** dqa, double* dqmaga, int rtype)
     string nstr = StringTools::int2str(runNum,4,"0");
     newic.surf_type = SURF_TYPE;
     newic.reset(natoms,anames,anumbers,icoords[min].coords);
+    newic.set_ox(nsurf_elem,surface_elements);
     newic.bmatp_create();
     newic.bmatp_to_U();
     newic.bmat_create();
@@ -5002,6 +5023,7 @@ int GString::check_for_reaction_g()
     int isrxn = 0;
 
     ic2.reset(natoms,anames,anumbers,icoords[nnR-1].coords);
+    ic2.set_ox(nsurf_elem,surface_elements);
     ic2.use_xyz = 1;
     ic2.ic_create();
 
@@ -5068,6 +5090,7 @@ int GString::check_for_reaction(int& wts, int& wint)
     ic1.surf_type = SURF_TYPE;
     ic2.surf_type = SURF_TYPE;
     ic1.reset(natoms,anames,anumbers,coords[0]);
+    ic1.set_ox(nsurf_elem,surface_elements);
     ic1.ic_create();
 
     int isrxn = 0;
@@ -5076,6 +5099,7 @@ int GString::check_for_reaction(int& wts, int& wint)
     if (nmax==0)
     {
         ic2.reset(natoms,anames,anumbers,icoords[nnmax-1].coords);
+        ic2.set_ox(nsurf_elem,surface_elements);
         ic2.ic_create();
 
         int nnew = 0;

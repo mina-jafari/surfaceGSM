@@ -847,7 +847,7 @@ void Surface::findAllSites()
 {
     if (mSurfaceType == ANY)
     {
-        std::cout << "Binding sites should be added using INPUT file." << std::endl;
+        std::cout << "   Binding sites should be added using INPUT file." << std::endl;
         return;
     }
     if (mSurfaceType == FCC100 || mSurfaceType == BCC100)

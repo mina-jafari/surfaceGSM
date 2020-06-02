@@ -274,9 +274,11 @@ int ICoord::ic_create()
   else
     make_bonds();
 
-  int abundant = 0;
-  int* oxel = new int[natoms]();
-  int nox = get_ox(oxel, abundant);
+  if (nox==0)
+  {
+    //oxel = new int[natoms]();
+    nox = get_ox();
+  }
 
   //if (surf_type==0 && isSemiconductor(abundant))
   //  surf_type = 1;
@@ -292,7 +294,7 @@ int ICoord::ic_create()
   }
   else if (isOpt && surf_type==2)
   {
-    printf("Coordinate system for semiconductors. isOpt: %i \n",isOpt);
+    printf("Coordinate system type 2. isOpt: %i \n",isOpt);
     make_frags();
     if (use_xyz)
     {
@@ -349,7 +351,6 @@ int ICoord::ic_create()
 
     update_ic();
 
-    delete [] oxel;
     return 0;
 }
 
@@ -947,7 +948,44 @@ void ICoord::connect_1_coord_mg()
     return;
 }
 
-int ICoord::get_ox(int* oxel, int &abundant)
+void ICoord::set_ox(int nelem1, int* elem1)
+{
+  for (int i=0;i<natoms;i++) oxel[i] = 0;
+
+  nox = 0;
+  for (int i=0;i<natoms;i++)
+  for (int m=0;m<nelem1;m++)
+  if (anumbers[i]==elem1[m])
+  {
+    oxel[i] = 1;
+    nox++;
+  }
+
+  abundant = 0;
+  int* allelem = new int[120]();
+  for (int i=0;i<natoms;i++)
+    allelem[anumbers[i]]++;
+  int elmax = 0;
+  for (int i=1;i<120;i++)
+  if (allelem[i]>elmax)
+  {
+    elmax = allelem[i];
+    abundant = i;
+  }
+  delete [] allelem;
+
+#if 0
+  printf(" surface atom classification:");
+  for (int i=0;i<natoms;i++)
+    printf(" %2i: %i ",i+1,oxel[i]);
+  printf("\n");
+  printf(" most abundant: %2s \n",PTable::atom_name(abundant).c_str());
+#endif
+
+  return;
+}
+
+int ICoord::get_ox()
 {
   printf("   getting most abundant elements \n");
 
@@ -1024,15 +1062,16 @@ int ICoord::get_ox(int* oxel, int &abundant)
   if (emax1>0 && emax2>0 && emax3>0)
     printf("   using all 3 abundant elements as bulk \n");
 
-  int nox = 0;
+  int nox1 = 0;
   for (int i=0;i<natoms;i++)
   if (anumbers[i]==emax1 || anumbers[i]==emax2 || anumbers[i]==emax3)
   {
     oxel[i]++;
-    nox++;
+    nox1++;
   }
 
-#if 0
+#if 1
+  printf(" surface atoms:");
   for (int i=0;i<natoms;i++)
     printf(" %2i: %i ",i+1,oxel[i]);
   printf("\n");
@@ -1040,7 +1079,7 @@ int ICoord::get_ox(int* oxel, int &abundant)
 
   delete [] elem;
 
-  return nox;
+  return nox1;
 }
 
 //CPMZ tune me
@@ -1075,13 +1114,12 @@ void ICoord::get_xyzic()
   if (use_xyz==2) return;
 
 
-    int abundant = 0;
-    int* oxel = new int[natoms]();
-    int nox = get_ox(oxel, abundant);
+  if (nox==0)
+    nox = get_ox();
 
-    nxyzic = 0;
-    for (int i=0;i<natoms;i++)
-        xyzic[i] = 0;
+  nxyzic = 0;
+  for (int i=0;i<natoms;i++)
+    xyzic[i] = 0;
 
     for (int i=0;i<nbonds;i++)
     {
@@ -1128,8 +1166,6 @@ void ICoord::get_xyzic()
         bond_frags_xyz();
     }
 #endif
-
-    delete [] oxel;
 
 #if 0
     if (isOpt)
