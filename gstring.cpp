@@ -1219,6 +1219,7 @@ void GString::init(string infilename, int run, int nprocs){
 
     if (isRestart)
     {
+        initialOpt = 0; //first node presumably optimized before restart
         if (isFSM)
         {
             printf("\n\n ERROR: cannot restart FSM runs \n");
